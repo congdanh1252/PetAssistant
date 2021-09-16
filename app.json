@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "PetAssistant",
+    "slug": "PetAssistant",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  },
+  "name": "PetAssistant"
+}
