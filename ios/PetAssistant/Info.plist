@@ -49,7 +49,20 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-  <key>UIStatusBarStyle</key>
-  <string>UIStatusBarStyleDefault</string>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleDefault</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>RedHatText-Bold.ttf</string>
+		<string>RedHatText-BoldItalic.ttf</string>
+		<string>RedHatText-Italic.ttf</string>
+		<string>RedHatText-Light.ttf</string>
+		<string>RedHatText-LightItalic.ttf</string>
+		<string>RedHatText-Medium.ttf</string>
+		<string>RedHatText-MediumItalic.ttf</string>
+		<string>RedHatText-Regular.ttf</string>
+		<string>RedHatText-SemiBold.ttf</string>
+		<string>RedHatText-SemiBoldItalic.ttf</string>
+	</array>
 </dict>
 </plist>
