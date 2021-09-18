@@ -4,9 +4,10 @@ import { Feather, MaterialCommunityIcons, Ionicons, AntDesign } from '@expo/vect
 import { Image, StyleSheet, Text, View, Keyboard, TouchableWithoutFeedback } from 'react-native'
 import { Input } from 'react-native-elements/dist/input/Input';
 import { Button } from 'react-native-elements/dist/buttons/Button';
+import ProgressBar from '../components/ProgressBar';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
-export function RegisterScreen() {
+export function RegisterScreen_3() {
     const [useName, setName] = useState('');
     const [useEmail, setEmail] = useState('');
 
@@ -96,10 +97,11 @@ export function RegisterScreen() {
                     title='Finish'
                     onPress={() => clickNextButton()}/>
 
-                <View style={style.indicator_container}>
-                    <View style={style.indicator}/>
-                    <View style={style.indicator}/>
-                    <View style={style.active_indicator}/>
+                <View style={{marginTop: 30}}>
+                    <ProgressBar
+                        num={3}
+                        activeIndex={2}    
+                    />
                 </View>
             </View>
         </TouchableWithoutFeedback>
@@ -159,22 +161,4 @@ const style = StyleSheet.create({
         height: 55,
         borderRadius: 10
     },
-    indicator_container: {
-        marginTop: 90,
-        flexDirection: 'row',
-        width: 120,
-        justifyContent: 'space-evenly'
-    },
-    active_indicator: {
-        width: 25,
-        height: 25,
-        borderRadius: 25 / 2,
-        backgroundColor: COLORS.primaryDark
-    },
-    indicator: {
-        width: 25,
-        height: 25,
-        borderRadius: 25 / 2,
-        backgroundColor: '#99885E'
-    }
 });

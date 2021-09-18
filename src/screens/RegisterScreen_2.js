@@ -5,8 +5,9 @@ import { Image, StyleSheet, Text, View, Keyboard, TouchableWithoutFeedback } fro
 import { Button } from 'react-native-elements/dist/buttons/Button';
 import { Input } from 'react-native-elements/dist/input/Input';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import ProgressBar from '../components/ProgressBar';
 
-export function RegisterScreen() {
+export function RegisterScreen_2() {
 
     function clickNextButton() {
         console.log('OK');
@@ -50,10 +51,11 @@ export function RegisterScreen() {
                     title='Next'
                     onPress={() => clickNextButton()}/>
 
-                <View style={style.indicator_container}>
-                    <View style={style.indicator}/>
-                    <View style={style.active_indicator}/>
-                    <View style={style.indicator}/>
+                <View style={{marginTop: 70}}>
+                    <ProgressBar
+                        num={3}
+                        activeIndex={1}    
+                    />
                 </View>
             </View>
         </TouchableWithoutFeedback>

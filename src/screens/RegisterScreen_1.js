@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import COLORS from '../theme/colors'
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Image, StyleSheet, Text, View, Keyboard, TouchableWithoutFeedback } from 'react-native'
+import { Image, StyleSheet, Text, View, Keyboard, TouchableWithoutFeedback, TouchableOpacity } from 'react-native'
 import { Input } from 'react-native-elements/dist/input/Input';
 import { Button } from 'react-native-elements/dist/buttons/Button';
+import ProgressBar from '../components/ProgressBar';
 
-export function RegisterScreen() {
+export function RegisterScreen_1() {
     const [useName, setName] = useState('');
     const [useEmail, setEmail] = useState('');
 
@@ -44,7 +45,7 @@ export function RegisterScreen() {
                     multiline={false}
                     leftIcon={<MaterialCommunityIcons style={style.icon} name="email-outline" size={28} color="black" />}
                     rightIcon={
-                        <TouchableOpacity>
+                        <TouchableOpacity activeOpacity={0.5}>
                             <Feather name="x" size={24} color="black" onPress={() => setEmail('')}/>
                         </TouchableOpacity>
                     }
@@ -58,12 +59,14 @@ export function RegisterScreen() {
                     titleStyle={{fontSize: 20}}
                     buttonStyle={style.next_button} 
                     title='Next'
-                    onPress={() => clickNextButton()}/>
+                    onPress={() => clickNextButton()}
+                />
 
-                <View style={style.indicator_container}>
-                    <View style={style.active_indicator}/>
-                    <View style={style.indicator}/>
-                    <View style={style.indicator}/>
+                <View style={{marginTop: 110}}>
+                    <ProgressBar
+                        num={3}
+                        activeIndex={0}    
+                    />
                 </View>
             </View>
         </TouchableWithoutFeedback>
