@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import COLORS from '../theme/colors'
 import { Feather, MaterialCommunityIcons, Ionicons, AntDesign } from '@expo/vector-icons';
-import { Image, StyleSheet, Text, View, Keyboard, TouchableWithoutFeedback } from 'react-native'
+import { Image, StyleSheet, Text, View, Keyboard, TouchableWithoutFeedback, TouchableOpacity } from 'react-native'
 import { Input } from 'react-native-elements/dist/input/Input';
 import { Button } from 'react-native-elements/dist/buttons/Button';
 import ProgressBar from '../components/ProgressBar';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 
 export function RegisterScreen_3() {
     const [useName, setName] = useState('');

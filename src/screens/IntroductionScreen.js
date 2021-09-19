@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import COLORS from '../theme/colors'
-import { Dimensions, Image, StyleSheet, Text, View } from 'react-native'
+import { Dimensions, StyleSheet, View } from 'react-native'
 import { Button } from 'react-native-elements/dist/buttons/Button';
 import ProgressBar from '../components/ProgressBar';
 

@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import COLORS from '../theme/colors'
 import { Ionicons, AntDesign } from '@expo/vector-icons';
-import { Image, StyleSheet, Text, View, Keyboard, TouchableWithoutFeedback } from 'react-native'
+import { Image, StyleSheet, Text, View, Keyboard, TouchableWithoutFeedback, TouchableOpacity } from 'react-native'
 import { Button } from 'react-native-elements/dist/buttons/Button';
 import { Input } from 'react-native-elements/dist/input/Input';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import ProgressBar from '../components/ProgressBar';
 
 export function RegisterScreen_2() {
