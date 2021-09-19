@@ -3,6 +3,8 @@ const COLORS = {
     primary: '#E5CD8E',
     primaryDark: '#A77B06',
 
+    dot: '#99885E',
+    grey: '#EEEEEE',
     white: '#fff',
     blue: '#5DA3FA',
 };
