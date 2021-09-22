@@ -1,58 +1,54 @@
 import React, { useState } from 'react';
 import COLORS from '../theme/colors'
 import { Ionicons, AntDesign } from '@expo/vector-icons';
-import { Image, StyleSheet, Text, View, Keyboard, TouchableWithoutFeedback, TouchableOpacity } from 'react-native'
+import {
+    Image, StyleSheet, Text, View, Keyboard, StatusBar,
+    TouchableWithoutFeedback, TouchableOpacity 
+} from 'react-native'
 import { Button } from 'react-native-elements/dist/buttons/Button';
 import { Input } from 'react-native-elements/dist/input/Input';
 import ProgressBar from '../components/ProgressBar';
 
-export function RegisterScreen_2() {
-
-    function clickNextButton() {
-        console.log('OK');
-    }
-
+export function RegisterScreen_2({navigation}) {
     return (
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
             <View style={style.container}>
-                <View style={style.back_button_container}>
+                {/* <View style={style.back_button_container}>
                     <TouchableOpacity activeOpacity={0.4}>
                         <Ionicons name="chevron-back" size={36} color="black" />
                     </TouchableOpacity>
-                </View>
+                </View> */}
 
                 <View style={style.icon_title_container}>
                     <Image style={style.bone_icon} source={require('../assets/icons/bone.png')} resizeMode='cover'/>
                     <Text style={style.register_title}>Register{"\n"}new account</Text>
                 </View>
                 
-                <Text style={style.message}>Check your email to get verify code</Text>
-                <View style={style.code_container}>
-                    <Input
-                        inputStyle={style.code}
-                        inputContainerStyle={style.input_container}
-                        multiline={false}
-                        placeholder='123456'
-                        underlineColorAndroid={'#fff'}
-                        rightIcon={
-                            <AntDesign name="downcircle" size={25} color="#24e079" />
-                        }
-                    />
+                <Text style={style.message}>
+                    We have sent you an email with a link to verify your email.{'\n'}
+                    Open it to finish this last step of registeration.
+                </Text>
+                {/* <View style={style.code_container}>
+                    
                     <Button
                         titleStyle={style.resend_code} type='clear' title='Resend code'/>
-                </View>
+                </View> */}
 
-                <Button
+                <Text style={style.note}>
+                    *This screen will close right after the email is verified
+                </Text>
+
+                {/* <Button
                     type='solid' 
                     containerStyle={{marginTop: 40}}
                     titleStyle={{fontSize: 20}}
                     buttonStyle={style.next_button} 
                     title='Next'
-                    onPress={() => clickNextButton()}/>
+                    onPress={() => clickNextButton()}/> */}
 
-                <View style={{marginTop: 70}}>
+                <View style={{marginTop: 200 - StatusBar.currentHeight}}>
                     <ProgressBar
-                        num={3}
+                        num={2}
                         activeIndex={1}    
                     />
                 </View>
@@ -69,7 +65,7 @@ const style = StyleSheet.create({
     },
     icon_title_container: {
         marginTop: 35,
-        marginBottom: 40,
+        marginBottom: 30,
         alignItems: 'center',
         justifyContent: 'center'
     },
@@ -86,10 +82,10 @@ const style = StyleSheet.create({
         textAlign: 'center'
     },
     message: {
-        width: '80%',
-        padding: 15,
+        width: '90%',
+        padding: 10,
         fontFamily: "RedHatText",
-        fontSize: 24,
+        fontSize: 20,
         fontStyle: 'normal',
         textAlign: 'center'
     },
@@ -110,8 +106,7 @@ const style = StyleSheet.create({
     code: {
         fontSize: 22, 
         fontFamily: 'RedHatText',
-        textAlign: 'center', 
-        paddingLeft: 20
+        textAlign: 'center',
     },
     resend_code: {
         fontSize: 20,
@@ -136,22 +131,12 @@ const style = StyleSheet.create({
         height: 55,
         borderRadius: 10
     },
-    indicator_container: {
-        marginTop: 155,
-        flexDirection: 'row',
-        width: 120,
-        justifyContent: 'space-evenly'
-    },
-    active_indicator: {
-        width: 25,
-        height: 25,
-        borderRadius: 25 / 2,
-        backgroundColor: COLORS.primaryDark
-    },
-    indicator: {
-        width: 25,
-        height: 25,
-        borderRadius: 25 / 2,
-        backgroundColor: '#99885E'
+    note: {
+        width: '80%',
+        marginTop: 20,
+        fontStyle: 'italic',
+        fontSize: 16,
+        color: COLORS.primaryDark,
+        textAlign: 'center'
     }
 });

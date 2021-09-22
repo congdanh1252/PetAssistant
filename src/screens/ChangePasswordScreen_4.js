@@ -14,9 +14,19 @@ const windowWidth = Dimensions.get('window').width;
 export function ChangePasswordScreen_4() {
     const [usePassword, setPassword] = useState('');
     const [useConfirmPassword, setConfirmPassword] = useState('');
+    const [useValidPassword, setValidPassword] = useState(false);
+    const [visiblePassword, setVisiblePassword] = useState(true);
+    const [visibleConfirmPassword, setVisibleConfirmPassword] = useState(false);
+    const [isTypingPassword, setIsTypingPassword] = useState(false);
+    const [isTypingConfirmPassword, setIsTypingConfirmPassword] = useState(false);
 
     return (
-        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+        <TouchableWithoutFeedback
+            onPress={() => {
+            Keyboard.dismiss()
+            setIsTypingPassword(false);
+            setIsTypingConfirmPassword(false);
+        }}>
             <View style={style.container}>
                 <View style={style.card}>
                     <Image style={style.icon} source={require('../assets/icons/print.png')}/>
@@ -27,54 +37,150 @@ export function ChangePasswordScreen_4() {
                     </Text>
 
                     <Input
+                        placeholderTextColor='#4c4c4c'
+                        inputStyle={{color: '#000'}}
                         containerStyle={style.input_container}
                         label='Password'
                         placeholder='Password'
                         textContentType='password'
-                        secureTextEntry={true}
+                        secureTextEntry={visiblePassword}
                         multiline={false}
                         errorMessage={
                             <Text style={style.pass_requirement}>Password must be at least 8 characters</Text>
                         }
-                        leftIcon={<MaterialCommunityIcons style={style.input_icon} name="key" size={28} color="black" />}
+                        leftIcon={
+                            <MaterialCommunityIcons style={style.input_icon} name="key" size={28} color="black" />
+                        }
                         rightIcon={
                             <View style={style.right_icon_container}>
-                                <TouchableOpacity activeOpacity={0.5}>
-                                    <Ionicons name="eye" size={24} color="black"/>
-                                </TouchableOpacity>
+                                { isTypingPassword ? (
+                                        <TouchableOpacity
+                                            activeOpacity={0.5}
+                                            onPress={() => setVisiblePassword(!visiblePassword)}>
+                                            <Ionicons
+                                                name="eye"
+                                                size={24}
+                                                color="black"
+                                            />
+                                        </TouchableOpacity>
+                                    ) : (null)
+                                }
 
-                                <TouchableOpacity activeOpacity={0.5}>
-                                    <Feather name="x" size={24} color="black" onPress={() => setPassword('')}/>
-                                </TouchableOpacity>
-                                <AntDesign style={style.correct_icon} name="downcircle" size={24} color="#24e079" />
+                                { isTypingPassword ? (
+                                        <TouchableOpacity
+                                            activeOpacity={0.5}
+                                            onPress={() => {
+                                                setPassword('')
+                                                setValidPassword(false)
+                                            }}>
+                                            <Feather
+                                                name="x"
+                                                size={24}
+                                                color="black"
+                                            />
+                                        </TouchableOpacity>
+                                    ) : (null)
+                                }
+
+                                { (useValidPassword && isTypingPassword) ? (
+                                        <AntDesign
+                                            style={style.correct_icon}
+                                            name="downcircle"
+                                            size={24}
+                                            color="#24e079"
+                                        />
+                                    ) : (
+                                        <AntDesign
+                                            style={style.correct_icon, {display: 'none'}}
+                                            name="downcircle"
+                                            size={24}
+                                            color="#24e079"
+                                        />
+                                    )
+                                }
                             </View>
                         }
                         value={usePassword}
-                        onChangeText={value => setPassword(value)}
+                        onChangeText={value => {
+                            value.length > 0 ? setIsTypingPassword(true) : setIsTypingPassword(false)
+                            value.length > 7 ? setValidPassword(true) : setValidPassword(false);
+                            setPassword(value)
+                        }}
+                        onFocus={() => {
+                            usePassword.length > 0 ? setIsTypingPassword(true) : setIsTypingPassword(false)
+                        }}
                     />
-                    
+                
                     <Input
+                        placeholderTextColor='#4c4c4c'
+                        inputStyle={{color: '#000'}}
                         containerStyle={style.input_container}
                         label='Confirm password'
                         placeholder='Confirm password'
                         textContentType='password'
-                        secureTextEntry={true}
+                        secureTextEntry={visibleConfirmPassword}
                         multiline={false}
-                        leftIcon={<MaterialCommunityIcons style={style.input_icon} name="key" size={28} color="black" />}
+                        leftIcon={
+                            <MaterialCommunityIcons style={style.input_icon} name="key" size={28} color="black" />
+                        }
                         rightIcon={
                             <View style={style.right_icon_container}>
-                                <TouchableOpacity activeOpacity={0.5}>
-                                    <Ionicons name="eye" size={24} color="black" />
-                                </TouchableOpacity>
+                                { isTypingConfirmPassword ? (
+                                        <TouchableOpacity
+                                            activeOpacity={0.5}
+                                            onPress={() => setVisibleConfirmPassword(!visibleConfirmPassword)}>
+                                            <Ionicons
+                                                name="eye"
+                                                size={24}
+                                                color="black"
+                                            />
+                                        </TouchableOpacity>
+                                    ) : (null)
+                                }
 
-                                <TouchableOpacity activeOpacity={0.5}>
-                                    <Feather name="x" size={24} color="black"  onPress={() => setConfirmPassword('')}/>
-                                </TouchableOpacity>
-                                <AntDesign style={style.correct_icon} name="downcircle" size={25} color="#24e079" />
+                                { isTypingConfirmPassword ? (
+                                        <TouchableOpacity
+                                            activeOpacity={0.5}
+                                            onPress={() => setConfirmPassword('')}>
+                                            <Feather
+                                                name="x"
+                                                size={24}
+                                                color="black"
+                                            />
+                                        </TouchableOpacity>
+                                    ) : (null)
+                                }
+
+                                { (useConfirmPassword == usePassword 
+                                    && useConfirmPassword != '' 
+                                    && isTypingConfirmPassword) ? (
+                                        <AntDesign
+                                            style={style.correct_icon}
+                                            name="downcircle"
+                                            size={24}
+                                            color="#24e079"
+                                        />
+                                    ) : (
+                                        <AntDesign
+                                            style={style.correct_icon, {display: 'none'}}
+                                            name="downcircle"
+                                            size={24}
+                                            color="#24e079"
+                                        />
+                                    )
+                                }
                             </View>
                         }
                         value={useConfirmPassword}
-                        onChangeText={value => setConfirmPassword(value)}
+                        onChangeText={value => {
+                            value.length > 0 ? setIsTypingConfirmPassword(true) : setIsTypingConfirmPassword(false)
+                            
+                            setConfirmPassword(value)
+                        }}
+                        onFocus={() => {
+                            setIsTypingPassword(false)
+                            useConfirmPassword.length > 0 ? setIsTypingConfirmPassword(true) : setIsTypingConfirmPassword(false)
+                        }}
                     />
                 </View>
 

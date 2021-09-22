@@ -7,7 +7,11 @@ import ProgressBar from '../components/ProgressBar';
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
 
-export function ChangePasswordScreen_5() {
+export function ChangePasswordScreen_5({navigation}) {
+
+    function click() {
+        navigation.navigate('Register1');
+    }
 
     return (
         <View style={style.container}>
@@ -26,6 +30,7 @@ export function ChangePasswordScreen_5() {
                 titleStyle={{fontSize: 20}}
                 buttonStyle={style.finish_button} 
                 title='Finish'
+                onPress={() => click()}
             />
 
             <View style={{marginTop: -20}}>
