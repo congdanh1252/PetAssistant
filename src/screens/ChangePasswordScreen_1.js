@@ -14,6 +14,7 @@ import {
 import { Input } from 'react-native-elements/dist/input/Input';
 
 import COLORS from './src/theme/colors'
+import ProgressBar from './src/components/ProgressBar'
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -47,42 +48,12 @@ const UserProfile = (props) => {
   )
 }
 
-const ProgressBar = (props) => {
-  var dotLoop=[];
-  for (let i = 0; i < props.num; i++) {
-    if (i == props.active) {
-    }
-    dotLoop.push(
-      <View
-        key={i}
-      >
-        {(() => {
-          if (i == props.activeIndex){
-              return (
-                  <View
-                    style={styles.activeDot}
-                  />
-              )
-          }
-          return (
-            <View
-              style={styles.dot}
-            />
-          );
-        })()}
-      </View>
-    );
-  }
-  return (
-    <View
-      style={styles.progressBar}
-    >
-      {dotLoop}
-    </View>
-  )
-}
+export default function ChangePasswordScreen_1() {
+    const [isTypingCredential, setIsTypingCredential] = useState(false);
+    const [credential, setCredential] = useState('');
+    const [credentialType, setCredentialType] = useState('Email');
+    const [credentialIcon, setCredentialIcon] = useState('email')
 
-export default function App() {
   return (
     <View
       style={styles.background}
@@ -109,22 +80,54 @@ export default function App() {
         </Text>
 
         <Input
+          value={credential}
           inputStyle={styles.textStyle}
           containerStyle={styles.inputContainer}
           inputStyle={styles.input}
-          label='Email'
-          placeholder='Enter email'
+          label={credentialType}
+          placeholder={"Enter " + credentialType.toLowerCase()}
           leftIcon={
             <MaterialIcons
-              name='email'
+              name={credentialIcon}
               size={20}
               color='black'
               style={styles.icon}
             />
           }
+          rightIcon={
+            isTypingCredential==true ? (
+                <MaterialIcons
+                  onPress={() => {
+                    setCredential('')
+                    setIsTypingCredential(false)
+                  }}
+                  name='clear'
+                  size={20}
+                  color='black'
+                  style={styles.icon}
+                />
+              ) : (
+                null
+              )
+          }
+          onChangeText={input => {
+            input.length>0 
+            ? setIsTypingCredential(true)
+            : setIsTypingCredential(false)
+            setCredential(input)
+          }}
         />
 
         <Text
+          onPress={() => {         
+              if (credentialType === 'Email') {
+                setCredentialType('Phone')
+                setCredentialIcon('local-phone')
+              } else {
+                setCredentialType('Email')
+                setCredentialIcon('email')
+              }
+          }}
           style={{
             fontWeight: '200',
             fontSize: 12,
@@ -133,7 +136,7 @@ export default function App() {
             color: COLORS.primaryDark,
           }}
         >
-          Use mobile instead?
+          {"Use " + credentialType.toLowerCase() + " instead?"}
         </Text>
 
         <UserProfile
@@ -149,7 +152,6 @@ export default function App() {
            <Text
             style={{
               fontSize: 18,
-              textStyle: 'bold',
               color: COLORS.white,
               fontFamily: 'RedHatText',
               fontWeight: '700',
@@ -230,25 +232,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     elevation: 3,
   },
-  dot: {
-    backgroundColor: COLORS.dot,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    marginLeft: 8, 
-    marginRight: 8,
-  },
-  activeDot: {
-    backgroundColor: COLORS.primaryDark,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    marginLeft: 8, 
-    marginRight: 8,
-  },
-  progressBar: {
-    marginTop: 50,
-    display: 'flex',
-    flexDirection: 'row',
+  icon: {
+    marginRight: 5,
   }
 })

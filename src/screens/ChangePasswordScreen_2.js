@@ -9,6 +9,8 @@ import {
 } from 'react-native'
 
 import COLORS from './src/theme/colors'
+import ProgressBar from './src/components/ProgressBar';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 
 const windowWidth = Dimensions.get('window').width;
@@ -17,7 +19,12 @@ const windowHeight = Dimensions.get('window').height;
 const VertificationMethod = (props) => {
   return(
     <View
-      style={styles.methodContainer}
+      style={StyleSheet.flatten([
+        styles.methodContainer,
+        props.isActived == false
+        ? styles.methodContainerGrey 
+        : styles.methodContainerBlue
+      ])}
     >
       <Image
         source={require('../PetAssistant/src/assets/icons/EmailSend.png')}
@@ -50,45 +57,19 @@ const VertificationMethod = (props) => {
   )
 }
 
-const ProgressBar = (props) => {
-  var dotLoop=[];
-  for (let i = 0; i < props.num; i++) {
-    if (i == props.active) {
-    }
-    dotLoop.push(
-      <View
-        key={i}
-      >
-        {(() => {
-          if (i == props.activeIndex){
-              return (
-                  <View
-                    style={styles.activeDot}
-                  />
-              )
-          }
-          return (
-            <View
-              style={styles.dot}
-            />
-          );
-        })()}
-      </View>
-    );
-  }
-  return (
-    <View
-      style={styles.progressBar}
-    >
-      {dotLoop}
-    </View>
-  )
-}
 
-export default function App() {
+export default function ChangePasswordScreen_2() {
+  const [isActived, setIsActived] = useState([
+    false,
+    false,
+    false
+  ])
+
   return (
     <View
-      style={styles.background}
+      style={
+        styles.background
+      }
     >
       <View
         style={styles.card}
@@ -109,20 +90,42 @@ export default function App() {
           Choose your vetification method
         </Text>
 
-        <VertificationMethod
-          methodName='via email:'
-          userCredential='tngcdng@gmail.com'
-        />
+        <TouchableOpacity
+          onPress={() => {
+            setIsActived([true, false, false])
+          }}
+        >
+          <VertificationMethod
+            isActived={isActived[0]}
+            methodName='via email:'
+            userCredential='tngcdng@gmail.com'
+          />
+        </TouchableOpacity>
 
-        <VertificationMethod
-          methodName='via sms:'
-          userCredential='+84 945 454 454'
-        />
 
-        <VertificationMethod
-          methodName='via question:'
-          userCredential='Some question about your pet'
-        />
+        <TouchableOpacity
+          onPress={() => {
+            setIsActived([false, true, false])
+          }}
+        >
+          <VertificationMethod
+            isActived={isActived[1]}
+            methodName='via sms:'
+            userCredential='+84 945 454 454'
+          />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => {
+            setIsActived([false, false, true])
+          }}
+        >
+          <VertificationMethod
+            isActived={isActived[2]}
+            methodName='via question:'
+            userCredential='Some question about your pet'
+          />
+        </TouchableOpacity>
 
       </View>
 
@@ -178,36 +181,20 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     elevation: 3,
   },
-  dot: {
-    backgroundColor: COLORS.dot,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    marginLeft: 8, 
-    marginRight: 8,
-  },
-  activeDot: {
-    backgroundColor: COLORS.primaryDark,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    marginLeft: 8, 
-    marginRight: 8,
-  },
-  progressBar: {
-    marginTop: 50,
-    display: 'flex',
-    flexDirection: 'row',
-  },
   methodContainer: {
     height: 90,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.grey,
     marginTop: 20,
     borderRadius: 5,
     marginLeft: 8, 
     marginRight: 8,
+  },
+  methodContainerGrey: {
+    backgroundColor: COLORS.grey,
+  },
+  methodContainerBlue: {
+    backgroundColor: COLORS.blue,
   },
   methodImage: {
     height: 36,
