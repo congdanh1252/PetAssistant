@@ -14,7 +14,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 
 const height = Dimensions.get('window').height - StatusBar.currentHeight + 300;
 
-export function RegisterScreen_1({navigation}) {
+export const RegisterScreen_1 = ({navigation}) => {
     const [useValidInputs, setValidInputs] = useState(false);
     const [useName, setName] = useState('');
     const [useEmail, setEmail] = useState('');
@@ -31,7 +31,7 @@ export function RegisterScreen_1({navigation}) {
     const [isTypingName, setIsTyingName] = useState(false);
     const [isTypingEmail, setIsTypingEmail] = useState(false);
 
-    function validateEmail(text) {
+    const validateEmail = (text) => {
         let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
         if (reg.test(text) === false) {
           setValidEmail(false);
@@ -41,7 +41,7 @@ export function RegisterScreen_1({navigation}) {
         }
     }
 
-    function alertEmptyInput() {
+    const alertEmptyInput = () => {
         Alert.alert(
             'Caution',
             'Please fill in all fields OR check your email/ password again',
@@ -52,7 +52,7 @@ export function RegisterScreen_1({navigation}) {
           );
     }
 
-    function storeAccountInfoInFirestore(uid) {
+    const addAccountToFirestoreAndFinish = (uid) => {
         firestore()
             .collection('users')
             .doc(uid)
@@ -68,7 +68,7 @@ export function RegisterScreen_1({navigation}) {
             });
     }
 
-    function checkInput() {
+    const checkInput = () => {
         if (useName==='' || useEmail==='' || usePassword==='' || usePhone==='' ||
             useConfirmPassword==='' || useValidEmail===false || useValidPassword===false) {
                 setValidInputs(false);
@@ -84,24 +84,30 @@ export function RegisterScreen_1({navigation}) {
         }
     }
 
-    function clickNextButton() {
+    const registerNewAccount = () => {
+        //navigation.navigate('Register2');
         checkInput();
         if (useValidInputs) {
-            try {console.log('passed')
+            try {
+                // create user with email, pass
                 const userCredential = auth().createUserWithEmailAndPassword(useEmail, usePassword)
                 .catch((error) => {
                     console.log(error)
                 });
                 console.log('user created');
+
                 const onAuthStateChangedUnsubscribe = 
                     firebase.auth().onAuthStateChanged(async (user) => {
                         if (user) {
+                            //send mail to user
                             await user.sendEmailVerification()
                             .catch((error) => {
                                 console.log(error)
                             });
                             console.log('mail sent');
                             navigation.navigate('Register2');
+
+                            //check verified mail
                             const onIdTokenChangedUnsubscribe = firebase.auth().onIdTokenChanged((user) => {
                                 const unsubscribeSetInterval = setTimeout(() => {
                                     firebase.auth().currentUser.reload();
@@ -113,7 +119,7 @@ export function RegisterScreen_1({navigation}) {
                                     console.log('mail clicked');
                                     clearInterval(unsubscribeSetInterval) //delete interval
                                     onAuthStateChangedUnsubscribe() //unsubscribe onAuthStateChanged
-                                    storeAccountInfoInFirestore(user.uid);
+                                    addAccountToFirestoreAndFinish(user.uid);
                                     return onIdTokenChangedUnsubscribe() //unsubscribe onIdTokenChanged
                                 }
                             })
@@ -143,14 +149,15 @@ export function RegisterScreen_1({navigation}) {
                     setIsTyingPhone(false);
                     setIsTypingPassword(false);
                     setIsTypingConfirmPassword(false);
-                    }
-                }>
+                }}
+            >
                 <View style={style.container}>
                     <View style={style.icon_title_container}>
                         <Image style={style.bone_icon} source={require('../assets/icons/bone.png')} resizeMode='cover'/>
                         <Text style={style.register_title}>Register{"\n"}new account</Text>
                     </View>
                     
+                    {/* Full name */}
                     <Input
                         placeholderTextColor='#4c4c4c'
                         inputStyle={{color: '#000'}}
@@ -176,6 +183,8 @@ export function RegisterScreen_1({navigation}) {
                             useName.length > 0 ? setIsTyingName(true) : setIsTyingName(false)
                         }}
                     />
+
+                    {/* Email */}
                     <Input
                         placeholderTextColor='#4c4c4c'
                         inputStyle={{color: '#000'}}
@@ -211,6 +220,7 @@ export function RegisterScreen_1({navigation}) {
                         }}
                     />
 
+                    {/* Phone */}
                     <Input
                         placeholderTextColor='#4c4c4c'
                         inputStyle={{color: '#000'}}
@@ -238,6 +248,7 @@ export function RegisterScreen_1({navigation}) {
                         }}
                     />
 
+                    {/* Password */}
                     <Input
                         placeholderTextColor='#4c4c4c'
                         inputStyle={{color: '#000'}}
@@ -313,6 +324,7 @@ export function RegisterScreen_1({navigation}) {
                         }}
                     />
                     
+                    {/* Confirm password */}
                     <Input
                         placeholderTextColor='#4c4c4c'
                         inputStyle={{color: '#000'}}
@@ -392,7 +404,7 @@ export function RegisterScreen_1({navigation}) {
                         titleStyle={{fontSize: 20}}
                         buttonStyle={style.next_button} 
                         title='Next'
-                        onPress={() => clickNextButton()}
+                        onPress={() => registerNewAccount()}
                     />
 
                     <View style={{marginTop: 90 - StatusBar.currentHeight}}>
@@ -404,6 +416,54 @@ export function RegisterScreen_1({navigation}) {
                 </View>
             </TouchableWithoutFeedback>
         </KeyboardAwareScrollView>
+    );
+}   
+
+export const RegisterScreen_2 = ({navigation}) => {
+    return (
+        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+            <View style={style.container}>
+                {/* <View style={style.back_button_container}>
+                    <TouchableOpacity activeOpacity={0.4}>
+                        <Ionicons name="chevron-back" size={36} color="black" />
+                    </TouchableOpacity>
+                </View> */}
+
+                <View style={style.icon_title_container}>
+                    <Image style={style.bone_icon} source={require('../assets/icons/bone.png')} resizeMode='cover'/>
+                    <Text style={style.register_title}>Register{"\n"}new account</Text>
+                </View>
+                
+                <Text style={style.message}>
+                    We have sent you an email with a link to verify your email.{'\n'}
+                    Open it to finish this last step of registeration.
+                </Text>
+                {/* <View style={style.code_container}>
+                    
+                    <Button
+                        titleStyle={style.resend_code} type='clear' title='Resend code'/>
+                </View> */}
+
+                <Text style={style.note}>
+                    *This screen will close right after the email is verified
+                </Text>
+
+                {/* <Button
+                    type='solid' 
+                    containerStyle={{marginTop: 40}}
+                    titleStyle={{fontSize: 20}}
+                    buttonStyle={style.next_button} 
+                    title='Next'
+                    onPress={() => clickNextButton()}/> */}
+
+                <View style={{marginTop: 200 - StatusBar.currentHeight}}>
+                    <ProgressBar
+                        num={2}
+                        activeIndex={1}    
+                    />
+                </View>
+            </View>
+        </TouchableWithoutFeedback>
     );
 }
 
@@ -459,5 +519,21 @@ const style = StyleSheet.create({
         fontStyle: 'italic',
         fontSize: 16,
         color: COLORS.primaryDark,
+    },
+    note: {
+        width: '80%',
+        marginTop: 20,
+        fontStyle: 'italic',
+        fontSize: 16,
+        color: COLORS.primaryDark,
+        textAlign: 'center'
+    },
+    message: {
+        width: '90%',
+        padding: 10,
+        fontFamily: "RedHatText",
+        fontSize: 20,
+        fontStyle: 'normal',
+        textAlign: 'center'
     },
 });
