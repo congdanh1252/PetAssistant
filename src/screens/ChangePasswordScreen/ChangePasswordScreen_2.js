@@ -8,8 +8,7 @@ import {
   Pressable
 } from 'react-native'
 
-import COLORS from './src/theme/colors'
-import ProgressBar from './src/components/ProgressBar';
+import COLORS from '../../theme/colors'
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
 
@@ -27,7 +26,7 @@ const VertificationMethod = (props) => {
       ])}
     >
       <Image
-        source={require('../PetAssistant/src/assets/icons/EmailSend.png')}
+        source={require('../../assets/icons/EmailSend.png')}
         style={styles.methodImage}
       />
 
@@ -58,22 +57,30 @@ const VertificationMethod = (props) => {
 }
 
 
-export default function ChangePasswordScreen_2() {
+export const ChangePasswordScreen_2 = (props) => {
   const [isActived, setIsActived] = useState([
     false,
     false,
     false
   ])
 
+  const transformCredential = (item, type) => {
+    switch (type) {
+        case 'email':
+            var parts = item.split("@");
+            var len = parts[0].length;
+            return item.replace(parts[0].slice(1, -2), "*".repeat(4));
+        case 'phone':
+            return item[0] + item[1] + "*".repeat(item.length - 4) + item.slice(-3);
+      default: 
+            throw new Error("Undefined type: " + type);
+    }        
+  }
+
   return (
     <View
-      style={
-        styles.background
-      }
+      style={styles.container}
     >
-      <View
-        style={styles.card}
-      > 
         <Text
           style={styles.title}
         >
@@ -93,12 +100,13 @@ export default function ChangePasswordScreen_2() {
         <TouchableOpacity
           onPress={() => {
             setIsActived([true, false, false])
+            props.onMethodChange('email')
           }}
         >
           <VertificationMethod
             isActived={isActived[0]}
             methodName='via email:'
-            userCredential='tngcdng@gmail.com'
+            userCredential={transformCredential(props.email, 'email')} 
           />
         </TouchableOpacity>
 
@@ -106,18 +114,20 @@ export default function ChangePasswordScreen_2() {
         <TouchableOpacity
           onPress={() => {
             setIsActived([false, true, false])
+            props.onMethodChange('sms')
           }}
         >
           <VertificationMethod
             isActived={isActived[1]}
             methodName='via sms:'
-            userCredential='+84 945 454 454'
+            userCredential={transformCredential(props.phoneNumber, 'phone')}
           />
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => {
             setIsActived([false, false, true])
+            props.onMethodChange('question')
           }}
         >
           <VertificationMethod
@@ -126,44 +136,13 @@ export default function ChangePasswordScreen_2() {
             userCredential='Some question about your pet'
           />
         </TouchableOpacity>
-
-      </View>
-
-      <Pressable
-          style={styles.button}
-        >
-           <Text
-            style={{
-              fontSize: 18,
-              color: COLORS.white,
-              fontFamily: 'RedHatText',
-              fontWeight: '700',
-            }}
-           >
-             NEXT
-           </Text>
-        </Pressable>
-
-      <ProgressBar
-        num={5}
-        activeIndex={1}
-      />
     </View>
   )
 }
 
 const styles = StyleSheet.create({
-  background: {
+  container: {
     flex: 1,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-  },
-  card: {
-    backgroundColor: COLORS.white,
-    marginTop: 45,
-    height: windowHeight - (windowWidth / 1.5),
-    width: windowWidth - (windowWidth / 7),
-    borderRadius: 25,
   },
   title: {
     textAlign: 'left',

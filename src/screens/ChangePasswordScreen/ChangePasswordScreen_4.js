@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import COLORS from '../theme/colors'
+import COLORS from '../../theme/colors'
 import { Feather, MaterialCommunityIcons, Ionicons, AntDesign } from '@expo/vector-icons';
 import { 
     Dimensions, Image, StyleSheet, Text, View, TouchableOpacity, TouchableWithoutFeedback, Keyboard 
 } from 'react-native'
 import { Button } from 'react-native-elements/dist/buttons/Button';
-import ProgressBar from '../components/ProgressBar';
 import { Input } from 'react-native-elements/dist/input/Input';
 
 const windowHeight = Dimensions.get('window').height;
@@ -23,13 +22,12 @@ export function ChangePasswordScreen_4() {
     return (
         <TouchableWithoutFeedback
             onPress={() => {
-            Keyboard.dismiss()
-            setIsTypingPassword(false);
-            setIsTypingConfirmPassword(false);
-        }}>
+                Keyboard.dismiss()
+                setIsTypingPassword(false);
+                setIsTypingConfirmPassword(false);
+            }}>
             <View style={style.container}>
-                <View style={style.card}>
-                    <Image style={style.icon} source={require('../assets/icons/print.png')}/>
+                    <Image style={style.icon} source={require('../../assets/icons/print.png')}/>
                     <Text style={style.new_password_title}>NEW PASSWORD</Text>
                     <Text style={style.message}>
                         Your identity has been verified!{'\n'}
@@ -182,32 +180,6 @@ export function ChangePasswordScreen_4() {
                             useConfirmPassword.length > 0 ? setIsTypingConfirmPassword(true) : setIsTypingConfirmPassword(false)
                         }}
                     />
-                </View>
-
-                <View style={style.buttons_container}>
-                <Button
-                    type='solid' 
-                    containerStyle={{marginTop: 40}}
-                    titleStyle={{fontSize: 20}}
-                    buttonStyle={style.button} 
-                    title='Back'
-                />
-
-                <Button
-                    type='solid' 
-                    containerStyle={{marginTop: 40}}
-                    titleStyle={{fontSize: 20}}
-                    buttonStyle={style.button} 
-                    title='Next'
-                />
-                </View>
-
-                <View style={{marginTop: -20}}>
-                    <ProgressBar
-                        num={5}
-                        activeIndex={3}    
-                    />
-                </View>
             </View>
         </TouchableWithoutFeedback>
     );
@@ -215,17 +187,9 @@ export function ChangePasswordScreen_4() {
 
 const style = StyleSheet.create({
     container: {
-        backgroundColor: COLORS.primary,
         flex: 1,
-        alignItems: 'center'
-    },
-    card: {
-        marginTop: 45,
-        backgroundColor: COLORS.white,
-        height: windowHeight - (windowHeight / 3),
-        width: windowWidth - (windowWidth / 7),
-        borderRadius: 25,
-        alignItems: 'center'
+        alignItems: 'center',
+        justifyContent: 'center'
     },
     icon: {
         marginTop: 20,

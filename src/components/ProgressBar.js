@@ -1,16 +1,20 @@
 import React from "react";
 import COLORS from '../theme/colors'
 import { StyleSheet, Text, View } from 'react-native'
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 const ProgressBar = (props) => {
     var dotLoop=[];
     for (let i = 0; i < props.num; i++) {
         dotLoop.push(
             <View
+                // onPress={() => {
+                //   props.onStateChange(i)
+                // }}
                 key={i}
             >
                 {(() => {
-                    if (i == props.activeIndex){
+                    if (i == props.activeIndex) {
                         return (
                             <View
                                 style={styles.activeDot}
@@ -28,7 +32,7 @@ const ProgressBar = (props) => {
     }
     return (
         <View
-        style={styles.progressBar}
+          style={styles.progressBar}
         >
         {dotLoop}
         </View>
@@ -47,9 +51,10 @@ const styles = StyleSheet.create({
         marginRight: 8,
     },
     progressBar: {
-        marginTop: 50,
+        position: "absolute",
         display: 'flex',
         flexDirection: 'row',
+        bottom: 25,
     },
     activeDot: {
         backgroundColor: COLORS.primaryDark,
