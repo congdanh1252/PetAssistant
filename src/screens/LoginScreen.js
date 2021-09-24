@@ -23,7 +23,7 @@ import COLORS from './src/theme/colors'
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-export default function App() {
+export default function LoginScreen() {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState();
 
