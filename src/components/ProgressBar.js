@@ -44,8 +44,8 @@ export default ProgressBar;
 const styles = StyleSheet.create({
     dot: {
         backgroundColor: COLORS.dot,
-        width: 32,
-        height: 32,
+        width: 24,
+        height: 24,
         borderRadius: 16,
         marginLeft: 8, 
         marginRight: 8,
@@ -58,8 +58,8 @@ const styles = StyleSheet.create({
     },
     activeDot: {
         backgroundColor: COLORS.primaryDark,
-        width: 32,
-        height: 32,
+        width: 24,
+        height: 24,
         borderRadius: 16,
         marginLeft: 8, 
         marginRight: 8,

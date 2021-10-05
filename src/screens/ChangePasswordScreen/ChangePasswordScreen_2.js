@@ -64,6 +64,19 @@ export const ChangePasswordScreen_2 = (props) => {
     false
   ])
 
+  const [isEmailHidden, setIsEmailHidden] 
+    = useState(
+      props.email == ''
+      ? false
+      : true
+    )
+  const [isPhoneHidden, setIsPhoneHidden] 
+    = useState(
+      props.phoneNumber == ''
+      ? false
+      : true
+    )
+
   const transformCredential = (item, type) => {
     switch (type) {
         case 'email':
@@ -98,29 +111,41 @@ export const ChangePasswordScreen_2 = (props) => {
         </Text>
 
         <TouchableOpacity
+          disabled={!isEmailHidden}
           onPress={() => {
             setIsActived([true, false, false])
             props.onMethodChange('email')
+            props.onReady(true)
           }}
         >
           <VertificationMethod
             isActived={isActived[0]}
             methodName='via email:'
-            userCredential={transformCredential(props.email, 'email')} 
+            userCredential={
+              isEmailHidden
+              ? transformCredential(props.email, 'email')
+              : 'Not available'
+            } 
           />
         </TouchableOpacity>
 
 
         <TouchableOpacity
+          disabled={!isPhoneHidden}
           onPress={() => {
             setIsActived([false, true, false])
             props.onMethodChange('sms')
+            props.onReady(true)
           }}
         >
           <VertificationMethod
             isActived={isActived[1]}
             methodName='via sms:'
-            userCredential={transformCredential(props.phoneNumber, 'phone')}
+            userCredential={
+              isPhoneHidden
+              ? transformCredential(props.phoneNumber, 'phone')
+              : 'Not available'
+            }
           />
         </TouchableOpacity>
 
@@ -128,6 +153,7 @@ export const ChangePasswordScreen_2 = (props) => {
           onPress={() => {
             setIsActived([false, false, true])
             props.onMethodChange('question')
+            props.onReady(true)
           }}
         >
           <VertificationMethod
