@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import COLORS from '../theme/colors'
 import { Feather, MaterialCommunityIcons, Ionicons, AntDesign } from '@expo/vector-icons';
 import {
@@ -15,7 +15,13 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 const height = Dimensions.get('window').height - StatusBar.currentHeight + 300;
 
 export const RegisterScreen_1 = ({navigation}) => {
-    const [useValidInputs, setValidInputs] = useState(false);
+    const ref_input_mail = useRef();
+    const ref_input_phone = useRef();
+    const ref_input_pass = useRef();
+    const ref_input_cfpass = useRef();
+
+    var isAddedFirebase = false;
+    var valid_inputs = false;
     const [useName, setName] = useState('');
     const [useEmail, setEmail] = useState('');
     const [useValidEmail, setValidEmail] = useState(false);
@@ -30,6 +36,7 @@ export const RegisterScreen_1 = ({navigation}) => {
     const [isTypingConfirmPassword, setIsTypingConfirmPassword] = useState(false);
     const [isTypingName, setIsTyingName] = useState(false);
     const [isTypingEmail, setIsTypingEmail] = useState(false);
+    const [isAuthChanged, setAuthChanged] = useState(false);
 
     const validateEmail = (text) => {
         let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
@@ -59,35 +66,36 @@ export const RegisterScreen_1 = ({navigation}) => {
             .set({
                 name: useName,
                 phone: usePhone,
+                email: useEmail,
             })
             .then(() => {
+                console.log('firestore added');
                 navigation.reset({
                     index: 0,
-                    routes: [{ name: 'Login' }],
-                  });
+                    routes: [{ name: 'Register1' }],
+                });
             });
     }
 
     const checkInput = () => {
-        if (useName==='' || useEmail==='' || usePassword==='' || usePhone==='' ||
-            useConfirmPassword==='' || useValidEmail===false || useValidPassword===false) {
-                setValidInputs(false);
-                // console.log(useName);
-                // console.log(useEmail);
-                // console.log(usePassword);
-                // console.log(useConfirmPassword);
-                // console.log(useValidEmail);
-                // console.log(useValidPassword);
+        if (useName==='' || useEmail==='' || usePassword==='' || useConfirmPassword != usePassword ||
+            usePhone==='' || useConfirmPassword==='' || useValidEmail===false || useValidPassword===false) {
+                valid_inputs = false;
+                console.log(useName);
+                console.log(useEmail);
+                console.log(usePassword);
+                console.log(useConfirmPassword);
+                console.log(useValidEmail);
+                console.log(useValidPassword);
         }
         else {
-            setValidInputs(true);
+            valid_inputs = true;
         }
     }
 
     const registerNewAccount = () => {
-        //navigation.navigate('Register2');
         checkInput();
-        if (useValidInputs) {
+        if (valid_inputs) {console.log("duoc");
             try {
                 // create user with email, pass
                 const userCredential = auth().createUserWithEmailAndPassword(useEmail, usePassword)
@@ -98,30 +106,45 @@ export const RegisterScreen_1 = ({navigation}) => {
 
                 const onAuthStateChangedUnsubscribe = 
                     firebase.auth().onAuthStateChanged(async (user) => {
-                        if (user) {
+                        if (user && !isAuthChanged) {
+                            setAuthChanged(true);
                             //send mail to user
                             await user.sendEmailVerification()
+                            .then(() => {
+                                    console.log('mail sent');
+                                    navigation.navigate('Register2');
+                                }
+                            )
                             .catch((error) => {
                                 console.log(error)
                             });
-                            console.log('mail sent');
-                            navigation.navigate('Register2');
 
                             //check verified mail
-                            const onIdTokenChangedUnsubscribe = firebase.auth().onIdTokenChanged((user) => {
-                                const unsubscribeSetInterval = setTimeout(() => {
-                                    firebase.auth().currentUser.reload();
-                                    firebase.auth().currentUser.getIdToken(/* forceRefresh */ true)
+                            const onIdTokenChangedUnsubscribe = firebase.auth().onIdTokenChanged((newUser) => {
+                                const unsubscribeSetInterval = setInterval(() => {
+                                    if (firebase.auth().currentUser && !isAddedFirebase) {
+                                        firebase.auth().currentUser.reload();
+                                        console.log('reload user');
+                                        firebase.auth().currentUser.getIdToken(/* forceRefresh */ true)
+
+                                        if (newUser.emailVerified) {
+                                            console.log('mail clicked');
+                                            clearInterval(unsubscribeSetInterval); //delete timeout
+                                            onAuthStateChangedUnsubscribe(); //unsubscribe onAuthStateChanged
+                                            if ( !isAddedFirebase) {
+                                                isAddedFirebase = true;
+                                                addAccountToFirestoreAndFinish(user.uid);
+                                            }
+                                            return onIdTokenChangedUnsubscribe(); //unsubscribe onIdTokenChanged
+                                        }
+                                    }
+                                    else if (isAddedFirebase) {
+                                        clearInterval(unsubscribeSetInterval);
+                                        onAuthStateChangedUnsubscribe(); 
+                                        return onIdTokenChangedUnsubscribe();
+                                    }
+                                    console.log('mail not clicked');
                                 }, 5000);
-                                
-                                console.log('mail not clicked');
-                                if (user && user.emailVerified) {
-                                    console.log('mail clicked');
-                                    clearInterval(unsubscribeSetInterval) //delete interval
-                                    onAuthStateChangedUnsubscribe() //unsubscribe onAuthStateChanged
-                                    addAccountToFirestoreAndFinish(user.uid);
-                                    return onIdTokenChangedUnsubscribe() //unsubscribe onIdTokenChanged
-                                }
                             })
                         }
                     })
@@ -169,7 +192,7 @@ export const RegisterScreen_1 = ({navigation}) => {
                         leftIcon={<Feather style={style.icon} name="user" size={28} color="black" />}
                         rightIcon={
                             isTypingName ? (
-                                <TouchableOpacity activeOpacity={0.5} onPress={() => setName('')}>
+                                <TouchableOpacity style={style.right_icon} activeOpacity={0.5} onPress={() => setName('')}>
                                     <Feather name="x" size={24} color="black"/>
                                 </TouchableOpacity>
                             ) : (null)
@@ -182,10 +205,13 @@ export const RegisterScreen_1 = ({navigation}) => {
                         onFocus={() => {
                             useName.length > 0 ? setIsTyingName(true) : setIsTyingName(false)
                         }}
+                        blurOnSubmit={false}
+                        onSubmitEditing={() => ref_input_mail.current.focus()}
                     />
 
                     {/* Email */}
                     <Input
+                        ref={ref_input_mail}
                         placeholderTextColor='#4c4c4c'
                         inputStyle={{color: '#000'}}
                         containerStyle={style.input_container}
@@ -200,6 +226,7 @@ export const RegisterScreen_1 = ({navigation}) => {
                         rightIcon={
                             isTypingEmail ? (
                                 <TouchableOpacity
+                                    style={style.right_icon}
                                     activeOpacity={0.5}
                                     onPress={() => {
                                         setEmail('')
@@ -218,10 +245,13 @@ export const RegisterScreen_1 = ({navigation}) => {
                         onFocus={() => {
                             useEmail.length > 0 ? setIsTypingEmail(true) : setIsTypingEmail(false)
                         }}
+                        blurOnSubmit={false}
+                        onSubmitEditing={() => ref_input_phone.current.focus()}
                     />
 
                     {/* Phone */}
                     <Input
+                        ref={ref_input_phone}
                         placeholderTextColor='#4c4c4c'
                         inputStyle={{color: '#000'}}
                         containerStyle={style.input_container}
@@ -233,7 +263,7 @@ export const RegisterScreen_1 = ({navigation}) => {
                         leftIcon={<Feather style={style.icon} name="phone" size={28} color="black" />}
                         rightIcon={
                             isTypingPhone ? (
-                                <TouchableOpacity activeOpacity={0.5}>
+                                <TouchableOpacity style={style.right_icon} activeOpacity={0.5}>
                                     <Feather name="x" size={24} color="black" onPress={() => setPhone('')}/>
                                 </TouchableOpacity>
                             ) : (null)
@@ -246,10 +276,13 @@ export const RegisterScreen_1 = ({navigation}) => {
                         onFocus={() => {
                             usePhone.length > 0 ? setIsTyingPhone(true) : setIsTyingPhone(false)
                         }}
+                        blurOnSubmit={false}
+                        onSubmitEditing={() => ref_input_pass.current.focus()}
                     />
 
                     {/* Password */}
                     <Input
+                        ref={ref_input_pass}
                         placeholderTextColor='#4c4c4c'
                         inputStyle={{color: '#000'}}
                         containerStyle={style.input_container}
@@ -268,6 +301,7 @@ export const RegisterScreen_1 = ({navigation}) => {
                             <View style={style.right_icon_container}>
                                 { isTypingPassword ? (
                                         <TouchableOpacity
+                                            style={style.right_icon}
                                             activeOpacity={0.5}
                                             onPress={() => setVisiblePassword(!visiblePassword)}>
                                             <Ionicons
@@ -281,6 +315,7 @@ export const RegisterScreen_1 = ({navigation}) => {
 
                                 { isTypingPassword ? (
                                         <TouchableOpacity
+                                            style={style.right_icon}
                                             activeOpacity={0.5}
                                             onPress={() => {
                                                 setPassword('')
@@ -322,10 +357,13 @@ export const RegisterScreen_1 = ({navigation}) => {
                         onFocus={() => {
                             usePassword.length > 0 ? setIsTypingPassword(true) : setIsTypingPassword(false)
                         }}
+                        blurOnSubmit={false}
+                        onSubmitEditing={() => ref_input_cfpass.current.focus()}
                     />
                     
                     {/* Confirm password */}
                     <Input
+                        ref={ref_input_cfpass}
                         placeholderTextColor='#4c4c4c'
                         inputStyle={{color: '#000'}}
                         containerStyle={style.input_container}
@@ -341,6 +379,7 @@ export const RegisterScreen_1 = ({navigation}) => {
                             <View style={style.right_icon_container}>
                                 { isTypingConfirmPassword ? (
                                         <TouchableOpacity
+                                            style={style.right_icon}
                                             activeOpacity={0.5}
                                             onPress={() => setVisibleConfirmPassword(!visibleConfirmPassword)}>
                                             <Ionicons
@@ -354,6 +393,7 @@ export const RegisterScreen_1 = ({navigation}) => {
 
                                 { isTypingConfirmPassword ? (
                                         <TouchableOpacity
+                                            style={style.right_icon}
                                             activeOpacity={0.5}
                                             onPress={() => setConfirmPassword('')}>
                                             <Feather
@@ -365,7 +405,7 @@ export const RegisterScreen_1 = ({navigation}) => {
                                     ) : (null)
                                 }
 
-                                { (useConfirmPassword == usePassword 
+                                { (useConfirmPassword === usePassword 
                                     && useConfirmPassword != '' 
                                     && isTypingConfirmPassword) ? (
                                         <AntDesign
@@ -407,12 +447,10 @@ export const RegisterScreen_1 = ({navigation}) => {
                         onPress={() => registerNewAccount()}
                     />
 
-                    <View style={{marginTop: 90 - StatusBar.currentHeight}}>
-                        <ProgressBar
-                            num={2}
-                            activeIndex={0}    
-                        />
-                    </View>
+                    <ProgressBar
+                        num={2}
+                        activeIndex={0}
+                    />
                 </View>
             </TouchableWithoutFeedback>
         </KeyboardAwareScrollView>
@@ -456,12 +494,10 @@ export const RegisterScreen_2 = ({navigation}) => {
                     title='Next'
                     onPress={() => clickNextButton()}/> */}
 
-                <View style={{marginTop: 200 - StatusBar.currentHeight}}>
-                    <ProgressBar
-                        num={2}
-                        activeIndex={1}    
-                    />
-                </View>
+                <ProgressBar
+                    num={2}
+                    activeIndex={1}    
+                />
             </View>
         </TouchableWithoutFeedback>
     );
@@ -501,12 +537,17 @@ const style = StyleSheet.create({
     },
     correct_icon: {
         marginTop: 1,
-        marginLeft: 8
+        marginLeft: 5
     },
     right_icon_container: {
-        width: 48,
+        width: 60,
         marginTop: 5,
+        marginLeft: -10,
         flexDirection: 'row',
+    },
+    right_icon: {
+        paddingLeft: 3,
+        paddingRight: 3,
     },
     next_button: {
         backgroundColor: COLORS.primaryDark,
