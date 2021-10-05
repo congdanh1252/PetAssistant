@@ -13,9 +13,15 @@ import {
 } from 'react-native-vector-icons';
 import { Input } from 'react-native-elements/dist/input/Input';
 import firestore from '@react-native-firebase/firestore';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 import COLORS from '../../theme/colors';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { 
+  validateEmail,
+  validatePhone,
+} from '../../models/common/validateFunctions';
+import { set } from 'react-native-reanimated';
+import Toast from 'react-native-toast-message';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -23,11 +29,28 @@ const windowHeight = Dimensions.get('window').height;
 
 export const ChangePasswordScreen_1 = (props) => {
   const [isTypingCredential, setIsTypingCredential] = useState(false);
-  const [credential, setCredential] = useState('');
-  const [credentialType, setCredentialType] = useState('Email');
-  const [credentialIcon, setCredentialIcon] = useState('email')
+  const [credentialType, setCredentialType] = useState(props.findMethod);
+  const [credential, setCredential] 
+    = useState(
+      credentialType == 'Email'
+      ? props.email
+      : props.phoneNum
+    )
+  const [credentialIcon, setCredentialIcon] 
+    = useState(
+      credentialType == 'Email'
+      ? 'email'
+      : 'local-phone'
+    )
+  const [anotherCredentialType, setAnotherCredentialType] 
+    = useState(
+      credentialType == 'Email'
+      ? 'phone'
+      : 'email'
+    )
   const [username, setUsername] = useState(null);
   const [isFoundUser, setIsFoundUser] = useState(false);
+  const [errorState, setErrorState] = useState(false)
 
   const findProfile = (credential, type) => {
     firestore()
@@ -38,6 +61,7 @@ export const ChangePasswordScreen_1 = (props) => {
         if (querySnapshot.size > 0) {
           setUsername(querySnapshot.docs[0].data().name);
           setIsFoundUser(true);
+          props.onReady(true);
           var phoneNum = querySnapshot.docs[0].data().phone
           phoneNum != undefined 
           ? props.onGetPhoneNum(phoneNum)
@@ -95,6 +119,8 @@ export const ChangePasswordScreen_1 = (props) => {
     }
   }
 
+  
+
   return (
     <View
         style={styles.container}
@@ -143,6 +169,8 @@ export const ChangePasswordScreen_1 = (props) => {
                     onPress={() => {
                       setCredential('')
                       setIsTypingCredential(false)
+                      setErrorState(false)
+                      props.onReady(false)
                     }}
                     name='clear'
                     size={20}
@@ -155,6 +183,8 @@ export const ChangePasswordScreen_1 = (props) => {
             }
             onChangeText={input => {
               setIsFoundUser(false)
+              setErrorState(false)
+              props.onReady(false)
               input.length>0 
               ? setIsTypingCredential(true)
               : setIsTypingCredential(false)
@@ -162,16 +192,37 @@ export const ChangePasswordScreen_1 = (props) => {
             }}
           />
 
+          {(() => {
+            if (errorState) {
+                return (
+                  <Text
+                    style={styles.errorMessage}
+                  >
+                    Invalid credential, please try again!
+                  </Text>
+                )
+            }   
+            return null
+          })()}
+
           <Text
-            onPress={() => {      
+            onPress={() => {
+                Toast.show({
+                  type: 'error',
+                  position: 'top',
+                  text1: 'Hello',
+                  text2: 'This is some something 👋'
+                });      
                 setCredential('')
                 setIsFoundUser(false)
                 if (credentialType === 'Email') {
                   setCredentialType('Phone')
                   setCredentialIcon('local-phone')
+                  setAnotherCredentialType('email')
                 } else {
                   setCredentialType('Email')
                   setCredentialIcon('email')
+                  setAnotherCredentialType('phone')
                 }
             }}
             style={{
@@ -182,20 +233,28 @@ export const ChangePasswordScreen_1 = (props) => {
               color: COLORS.primaryDark,
             }}
           >
-            {"Use " + credentialType.toLowerCase() + " instead?"}
+            {"Use " + anotherCredentialType + " instead?"}
           </Text>
 
           {renderUserProfile(username, "", isFoundUser)}
 
           <TouchableOpacity
             style={styles.button}
-            onPress={() => {
-              findProfile(credential, credentialType);
+            onPress={() => {    
+              credentialType == 'Email'
+              ? 
+                validateEmail(credential)
+                ? findProfile(credential, credentialType)
+                : setErrorState(true)
+              :
+                validatePhone(credential)
+                ? findProfile(credential, credentialType)
+                : setErrorState(true);
             }}
           >
             <Text
               style={{
-                fontSize: 18,
+                fontSize: 15,
                 color: COLORS.white,
                 fontFamily: 'RedHatText',
                 fontWeight: '700',
@@ -234,6 +293,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
     width: windowWidth - (windowWidth / 5),
     alignSelf: 'center',
+  },
+  errorMessage: {
+    color: COLORS.error,
+    marginTop: -10,
+    marginBottom: 4,
+    fontSize: 12,
+    marginLeft: windowWidth / 12,
   },
   userContainer: {
     backgroundColor: COLORS.grey,

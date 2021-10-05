@@ -15,7 +15,6 @@ import { Input } from 'react-native-elements/dist/input/Input';
 
 import COLORS from '../../theme/colors';
 import ProgressBar from '../../components/ProgressBar';
-import { User } from '../../models/user'
 
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { 
@@ -28,35 +27,11 @@ import {
 } from './index';
 
 import auth from '@react-native-firebase/auth';
+import Toast from 'react-native-toast-message';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const Buttons = (props) => {
-  return (
-    <TouchableOpacity
-      style={styles.button}
-      onPress={() => {
-        props.buttonName == 'Back' 
-        ? props.onStateChange(props.state - 1)
-        : props.state == 1 && props.method == 'email'
-        ? props.onStateChange(4)
-        : props.onStateChange(props.state + 1)
-      }}
-    >
-    <Text
-      style={{
-        fontSize: 18,
-        color: COLORS.white,
-        fontFamily: 'RedHatText',
-        fontWeight: '700',
-      }}
-      >
-      {props.buttonName}
-    </Text>
-  </TouchableOpacity>
-  )
-}
 
 const sendEmailVertification = (email) => {
   // console.log(email);
@@ -65,14 +40,51 @@ const sendEmailVertification = (email) => {
 
 export const ChangePasswordScreen = () => {
   const [currentState, setCurrentState] = useState(0);
+  const [findMethod, setFindMethod] = useState('Email')
   const [method, setMethod] = useState(null);
-  const [email, setEmail] = useState('Not available')
-  const [phoneNum, setPhoneNum] = useState('Not available')
+  const [email, setEmail] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [name, setName] = useState()
+  const [userImage, setUserImage] = useState()
+  const [isReadyForNextState, setIsReadyForNextState] = useState(false)
+  const [otp, setOTP] = useState()
+
+  const Buttons = (props) => {
+    return (
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => {
+          props.buttonName == 'Back' 
+          ? setCurrentState(currentState - 1)
+          : isReadyForNextState
+          ? 
+            currentState == 1 && method == 'email'
+            ? setCurrentState(4)
+            : setCurrentState(currentState + 1)
+          : null
+          setIsReadyForNextState(false)
+        }}
+      >
+      <Text
+        style={{
+          fontSize: 18,
+          color: COLORS.white,
+          fontFamily: 'RedHatText',
+          fontWeight: '700',
+        }}
+        >
+        {props.buttonName}
+      </Text>
+    </TouchableOpacity>
+    )
+  }
 
   return (
     <View
       style={styles.background}
     >
+      <Toast ref={(ref) => Toast.setRef(ref)} />
+      
       <View
         style={styles.card}
       >
@@ -81,20 +93,38 @@ export const ChangePasswordScreen = () => {
             case 0: 
               return (
                 <ChangePasswordScreen_1
+                  findMethod={findMethod}
+                  email={email}
+                  phoneNum={phoneNumber}
+                  name={name}
+                  userImage={userImage}
+                  onReady={value => {
+                    setIsReadyForNextState(value)
+                  }}
                   onGetEmail={value => {
                     setEmail(value)
                   }}
                   onGetPhoneNum={value => {
-                    setPhoneNum(value)
+                    setPhoneNumber(value)
+                  }}
+                  onGetName={value => {
+                    setName(value)
+                  }}
+                  onGetUserProfile={value => {
+                    setUserImage(value)
                   }}
                 />
               )
             case 1: 
               return (
                 <ChangePasswordScreen_2
-                  phoneNumber={phoneNum}
+                  onReady={() => {
+                    setIsReadyForNextState(true)
+                  }}
+                  phoneNumber={phoneNumber}
                   email={email}
                   onMethodChange={value => {
+                    console.log('Finish 2')
                     setMethod(value);
                   }}
                 />
@@ -102,20 +132,36 @@ export const ChangePasswordScreen = () => {
             case 2: 
               if (method == 'sms') {
                 return (
-                  <ChangePasswordScreen_3_1/>
+                  <ChangePasswordScreen_3_1
+                    phoneNumber={phoneNumber}  
+                    onReady={() => {
+                      setIsReadyForNextState(true)
+                    }}
+                  />
                 )
               }
               return (
-                <ChangePasswordScreen_3_2 />
+                <ChangePasswordScreen_3_2
+                  onReady={() => {
+                    setIsReadyForNextState(true)
+                  }}
+                />
               )
             case 3: 
               return (
-                <ChangePasswordScreen_4 />
+                <ChangePasswordScreen_4
+                  onReady={() => {
+                    setIsReadyForNextState(true)
+                  }}
+                />
               )  
             case 4: 
               return (
                 <ChangePasswordScreen_5
                   type={method}
+                  onReady={() => {
+                    setIsReadyForNextState(true)
+                  }}
                 />
               )
             default: 
@@ -145,19 +191,11 @@ export const ChangePasswordScreen = () => {
           return null;
         })()}
         <Buttons
-          method={method}
           buttonName={
             currentState == 4
             ? 'Finish'
             : 'Next'
           }
-          state={currentState}
-          onStateChange={(value) => {
-            setCurrentState(value)
-            if (method == 'email') {
-              sendEmailVertification(email);
-            }
-          }}
         />
       </View>
 
@@ -168,7 +206,6 @@ export const ChangePasswordScreen = () => {
         num={5}
         activeIndex={currentState}
       />
-
     </View>
   )
 }
@@ -181,8 +218,8 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: COLORS.white,
-    marginTop: 45,
-    height: windowHeight - (windowWidth / 1.8),
+    marginTop: 16,
+    height: windowHeight - (windowHeight / 4),
     width: windowWidth - (windowWidth / 7),
     borderRadius: 25,
   },
@@ -193,10 +230,10 @@ const styles = StyleSheet.create({
   },
   button: {
     marginLeft: 5,
-    marginTop: 50,  
+    marginTop: 16,  
     backgroundColor: COLORS.primaryDark,
-    paddingVertical: 8,
-    paddingHorizontal: 50,
+    paddingVertical: 4,
+    paddingHorizontal: 30,
     borderRadius: 15,
     elevation: 3,
   },

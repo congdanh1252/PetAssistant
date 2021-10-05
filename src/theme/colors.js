@@ -3,6 +3,7 @@ const COLORS = {
     primary: '#E5CD8E',
     primaryDark: '#A77B06',
 
+    error: '#E21717',
     dot: '#99885E',
     grey: '#EEEEEE',
     white: '#fff',
