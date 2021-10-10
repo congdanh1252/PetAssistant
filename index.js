@@ -1,6 +1,7 @@
 import 'react-native-gesture-handler';
 import { registerRootComponent } from 'expo';
-
+import 'moment';
+import 'moment/locale/vi';
 import App from './App';
 
 // registerRootComponent calls AppRegistry.registerComponent('main', () => App);

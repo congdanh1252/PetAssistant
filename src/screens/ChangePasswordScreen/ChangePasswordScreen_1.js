@@ -20,7 +20,6 @@ import {
   validateEmail,
   validatePhone,
 } from '../../models/common/validateFunctions';
-import { set } from 'react-native-reanimated';
 import Toast from 'react-native-toast-message';
 
 const windowWidth = Dimensions.get('window').width;
