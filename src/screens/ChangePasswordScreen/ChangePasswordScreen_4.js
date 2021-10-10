@@ -4,7 +4,6 @@ import { Feather, MaterialCommunityIcons, Ionicons, AntDesign } from '@expo/vect
 import { 
     Dimensions, Image, StyleSheet, Text, View, TouchableOpacity, TouchableWithoutFeedback, Keyboard 
 } from 'react-native'
-import { Button } from 'react-native-elements/dist/buttons/Button';
 import { Input } from 'react-native-elements/dist/input/Input';
 
 const windowHeight = Dimensions.get('window').height;
