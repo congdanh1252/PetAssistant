@@ -41,4 +41,7 @@ export default strings = {
     success: "Thành công",
     err_check_inputs: "Vui lòng kiểm tra lại tất cả thông tin!",
     msg_add_pet_success: "Đã thêm thú cưng mới! 👋",
+    loading: "Đang tải",
+    msg_please_wait: "Bạn vui lòng đợi một chút nhé!",
+    sure: "Chắc chắn",
 }

@@ -30,6 +30,7 @@ const AddPetScreen = () => {
     const [height, setHeight] = useState('');
     const [weight, setWeight] = useState('');
     const [dropdown, setDropdown] = useState('');
+    const [isUploading, setUploading] = useState(false);
 
     const [date, setDate] = useState(new Date(2017, 12, 12));
     const [show, setShow] = useState(false);
@@ -38,7 +39,7 @@ const AddPetScreen = () => {
     const snapPoints = useMemo(() => ['100%', '100%'], []);
 
 
-    const checkSubmitInputs = () => {
+    const checkSubmitFields = () => {
         if (photoUri=='' || name=='' || kind=='' || gender=='' || species==''
             || !choseDate || breed=='' || status=='' || height=='' || weight=='') {
             Alert.alert(
@@ -53,8 +54,46 @@ const AddPetScreen = () => {
         }
         else {
             console.log('check input ok');
+            setUploading(true);
+
             uploadImageToStorage(photoUri, photoFileName, addPetToFirestore);
         }
+    }
+
+    const resetAllFields = () => {
+        setPhotoUri('');
+        setPhotoFileName('');
+        setName('');
+        setKind('');
+        setGender('');
+        setSpecies('');
+        setBreed('');
+        setStatus('');
+        setHeight('');
+        setWeight('');
+        setDropdown('');
+        setUploading(false);
+        setDate(new Date('2017, 12, 12'));
+        setShow(false);
+        setChoseDate(false);
+    }
+
+    const cancelAddingPet = () => {
+        Alert.alert(
+            'Cảnh báo',
+            'Bạn có chắc muốn hủy việc thêm thông tin thú cưng?',
+            [
+                {
+                    text: strings.cancel,
+                },
+                {
+                    text: strings.sure,
+                    onPress: () => {
+                        resetAllFields();
+                    }
+                }
+            ]
+        );
     }
 
     const onChangeDate = (event, selectedDate) => {
@@ -108,6 +147,8 @@ const AddPetScreen = () => {
             photo: photoUrl,
         })
         .then(() => {
+            setUploading(false);
+
             Toast.show({
                 type: 'success',
                 text1: strings.success,
@@ -304,6 +345,7 @@ const AddPetScreen = () => {
                                 <TextInput
                                     style={styles.input}
                                     placeholder={strings.name}
+                                    value={name}
                                     onChangeText={value => {
                                         setName(value)
                                     }}
@@ -500,6 +542,7 @@ const AddPetScreen = () => {
                                     title={strings.cancel}
                                     titleStyle={styles.button_title}
                                     buttonStyle={styles.button}
+                                    onPress={() => cancelAddingPet()}
                                 >
                                 </Button>
 
@@ -507,7 +550,7 @@ const AddPetScreen = () => {
                                     title={strings.save}
                                     titleStyle={styles.button_title}
                                     buttonStyle={styles.button}
-                                    onPress={() => checkSubmitInputs()}
+                                    onPress={() => checkSubmitFields()}
                                 >
                                 </Button>
                             </View>
@@ -555,6 +598,20 @@ const AddPetScreen = () => {
                     onChange={onChangeDate}
                 />
             )}
+
+            {isUploading ?
+                (
+                    <View style={styles.overlay}>
+                        <Text style={[styles.header_title, {fontSize: 24}]}>
+                            {strings.loading}
+                        </Text>
+
+                        <Text style={[styles.header_title, {fontSize: 18}]}>
+                            {strings.msg_please_wait}
+                        </Text>
+                    </View>
+                ) : (null)
+            }
 
             <Toast ref={(ref) => Toast.setRef(ref)} />
         </View>
@@ -703,5 +760,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between'
-    }
+    },
+    overlay: {
+        width: '100%',
+        height: '100%',
+        position: 'absolute',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    },
 });
