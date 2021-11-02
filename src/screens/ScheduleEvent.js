@@ -187,23 +187,6 @@ export function ScheduleEvent () {
         )
     }
 
-    // useEffect(() => {
-    //     const unsubscribe = firestore()
-    //     .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
-    //     .doc(reminder._id)
-    //     .onSnapshot(documentSnapshot => {
-    //         console.log('Got reminder result.')
-    //         var rmd = new Reminder()
-    //         rmd.update(documentSnapshot.data())
-    //         rmd.datetime = documentSnapshot.data().datetime.toDate()
-    //         rmd._id = reminder._id
-    //         setReminder(rmd)
-    //     });
-    //     return () => {
-    //       unsubscribe()
-    //     }
-    // }, [firestore()])
-
     const handleReminderCallback = (reminder) => {
         var rmd = new Reminder()
         rmd.update(reminder)
@@ -589,54 +572,54 @@ export function ScheduleEvent () {
             <Dialog.Container
                 visible={isShowDialog}
             >
-            <Dialog.Title
-                style={{
-                    fontFamily: 'Roboto-Bold'
-                }}
-            >
-                {dialogTitle}
-            </Dialog.Title>
-                <Dialog.Description
+                <Dialog.Title
                     style={{
-                        fontFamily: 'Roboto-LightItalic',
-                        fontSize: 14,
+                        fontFamily: 'Roboto-Bold'
                     }}
                 >
-                    {dialogDescription}
-                </Dialog.Description>
+                    {dialogTitle}
+                </Dialog.Title>
+                    <Dialog.Description
+                        style={{
+                            fontFamily: 'Roboto-LightItalic',
+                            fontSize: 14,
+                        }}
+                    >
+                        {dialogDescription}
+                    </Dialog.Description>
 
-                {
-                    dialogTitle.includes(strings.delete)
-                    ? null
-                    : (
-                        <View style={styles.inputBox}>
-                            <TextInput
-                                onChangeText={value => {
-                                    setDialogInput(value)
-                                }}
-                                style={styles.input}
-                                placeholder='ABCDEF'
-                                placeholderTextColor = 'rgba(0, 0, 0, 0.5)'
-                            >
-                            </TextInput>
-                        </View>
-                    )
-                    
-                }
-
-                
-                
-                <Dialog.Button 
-                    label={strings.cancel}
-                    onPress={handleCancel}    
-                />
-                <Dialog.Button 
-                    label={
+                    {
                         dialogTitle.includes(strings.delete)
-                        ? strings.delete
-                        : strings.add
+                        ? null
+                        : (
+                            <View style={styles.inputBox}>
+                                <TextInput
+                                    onChangeText={value => {
+                                        setDialogInput(value)
+                                    }}
+                                    style={styles.input}
+                                    placeholder='ABCDEF'
+                                    placeholderTextColor = 'rgba(0, 0, 0, 0.5)'
+                                >
+                                </TextInput>
+                            </View>
+                        )
+                        
                     }
-                    onPress={handleDelete}/>
+
+                    
+                    
+                    <Dialog.Button 
+                        label={strings.cancel}
+                        onPress={handleCancel}    
+                    />
+                    <Dialog.Button 
+                        label={
+                            dialogTitle.includes(strings.delete)
+                            ? strings.delete
+                            : strings.add
+                        }
+                        onPress={handleDelete}/>
             </Dialog.Container>
 
         </View>

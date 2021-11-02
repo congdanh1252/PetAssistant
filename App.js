@@ -3,11 +3,12 @@ import { StyleSheet, Text, View } from 'react-native'
 import { IntroductionScreen } from './src/screens/IntroductionScreen';
 import { ScheduleEvent } from './src/screens/ScheduleEvent'
 import { Schedules } from './src/screens/Schedules'
+import { StatisticScreen } from './src/screens/StatisticScreen'
 import Toast from 'react-native-toast-message';
 export default function App() {
   return (
     <>
-      <ScheduleEvent />
+      <StatisticScreen />
       <Toast ref={(ref) => Toast.setRef(ref)} />
     </>    
   );

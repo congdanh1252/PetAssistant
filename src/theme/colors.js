@@ -11,6 +11,7 @@ const COLORS = {
     dark: '#242B2E',
     yellow: '#EDC126',
     dot: '#99885E',
+    success: "#22CB5C",
 };
   
   export default COLORS;

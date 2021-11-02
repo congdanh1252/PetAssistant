@@ -1,4 +1,5 @@
 export default strings = {
+    title: "Tiêu đề",
     date: "Ngày",
     time: "Thời gian",
     pet: "Thú cưng",
@@ -9,7 +10,9 @@ export default strings = {
     delete: "Xóa",
     add: "Thêm",
     save: "Lưu",
+    amount: "Số tiền",
     success: "Thành công",
+    findInfomation: "Tìm kiếm thông tin",
     saveSuccessful: "Lưu hoạt động thành công!",
     deletePetInEvent: "Xóa thú cưng trong hoạt động?",
     confirmDeletePetInEvent: "Bạn có chắc chắn muốn xóa thú cưng, thao tác sẽ không thể hoàn tác",
@@ -18,5 +21,8 @@ export default strings = {
     addPetInEvent: "Thêm thú cưng cho hoạt động",
     enterPetName: "Nhập tên thú cưng",
     addDetailInEvent: "Thêm hoạt động mới",
-    enterDetailDescription: "Mô tả cho hoạt động"
+    addExpenditure: "Thêm chi tiêu mới",
+    enterDetailDescription: "Mô tả cho hoạt động",
+    cannotFindExpenditure: "Không tìm thấy chi tiêu!",
+    addExpenditureInformation: "Thêm thông tin chi tiết cho chi tiêu"
 }

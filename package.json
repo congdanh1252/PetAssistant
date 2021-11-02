@@ -26,10 +26,11 @@
     "react-native-calendar-strip": "^2.2.5",
     "react-native-calendars": "^1.1267.0",
     "react-native-dialog": "^9.1.2",
+    "react-native-dropdown-picker": "^5.2.3",
     "react-native-elements": "^3.4.2",
     "react-native-gesture-handler": "~1.10.2",
     "react-native-keyboard-aware-scroll-view": "^0.9.4",
-    "react-native-reanimated": "~2.2.0",
+    "react-native-reanimated": "^2.3.0-beta.2",
     "react-native-safe-area-context": "^3.3.2",
     "react-native-screens": "^3.4.0",
     "react-native-toast-message": "^1.6.0",
@@ -37,7 +38,8 @@
     "react-native-web": "~0.13.12"
   },
   "devDependencies": {
-    "@babel/core": "^7.9.0"
+    "@babel/core": "^7.9.0",
+    "@babel/preset-typescript": "^7.16.0"
   },
   "private": true
 }
