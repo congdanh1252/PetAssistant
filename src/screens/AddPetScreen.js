@@ -9,12 +9,15 @@ import { launchImageLibrary, launchCamera } from "react-native-image-picker";
 import BottomSheet from '@gorhom/bottom-sheet';
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Toast from "react-native-toast-message";
-import firestore from '@react-native-firebase/firestore';
-import storage from '@react-native-firebase/storage';
+import {
+    uploadImageToStorage,
+    addPetToFirestore
+} from '../api/PetAPI';
 
 import COLORS from '../theme/colors';
 import strings from "../data/strings";
 import BackButton from "../components/BackButton";
+import Pet from "../models/pet";
 
 const AddPetScreen = () => {
     var elseOption = '';
@@ -38,6 +41,21 @@ const AddPetScreen = () => {
 
     const snapPoints = useMemo(() => ['100%', '100%'], []);
 
+    const speciesOpt = {
+        dog: [
+            'Husky Bắc Cực',
+            'Husky Nam Cực',
+            'Husky Alaska',
+            'Husky Tây Tạng'
+        ],
+        cat: [
+            'Munchkin',
+            'Xiêm',
+            'Bengal',
+            'Anh lông ngắn'
+        ],
+    };
+    const [species_choice_base, setSpeciesChoiceBase] = useState([]);
 
     const checkSubmitFields = () => {
         if (photoUri=='' || name=='' || kind=='' || gender=='' || species==''
@@ -56,7 +74,7 @@ const AddPetScreen = () => {
             console.log('check input ok');
             setUploading(true);
 
-            uploadImageToStorage(photoUri, photoFileName, addPetToFirestore);
+            uploadImageToStorage(photoUri, photoFileName, handleImageUrl);
         }
     }
 
@@ -112,43 +130,24 @@ const AddPetScreen = () => {
         }
     };
 
-    const uploadImageToStorage = async (uri, name, addPet) => {
-        let reference = storage().ref(`${name}`);
-        let task = reference.putFile(uri);
-        task.then(() => {
-            console.log('Image uploaded to the bucket!');
-        
-            reference.getDownloadURL()
-            .then((url) => {
-                addPet(url);
-            })
-            .catch((e) => {
-                console.log('get downloadUrl error => ', e);
-            })
-        })
-        .catch((e) => {
-            console.log('uploading image error => ', e);
-        });
-    };
+    const handleImageUrl = (url) => {
+        var pet = new Pet();
+        pet.name = name;
+        pet.kind = kind;
+        pet.gender = gender;
+        pet.species = species;
+        pet.photo = url;
+        pet.height = parseFloat(height);
+        pet.weight = parseFloat(weight);
+        pet.birthday = date;
+        pet.status = status;
+        pet.breed = breed;
+        addPetToFirestore(pet, handlePetAdded);
+    }
 
-    const addPetToFirestore = (photoUrl) => {
-        firestore()
-        .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/pets')
-        .add({
-            name: name,
-            kind: kind,
-            gender: gender,
-            species: species,
-            dob: firestore.Timestamp.fromDate(date),
-            breed: breed,
-            status: status,
-            height: parseFloat(height),
-            weight: parseFloat(weight),
-            photo: photoUrl,
-        })
-        .then(() => {
-            setUploading(false);
-
+    const handlePetAdded = (result) => {
+        setUploading(false);
+        if (result == 'Success') {
             Toast.show({
                 type: 'success',
                 text1: strings.success,
@@ -158,10 +157,18 @@ const AddPetScreen = () => {
             });
 
             console.log('Pet added!');
-        })
-        .catch((e) => {
+        }
+        else {
+            Toast.show({
+                type: 'error',
+                text1: strings.fail,
+                text2: strings.msg_add_pet_success,
+                position: 'top',
+                autoHide: true,
+            });
+
             console.log('Add to firestore error => ' + e);
-        });
+        }
     }
 
     const addPetPhoto = (method) => {
@@ -207,9 +214,14 @@ const AddPetScreen = () => {
         switch (dropdown) {
             case 'Kind':
                 setKind(value);
+                setSpeciesChoiceBase([]);
+                if (kind != value) setSpecies('');
                 break;
             case 'Gender':
                 setGender(value);
+                break;
+            case 'Species':
+                setSpecies(value);
                 break;
             case 'Breed':
                 setBreed(value);
@@ -235,11 +247,33 @@ const AddPetScreen = () => {
             case 'Gender':
                 options.push(strings.male, strings.female);
                 break;
+            case 'Species':
+                switch (kind) {
+                    case 'Chó':
+                        if (species_choice_base.length == 0) {
+                            options = options.concat(options, speciesOpt.dog);
+                        }
+                        else {
+                            options = options.concat(options, species_choice_base);
+                        }
+                        break;
+                    case 'Mèo':
+                        if (species_choice_base.length == 0) {
+                            options = options.concat(options, speciesOpt.cat);
+                        }
+                        else {
+                            options = options.concat(options, species_choice_base);
+                        }
+                        break;
+                    default:
+                        options.push(strings.else_option);
+                }
+                break;
             case 'Breed':
                 options.push(strings.purebred, strings.mixed_breed, strings.unknown);
                 break;
             case 'Status':
-                options.push(strings.sts_healthy, strings.sts_dead);
+                options.push(strings.sts_healthy, strings.sts_sick);
                 break;
             default:
                 options.push(strings.take_photo, strings.pick_photo_fr_lib);
@@ -290,6 +324,28 @@ const AddPetScreen = () => {
                 {optionViews}
             </View>
         )
+    }
+    
+    function sortDropdownBasedOnSearch(criterias) {
+        var map = [];
+        var dataArr = [];
+        switch (kind) {
+            case 'Chó':
+                dataArr = dataArr.concat(speciesOpt.dog, dataArr);
+                break;
+            case 'Mèo':
+                dataArr = dataArr.concat(speciesOpt.cat, dataArr);
+                break;
+            default:
+
+        }
+
+        for (let i = 0; i < dataArr.length;  i++) {
+            if (dataArr[i].toLowerCase().includes(criterias.toLowerCase())) {
+                map.push(dataArr[i]);
+            }
+        }
+        setSpeciesChoiceBase(map);
     }
 
     return (
@@ -402,14 +458,23 @@ const AddPetScreen = () => {
                             {/* Species */}
                             <View style={styles.input_holder}>
                                 <Text style={styles.label}>{strings.species}</Text>
+                                
+                                <TouchableOpacity
+                                    activeOpacity={0.7}
+                                    onPress={() => setDropdown('Species')}
+                                >
+                                    <TextInput
+                                        editable={false}
+                                        style={styles.input}
+                                        placeholder={strings.species}
+                                        value={species}
+                                    />
 
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder={strings.species}
-                                    onChangeText={value => {
-                                        setSpecies(value)
-                                    }}
-                                />
+                                    <Image
+                                        source={require('../assets/icons/ic_down.png')}
+                                        style={styles.down_icon}
+                                    />
+                                </TouchableOpacity>
                             </View>
 
                             {/* Birthday */}
@@ -582,6 +647,22 @@ const AddPetScreen = () => {
                         enablePanDownToClose={true}
                         onClose={() => setDropdown('')}
                     >
+                        {
+                            dropdown=='Species' ?
+                            (
+                                <TextInput
+                                    editable={true}
+                                    style={[
+                                        styles.input,
+                                        {width: '95%', height: 44, alignSelf: "center", marginBottom: 12}
+                                    ]}
+                                    placeholder={strings.find}
+                                    onChangeText={(value) => {
+                                        sortDropdownBasedOnSearch(value);
+                                    }}
+                                />
+                            ) : (null)
+                        }
                         <DropDownOptions/>
                     </BottomSheet>
             }

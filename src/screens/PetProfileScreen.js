@@ -7,7 +7,6 @@ import strings from '../data/strings';
 import BackButton from '../components/BackButton';
 
 export function PetProfileScreen() {
-
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = useMemo(() => ['45%', '80%'], []);
     

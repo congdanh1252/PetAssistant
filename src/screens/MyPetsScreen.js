@@ -1,35 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Image, StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
 
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
 
+import {
+    getPetList
+} from '../api/PetAPI';
+
 export function MyPetsScreen() {
     const [chosenKind, setChosenKind] = useState(strings.all);
-    const petKind = [
-        'Chó',
-        'Mèo',
-        'Chim',
-        'Chuột'
-    ];
-    const myPet = [
-        {
-            name: 'Goofy',
-            kind: 'Mèo',
-            photo: 'https://i.natgeofe.com/n/3861de2a-04e6-45fd-aec8-02e7809f9d4e/02-cat-training-NationalGeographic_1484324.jpg',
-        },
-        {
-            name: 'Oggy',
-            kind: 'Chó',
-            photo: 'https://www.thesprucepets.com/thmb/sfuyyLvyUx636_Oq3Fw5_mt-PIc=/3760x2820/smart/filters:no_upscale()/adorable-white-pomeranian-puppy-spitz-921029690-5c8be25d46e0fb000172effe.jpg',
-        },
-        {
-            name: 'Jack',
-            kind: 'Chó',
-            photo: 'https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/dog-puppy-on-garden-royalty-free-image-1586966191.jpg?crop=1.00xw:0.669xh;0,0.190xh&resize=1200:*',
+    const [petKind, setPetKind] = useState([]);
+    const [myPet, setMyPet] = useState([]);
+
+    const handlePets = (petList) => {
+        var kinds = [];
+        var pets = [];
+        petList.forEach((pet) => {
+            pets.push(pet);
+
+            if (!kinds.includes(pet.kind)) {
+                kinds.push(pet.kind);
+            }
+        });
+
+        setMyPet(pets);
+        setPetKind(kinds);
+    }
+
+    useEffect(() => {
+        const myPets = getPetList(handlePets);
+
+        return () => {
+            myPet
         }
-    ];
+    }, []);
 
     const PetKinds = () => {
         var kinds = [];
@@ -169,62 +175,76 @@ export function MyPetsScreen() {
 
     //Main 
     return (
-        <View style={style.container}>
+        <View style={style.screen}>
             <View style={style.header}>
                 <BackButton
-                    container={'black'}
+                    container={'trans'}
                 />
 
-                <Image style={style.logo} source={require('../assets/icons/Logo.png')}/>
+                <Text style={style.headerTitle}>{strings.my_pet}</Text>
             </View>
 
-            <View style={style.animals}>
-                <Text style={style.title}>{strings.animal_kind}</Text>
+            <View style={style.container}>
+                <View style={style.animals}>
+                    <Text style={style.title}>{strings.animal_kind}</Text>
 
-                <PetKinds/>
-            </View>
+                    <PetKinds/>
+                </View>
 
-            <View style={style.my_pets}>
-                <Text style={style.title}>{strings.my_pet}</Text>
+                <View style={style.my_pets}>
+                    <Text style={style.title}>{strings.my_pet}</Text>
 
-                <MyPets/>
+                    <MyPets/>
+                </View>
             </View>
 
             <TouchableOpacity
-                style={style.floating_button}
-                activeOpacity={0.7}
-            >
-                <Image
-                    source={require('../assets/icons/Add.png')}
-                    style={style.add_btn}
-                />
-            </TouchableOpacity>
+                    style={style.floating_button}
+                    activeOpacity={0.7}
+                >
+                    <Image
+                        source={require('../assets/icons/Add.png')}
+                        style={style.add_btn}
+                    />
+                </TouchableOpacity>
         </View>
     );
 }
 
 const style = StyleSheet.create({
-    container: {
-        backgroundColor: COLORS.white,
+    screen: {
         flex: 1,
-        padding: 22,
+        display: 'flex',
+        flexDirection: 'column',
+    },
+    container: {
+        paddingTop: 0,
+        paddingLeft: 22,
+        paddingRight: 22,
+        paddingBottom: 22,
+        marginTop: -20,
+        borderTopLeftRadius: 25,
+        borderTopRightRadius: 25,
+        backgroundColor: COLORS.white,
     },
     header: {
-        height: 80,
-        marginTop: 5,
+        width: '100%',
+        height: 110,
+        paddingTop: 16,
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: COLORS.white,
+        backgroundColor: COLORS.dark,
     },
-    logo: {
-        width: 80,
-        height: 80,
-        borderRadius: 100 / 2,
+    headerTitle: {
+        width: '80%',
+        textAlign: 'center',
+        fontFamily: 'Roboto-Bold',
+        fontSize: 24,
+        marginTop: 16,
+        color: COLORS.white,
     },
     animals: {
         height: '20%',
-        marginTop: 20,
+        marginTop: 16,
     },
     title: {
         color: COLORS.black,
@@ -260,8 +280,8 @@ const style = StyleSheet.create({
         fontSize: 16,
     },
     my_pets: {
-        height: '58%',
-        marginTop: 24,
+        height: '66%',
+        marginTop: 20,
     },
     pet_holder: {
         height: 130,
@@ -285,8 +305,8 @@ const style = StyleSheet.create({
         height: 48,
         borderRadius: 24,
         position: 'absolute',
-        bottom: 12,
-        left: '50%',
+        bottom: 16,
+        left: '45%',
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: COLORS.white,
