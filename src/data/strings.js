@@ -12,6 +12,7 @@ export default strings = {
     save: "Lưu",
     amount: "Số tiền",
     success: "Thành công",
+    statistic: "Thống kê",
     findInfomation: "Tìm kiếm thông tin",
     saveSuccessful: "Lưu hoạt động thành công!",
     deletePetInEvent: "Xóa thú cưng trong hoạt động?",

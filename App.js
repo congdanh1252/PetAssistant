@@ -3,8 +3,12 @@ import { StyleSheet, Text, View } from 'react-native'
 import { IntroductionScreen } from './src/screens/IntroductionScreen';
 import { ScheduleEvent } from './src/screens/ScheduleEvent'
 import { Schedules } from './src/screens/Schedules'
+import { ExpenditureScreen } from './src/screens/ExpenditureScreen'
 import { StatisticScreen } from './src/screens/StatisticScreen'
+import { ExpenditureStack } from './src/components/StatisticStack'
+import { RegisterStack } from './src/components/RegisterStack'
 import Toast from 'react-native-toast-message';
+
 export default function App() {
   return (
     <>

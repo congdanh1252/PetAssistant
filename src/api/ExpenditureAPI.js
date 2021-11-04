@@ -92,13 +92,68 @@ export const findDateByKeyword = (keyword, handleDatesCallback) => {
   .orderBy('date', 'desc')
   .get()
   .then(querySnapshot => {
+    querySnapshot.forEach(documentSnapshot => {
+      if (documentSnapshot.data().title.includes(keyword)) {
+        var tempDate = documentSnapshot.data().date.toDate().getDate()
+        if (!datesList.includes(tempDate))
+          datesList.push(tempDate)
+      }
+    });
+    handleDatesCallback(datesList)
+  }, onError);
+}
+
+export const addExpenditure = (expenditure, handleAddExpenditureCallback) => {
+  firestore()
+  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/expenditures')
+  .add({
+    title: expenditure.title,
+    amount: expenditure.amount,
+    month: expenditure.date.getMonth(),
+    date: firestore.Timestamp.fromDate(new Date(expenditure.date)),
+    year: expenditure.date.getFullYear(),
+    type: expenditure.type,
+  })
+  .then(() => {
+    handleAddExpenditureCallback()
+  }, onError);
+}
+
+export const getMonthStatistic = (date, handleStatisticCallback) => {
+  var values = [0, 0, 0, 0, 0]
+  var percentage = [0, 0, 0, 0, 0]
+  var total = 0
+  firestore()
+  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/expenditures')
+  .where('month', '==', date.getMonth() + 1)
+  .where('year', '==', date.getFullYear())
+  .get()
+  .then(querySnapshot => {
       querySnapshot.forEach(documentSnapshot => {
-        if (documentSnapshot.data().title.includes(keyword)) {
-          var tempDate = documentSnapshot.data().date.toDate().getDate()
-          if (!datesList.includes(tempDate))
-            datesList.push(tempDate)
+        var type = documentSnapshot.data().type
+        var amount = documentSnapshot.data().amount
+        total += amount
+        switch (type) {
+          case 'Doctor':
+            values[0] += amount
+            break
+          case 'Food':
+            values[1] += amount
+            break
+          case 'Service': 
+            values[2] += amount
+            break
+          case 'Stuff':
+            values[3] += amount
+            break
+          default:
+            values[4] += amount
+            break
         }
       });
-      handleDatesCallback(datesList);
+      for (var i = 0; i < values.length; i++) {
+        percentage[i] = Math.round(values[i] / total * 100)
+      }
+      handleStatisticCallback(values, percentage);
   }, onError);
 }

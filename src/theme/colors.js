@@ -12,6 +12,10 @@ const COLORS = {
     yellow: '#EDC126',
     dot: '#99885E',
     success: "#22CB5C",
+    green: "#A4DA88",
+    ocean: "#7AC6E4",
+    pink: "#FCDDEC",
+    
 };
   
   export default COLORS;
