@@ -19,8 +19,9 @@ import strings from "../data/strings";
 import BackButton from "../components/BackButton";
 import Pet from "../models/pet";
 
-const AddPetScreen = () => {
+const AddPetScreen = ({route, navigation}) => {
     var elseOption = '';
+    var pet = new Pet();
     const [photoUri, setPhotoUri] = useState('');
     const [photoFileName, setPhotoFileName] = useState('');
     const [name, setName] = useState('');
@@ -131,7 +132,6 @@ const AddPetScreen = () => {
     };
 
     const handleImageUrl = (url) => {
-        var pet = new Pet();
         pet.name = name;
         pet.kind = kind;
         pet.gender = gender;
@@ -145,8 +145,7 @@ const AddPetScreen = () => {
         addPetToFirestore(pet, handlePetAdded);
     }
 
-    const handlePetAdded = (result) => {
-        setUploading(false);
+    const showResultToast = (result) => {
         if (result == 'Success') {
             Toast.show({
                 type: 'success',
@@ -162,13 +161,24 @@ const AddPetScreen = () => {
             Toast.show({
                 type: 'error',
                 text1: strings.fail,
-                text2: strings.msg_add_pet_success,
+                text2: strings.msg_add_pet_fail,
                 position: 'top',
                 autoHide: true,
             });
 
             console.log('Add to firestore error => ' + e);
         }
+    }
+
+    const handlePetAdded = (result) => {
+        setUploading(false);
+        showResultToast(result);
+
+        navigation.navigate({
+            name: 'MyPets',
+            params: { newPet: pet},
+            merge: true,
+        });
     }
 
     const addPetPhoto = (method) => {
@@ -349,7 +359,19 @@ const AddPetScreen = () => {
     }
 
     return (
-        <View>
+        <View style={styles.screen}>
+            {/* Header */}
+            <View style={styles.header}>
+                <BackButton
+                    container={''}
+                    navigation={navigation}
+                />
+
+                <Text style={styles.header_title}>
+                    {strings.add_pet}
+                </Text>
+            </View>
+
             <KeyboardAwareScrollView
                 showsVerticalScrollIndicator={false}
                 enableAutomaticScroll={true}
@@ -577,6 +599,7 @@ const AddPetScreen = () => {
                                             onChangeText={value => {
                                                 setHeight(value)
                                             }}
+                                            value={height}
                                         />
                                     </TouchableOpacity>
                                 </View>
@@ -596,6 +619,7 @@ const AddPetScreen = () => {
                                             onChangeText={value => {
                                                 setWeight(value)
                                             }}
+                                            value={weight}
                                         />
                                     </TouchableOpacity>
                                 </View>
@@ -625,13 +649,6 @@ const AddPetScreen = () => {
             </KeyboardAwareScrollView>
 
             {/* Header */}
-            <View style={styles.header}>
-                <BackButton container={''}/>
-
-                <Text style={styles.header_title}>
-                    {strings.add_pet}
-                </Text>
-            </View>
 
             {/* Dropdown bottomsheet */}
             {
@@ -702,34 +719,39 @@ const AddPetScreen = () => {
 export default AddPetScreen;
 
 const styles = StyleSheet.create({
-    container: {
+    screen: {
         flex: 1,
-        backgroundColor: COLORS.white,
+        display: 'flex',
+        flexDirection: 'column',
+    },
+    container: {
+        marginTop: 0,
+        backgroundColor: COLORS.dark,
         alignItems: 'center',
-        position: 'relative',
     },
     header: {
         width: '100%',
-        height: 62,
+        height: 90,
         paddingLeft: 8,
-        position: 'absolute',
+        paddingTop: 16,
         flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: COLORS.black,
+        backgroundColor: COLORS.dark,
     },
     header_title: {
-        width: '72%',
-        fontSize: 20,
-        fontFamily: 'Roboto-Medium',
+        width: '74%',
+        fontSize: 24,
+        marginTop: 16,
+        fontFamily: 'Roboto-Bold',
         color: COLORS.white,
         textAlign: 'center',
     },
     content: {
         height: '100%',
         width: '100%',
-        marginTop: 62,
         paddingLeft: 22,
         paddingRight: 22,
+        borderTopLeftRadius: 25,
+        borderTopRightRadius: 25,
         alignItems: 'center',
         backgroundColor: COLORS.white,
     },

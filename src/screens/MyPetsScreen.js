@@ -9,7 +9,7 @@ import {
     getPetList
 } from '../api/PetAPI';
 
-export function MyPetsScreen() {
+const MyPetsScreen = ({route, navigation}) => {
     const [chosenKind, setChosenKind] = useState(strings.all);
     const [petKind, setPetKind] = useState([]);
     const [myPet, setMyPet] = useState([]);
@@ -29,13 +29,43 @@ export function MyPetsScreen() {
         setPetKind(kinds);
     }
 
+    //load pet list
     useEffect(() => {
-        const myPets = getPetList(handlePets);
-
+        let isMounted = true;
+        if (isMounted) {
+            const myPets = getPetList(handlePets);
+        }
         return () => {
-            myPet
+            isMounted = false;
         }
     }, []);
+
+    //Add new added pet to list
+    useEffect(() => {
+        if (route.params?.newPet) {
+            var kinds = [];
+            var pets = [];
+            var isHasNewKind = false;
+            myPet.forEach((pet) => {
+                pets.push(pet);
+
+                if (!kinds.includes(pet.kind)) {
+                    kinds.push(pet.kind);
+                }
+            });
+            pets.push(route.params.newPet);
+
+            if (!kinds.includes(route.params.newPet.kind)) {
+                kinds.push(route.params.newPet.kind);
+                isHasNewKind = true;
+            }
+
+            setMyPet(pets);
+            if (isHasNewKind) {
+                setPetKind(kinds);
+            }
+        }
+    }, [route.params?.newPet]);
 
     const PetKinds = () => {
         var kinds = [];
@@ -107,7 +137,6 @@ export function MyPetsScreen() {
                 <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
                     {kinds}
                 </ScrollView>
-                
             </View>
         )
     }
@@ -145,6 +174,9 @@ export function MyPetsScreen() {
                     key={i}
                     style={[style.pet_holder, {backgroundColor: color}]}
                     activeOpacity={0.8}
+                    onPress={() => {
+                        navigation.navigate('PetProfile', {pet: pets_chosen_kind[i]});
+                    }}
                 >
                     <Image
                         style={style.pet_photo}
@@ -179,6 +211,7 @@ export function MyPetsScreen() {
             <View style={style.header}>
                 <BackButton
                     container={'trans'}
+                    navigation={navigation}
                 />
 
                 <Text style={style.headerTitle}>{strings.my_pet}</Text>
@@ -201,6 +234,9 @@ export function MyPetsScreen() {
             <TouchableOpacity
                     style={style.floating_button}
                     activeOpacity={0.7}
+                    onPress={() => {
+                        navigation.navigate('AddPet');
+                    }}
                 >
                     <Image
                         source={require('../assets/icons/Add.png')}
@@ -210,6 +246,8 @@ export function MyPetsScreen() {
         </View>
     );
 }
+
+export default MyPetsScreen;
 
 const style = StyleSheet.create({
     screen: {
@@ -231,6 +269,7 @@ const style = StyleSheet.create({
         width: '100%',
         height: 110,
         paddingTop: 16,
+        paddingLeft: 8,
         flexDirection: 'row',
         backgroundColor: COLORS.dark,
     },
@@ -257,7 +296,7 @@ const style = StyleSheet.create({
         borderRadius: 10,
         alignItems: 'center',
         flexDirection: 'row',
-        backgroundColor: COLORS.black,
+        backgroundColor: COLORS.white,
     },
     animal_kind: {
         height: 64,

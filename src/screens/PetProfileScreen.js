@@ -1,20 +1,79 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import BottomSheet from '@gorhom/bottom-sheet';
-import { Image, StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import Toast from "react-native-toast-message";
+import Dialog from "react-native-dialog";
+import {
+    Image, StyleSheet, View, Text, ScrollView, TouchableOpacity, LogBox,
+    TouchableHighlight, TouchableWithoutFeedback
+} from 'react-native';
 
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
 
-export function PetProfileScreen() {
+LogBox.ignoreLogs([
+    'Non-serializable values were found in the navigation state',
+]);
+
+const PetProfileScreen = ({route, navigation}) => {
+    const [petAge, setPetAge] = useState('');
+    const [setting, setSetting] = useState('');
+    const [dialogVisible, setDialogVisible] = useState(false);
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = useMemo(() => ['45%', '80%'], []);
+    const snapPointsDropdown = useMemo(() => ['19%', '19%'], []);
+
+    const { pet } = route.params;
+
+    //Find correct animal kind icon
+    const GenderIcon = () => {
+        var icon;
+        switch (pet.gender) {
+            case 'Đực':
+                icon = require('../assets/icons/ic_male.png');
+                break;
+            case 'Cái':
+                icon = require('../assets/icons/ic_female.png');
+                break;
+            default:
+                icon = require('../assets/icons/ic_question.png')
+        }
+
+        return (
+            <Image
+                style={style.pet_gender}
+                source={icon}
+            />
+        )
+    }
+
+    //Calculate age in year
+    useEffect(() => {
+        var isMounted = true;
+        if (isMounted) {
+            var bornDays = Math.abs(new Date() - pet.birthday) / 86400000;
+            var age = Math.round(bornDays / 365);
+            var ageWithoutRound = (bornDays / 365) - age;
+            if (ageWithoutRound === 0) {
+                setPetAge(age);
+            } else {
+                setPetAge('<' + age);
+            }
+        }
+        
+        return () => {
+            isMounted = false;
+        }
+    }, []);
     
     const SettingButton = () => {
         return (
             <TouchableOpacity
                 activeOpacity={0.6}
                 style={style.btn_container}
+                onPress={() => {
+                    setSetting('Open');
+                }}
             >
                 <Image
                     style={{tintColor: COLORS.white}}
@@ -30,12 +89,13 @@ export function PetProfileScreen() {
             <View style={style.pet_photo_conatainer}>
                 <Image
                     style={style.pet_photos}
-                    source={{uri: 'https://i.natgeofe.com/n/3861de2a-04e6-45fd-aec8-02e7809f9d4e/02-cat-training-NationalGeographic_1484324.jpg'}}
+                    source={{uri: pet.photo}}
                 />
 
                 <View style={style.header}>
                     <BackButton
                         container={'black'}
+                        navigation={navigation}
                     />
 
                     <SettingButton/>
@@ -52,17 +112,14 @@ export function PetProfileScreen() {
                     {/* Name, breed, kind */}
                     <View style={style.name_gender_container}>
                         <Text style={style.pet_name}>
-                            Pomeranian
+                            {pet.name}
                         </Text>
 
-                        <Image
-                            style={style.pet_gender}
-                            source={require('../assets/icons/ic_female.png')}
-                        />
+                        <GenderIcon/>
                     </View>
 
                     <Text style={style.pet_kind_breed}>
-                        Chihuahua - Thuần chủng
+                        {pet.species}  •  {pet.breed}
                     </Text>
 
                     {/* 3 boxes */}
@@ -72,7 +129,7 @@ export function PetProfileScreen() {
                             style={[style.box_information, {backgroundColor: COLORS.pet_green}]}
                         >
                             <Text style={style.information_detail}>
-                                1 năm
+                                {petAge} năm
                             </Text>
 
                             <Text style={style.information_label}>
@@ -85,7 +142,7 @@ export function PetProfileScreen() {
                             style={[style.box_information, {backgroundColor: COLORS.pet_blue}]}
                         >
                             <Text style={style.information_detail}>
-                                30 cm
+                                {pet.height} cm
                             </Text>
 
                             <Text style={style.information_label}>
@@ -98,7 +155,7 @@ export function PetProfileScreen() {
                             style={[style.box_information, {backgroundColor: COLORS.pet_pink}]}
                         >
                             <Text style={style.information_detail}>
-                                0.5 kg
+                                {pet.weight} kg
                             </Text>
 
                             <Text style={style.information_label}>
@@ -109,13 +166,120 @@ export function PetProfileScreen() {
                 </View>
 
                 {/* Process */}
-                <View style={style.process_information}>
-                    
+                <View style={style.care_information}>
+                    <Text style={style.section_title}>
+                        {strings.care_title}
+                    </Text>
                 </View>
             </BottomSheet>
+
+            {/* Overlay and Settings dropdown bottomsheet */}
+            {
+                setting=='' ?
+                    (null)
+                :
+                    (
+                        <TouchableWithoutFeedback
+                            onPress={() => {
+                                setSetting('')
+                            }}
+                        >
+                            <View style={style.overlay}>
+                                <BottomSheet
+                                    index={1}
+                                    snapPoints={snapPointsDropdown}
+                                    style={style.dropdown_bottomsheet}
+                                    enableOverDrag={false}
+                                    enablePanDownToClose={true}
+                                    onClose={() => setSetting('')}
+                                >
+                                    <TouchableHighlight
+                                        key={1}
+                                        activeOpacity={0.7}
+                                        underlayColor='#EEEEEE'
+                                        style={style.dropdown_option}
+                                        onPress={() => {
+
+                                        }}
+                                    >
+                        
+                                        <View style={style.dropdown_detail}>
+                                            <Image
+                                                style={style.dropdown_option_icon}
+                                                source={require('../assets/icons/ic_edit.png')}
+                                            />
+
+                                            <Text style={style.dropdown_option_text}>
+                                                {strings.edit_pet_info}
+                                            </Text>
+                                        </View>
+                                    </TouchableHighlight>
+
+                                    <TouchableHighlight
+                                        key={2}
+                                        activeOpacity={0.7}
+                                        underlayColor='#EEEEEE'
+                                        style={style.dropdown_option}
+                                        onPress={() => {
+                                            setDialogVisible(true);
+                                            setSetting('');
+                                        }}
+                                    >
+                        
+                                        <View style={style.dropdown_detail}>
+                                            <Image
+                                                style={style.dropdown_option_icon}
+                                                source={require('../assets/icons/ic_bin.png')}
+                                            />
+
+                                            <Text style={style.dropdown_option_text}>
+                                                {strings.delete_pet}
+                                            </Text>
+                                        </View>
+                                    </TouchableHighlight>
+                                </BottomSheet>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    )
+            }
+
+            <Toast ref={(ref) => Toast.setRef(ref)} />
+
+            {/* Delete pet dialog */}
+            <Dialog.Container visible={dialogVisible}>
+                <Dialog.Title
+                    style={{fontFamily: 'Roboto-Bold'}}
+                >
+                    {strings.delete_pet}
+                </Dialog.Title>
+
+                <Dialog.Description>
+                    {strings.delete_pet_msg}
+                </Dialog.Description>
+
+                <Dialog.Input placeholder={'Nhập tên thú cưng'}/>
+
+                <Dialog.Button
+                    color={COLORS.black}
+                    label={strings.cancel}
+                    onPress={() => {
+                        setDialogVisible(false);
+                    }}
+                />
+
+                <Dialog.Button
+                    color={COLORS.black}
+                    label={strings.sure}
+                    onPress={() => {
+
+                    }}
+                />
+            </Dialog.Container>
         </View>
     );
 }
+
+export default PetProfileScreen;
 
 const style = StyleSheet.create({
     container: {
@@ -205,5 +369,49 @@ const style = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Roboto-Regular',
         opacity: 0.7,
-    }
+    },
+    section_title: {
+        color: COLORS.black,
+        fontFamily: 'Roboto-Bold',
+        fontSize: 22,
+        marginBottom: 15,
+    },
+    care_information: {
+        marginTop: 20,
+    },
+    dropdown_bottomsheet: {
+        borderRadius: 10,
+    },
+    dropdown_option: {
+        width: '100%',
+        height: 60,
+        padding: 24,
+        justifyContent: 'center',
+        borderBottomWidth: 1.5,
+        borderColor: COLORS.grey,
+    },
+    dropdown_detail: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-start'
+    },
+    dropdown_option_icon: {
+        height: 20,
+        width: 20,
+        marginRight: 16
+    },
+    dropdown_option_text: {
+        color: COLORS.black,
+        fontSize: 16,
+        fontFamily: 'Roboto-Regular',
+    },
+    overlay: {
+        width: '100%',
+        height: '100%',
+        position: 'absolute',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    },
 });

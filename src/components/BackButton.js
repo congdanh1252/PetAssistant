@@ -9,7 +9,11 @@ const BackButton = (props) => {
             activeOpacity={0.6}
             style={
                 props.container=='black' ?
-                [styles.container] : [styles.container, {backgroundColor: 'transparent'}]}
+                [styles.container] : [styles.container, {backgroundColor: 'transparent'}]
+            }
+            onPress={() => {
+                props.navigation.goBack();
+            }}
         >
             <Image source={require('../assets/icons/Back.png')} />
         </TouchableOpacity>

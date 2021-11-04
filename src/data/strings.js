@@ -42,7 +42,12 @@ export default strings = {
     success: "Thành công",
     err_check_inputs: "Vui lòng kiểm tra lại tất cả thông tin!",
     msg_add_pet_success: "Đã thêm thú cưng mới! 👋",
+    msg_add_pet_fail: "Thao tác gặp vấn đề, bạn thử lại sau nhé! 😔",
     loading: "Đang tải",
     msg_please_wait: "Bạn vui lòng đợi một chút nhé!",
     sure: "Chắc chắn",
+    care_title: "Chăm sóc",
+    edit_pet_info: "Chỉnh sửa thông tin",
+    delete_pet: "Xóa thú cưng",
+    delete_pet_msg: "Bạn chắc chắn muốn xóa thú cưng? Nhập lại tên thú cưng để xác nhận."
 }

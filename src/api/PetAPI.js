@@ -15,8 +15,8 @@ export const getPetList = (handlePets) => {
   .then(querySnapshot => {
         querySnapshot.forEach(documentSnapshot => {
         var pet = new Pet();
-        pet.update(documentSnapshot.data())
-        pet.birthday = documentSnapshot.data().dob.toDate()
+        pet.update(documentSnapshot.data());
+        pet.birthday = new Date(documentSnapshot.data().dob.toDate());
         pet._id = documentSnapshot.id;
         petList.push(pet);
     });
