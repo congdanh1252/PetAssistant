@@ -33,39 +33,77 @@ const MyPetsScreen = ({route, navigation}) => {
     useEffect(() => {
         let isMounted = true;
         if (isMounted) {
-            const myPets = getPetList(handlePets);
+            const getPets = getPetList(handlePets);
+            console.log('load pet list');
         }
+
         return () => {
             isMounted = false;
-        }
+        };
     }, []);
 
     //Add new added pet to list
     useEffect(() => {
         if (route.params?.newPet) {
+            if (route.params.newPet != null) {
+                console.log('add pet to list');
+                var kinds = [];
+                var pets = [];
+                var isHasNewKind = false;
+                myPet.forEach((pet) => {
+                    pets.push(pet);
+
+                    if (!kinds.includes(pet.kind)) {
+                        kinds.push(pet.kind);
+                    }
+                });
+                pets.push(route.params.newPet);
+
+                if (!kinds.includes(route.params.newPet.kind)) {
+                    kinds.push(route.params.newPet.kind);
+                    isHasNewKind = true;
+                }
+
+                setMyPet(pets);
+                if (isHasNewKind) {
+                    setPetKind(kinds);
+                }
+                navigation.setParams({
+                    newPet: null,
+                })
+            }
+        }
+    });
+
+    //Remove deleted pet from list
+    useEffect(() => {
+        if (route.params?.deletedPet) {
+            if (route.params.deletedPet != null)
+            console.log('remove pet from list');
             var kinds = [];
             var pets = [];
-            var isHasNewKind = false;
             myPet.forEach((pet) => {
-                pets.push(pet);
+                if (pet._id != route.params.deletedPet._id) {
+                    pets.push(pet);
+                }
+            });
 
+            pets.forEach((pet) => {
                 if (!kinds.includes(pet.kind)) {
                     kinds.push(pet.kind);
                 }
             });
-            pets.push(route.params.newPet);
-
-            if (!kinds.includes(route.params.newPet.kind)) {
-                kinds.push(route.params.newPet.kind);
-                isHasNewKind = true;
-            }
 
             setMyPet(pets);
-            if (isHasNewKind) {
+            if (kinds.length < petKind.length) {
                 setPetKind(kinds);
             }
+            
+            navigation.setParams({
+                deletedPet: null,
+            })
         }
-    }, [route.params?.newPet]);
+    });
 
     const PetKinds = () => {
         var kinds = [];
@@ -104,6 +142,12 @@ const MyPetsScreen = ({route, navigation}) => {
                         break;
                     case 'Chim':
                         icon = require('../assets/icons/ic_bird.png');
+                        break;
+                    case 'Rắn':
+                        icon = require('../assets/icons/ic_snake.png');
+                        break;
+                    case 'Hamster':
+                        icon = require('../assets/icons/ic_hamster.png');
                         break;
                     default:
                         icon = require('../assets/icons/Logo.png')
@@ -232,17 +276,20 @@ const MyPetsScreen = ({route, navigation}) => {
             </View>
 
             <TouchableOpacity
-                    style={style.floating_button}
-                    activeOpacity={0.7}
-                    onPress={() => {
-                        navigation.navigate('AddPet');
-                    }}
-                >
-                    <Image
-                        source={require('../assets/icons/Add.png')}
-                        style={style.add_btn}
-                    />
-                </TouchableOpacity>
+                style={style.floating_button}
+                activeOpacity={0.7}
+                onPress={() => {
+                    navigation.navigate('AddPet', {
+                        action: 'add',
+                        petObj: null,
+                    });
+                }}
+            >
+                <Image
+                    source={require('../assets/icons/Add.png')}
+                    style={style.add_btn}
+                />
+            </TouchableOpacity>
         </View>
     );
 }
@@ -274,25 +321,25 @@ const style = StyleSheet.create({
         backgroundColor: COLORS.dark,
     },
     headerTitle: {
-        width: '80%',
+        width: '76%',
         textAlign: 'center',
-        fontFamily: 'Roboto-Bold',
+        fontFamily: 'Roboto-Medium',
         fontSize: 24,
         marginTop: 16,
         color: COLORS.white,
     },
     animals: {
         height: '20%',
-        marginTop: 16,
+        marginTop: 20,
     },
     title: {
         color: COLORS.black,
         fontFamily: 'Roboto-Bold',
         fontSize: 22,
-        marginBottom: 15,
+        marginBottom: 12,
     },
     animal_kind_holder: {
-        height: '60%',
+        height: '56%',
         borderRadius: 10,
         alignItems: 'center',
         flexDirection: 'row',
@@ -320,7 +367,7 @@ const style = StyleSheet.create({
     },
     my_pets: {
         height: '66%',
-        marginTop: 20,
+        marginTop: 8,
     },
     pet_holder: {
         height: 130,

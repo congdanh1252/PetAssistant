@@ -11,7 +11,9 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import Toast from "react-native-toast-message";
 import {
     uploadImageToStorage,
-    addPetToFirestore
+    addPetToFirestore,
+    updatePetInFirestore,
+    deleteImageFromStorage
 } from '../api/PetAPI';
 
 import COLORS from '../theme/colors';
@@ -22,23 +24,24 @@ import Pet from "../models/pet";
 const AddPetScreen = ({route, navigation}) => {
     var elseOption = '';
     var pet = new Pet();
-    const [photoUri, setPhotoUri] = useState('');
+    const { action, petObj } = route.params;
+    const [photoUri, setPhotoUri] = useState(action=='add' ? '' : petObj.photo);
     const [photoFileName, setPhotoFileName] = useState('');
-    const [name, setName] = useState('');
-    const [kind, setKind] = useState('');
-    const [gender, setGender] = useState('');
-    const [species, setSpecies] = useState('');
+    const [name, setName] = useState(action=='add' ? '' : petObj.name);
+    const [kind, setKind] = useState(action=='add' ? '' : petObj.kind);
+    const [gender, setGender] = useState(action=='add' ? '' : petObj.gender);
+    const [species, setSpecies] = useState(action=='add' ? '' : petObj.species);
     //const [birthday, setBirthday] = useState('');
-    const [breed, setBreed] = useState('');
-    const [status, setStatus] = useState('');
-    const [height, setHeight] = useState('');
-    const [weight, setWeight] = useState('');
+    const [breed, setBreed] = useState(action=='add' ? '' : petObj.breed);
+    const [status, setStatus] = useState(action=='add' ? '' : petObj.status);
+    const [height, setHeight] = useState(action=='add' ? '' : (petObj.height + ''));
+    const [weight, setWeight] = useState(action=='add' ? '' : (petObj.weight + ''));
     const [dropdown, setDropdown] = useState('');
     const [isUploading, setUploading] = useState(false);
 
-    const [date, setDate] = useState(new Date(2017, 12, 12));
+    const [date, setDate] = useState(action=='add' ? new Date(2017, 12, 12) : petObj.birthday);
     const [show, setShow] = useState(false);
-    const [choseDate, setChoseDate] = useState(false);
+    const [choseDate, setChoseDate] = useState(action=='add' ? false : true);
 
     const snapPoints = useMemo(() => ['100%', '100%'], []);
 
@@ -58,6 +61,20 @@ const AddPetScreen = ({route, navigation}) => {
     };
     const [species_choice_base, setSpeciesChoiceBase] = useState([]);
 
+    const initPetData = (photoUrl) => {
+        pet.name = name;
+        pet.kind = kind;
+        pet.gender = gender;
+        pet.species = species;
+        pet.photo = photoUrl;
+        pet.height = parseFloat(height);
+        pet.weight = parseFloat(weight);
+        pet.birthday = date;
+        pet.status = status;
+        pet.breed = breed;
+        action === 'edit' ? pet._id = petObj._id : null;
+    }
+
     const checkSubmitFields = () => {
         if (photoUri=='' || name=='' || kind=='' || gender=='' || species==''
             || !choseDate || breed=='' || status=='' || height=='' || weight=='') {
@@ -75,7 +92,17 @@ const AddPetScreen = ({route, navigation}) => {
             console.log('check input ok');
             setUploading(true);
 
-            uploadImageToStorage(photoUri, photoFileName, handleImageUrl);
+            if (action==='add') {
+                uploadImageToStorage(photoUri, photoFileName, handleImageUrl);
+            } else {
+                if (photoFileName==='') {
+                    initPetData(petObj.photo);
+                    updatePetInFirestore(pet, handlePetUpdated);
+                } else {
+                    uploadImageToStorage(photoUri, photoFileName, handleImageUrl);
+                    deleteImageFromStorage(petObj.photo);
+                }
+            }
         }
     }
 
@@ -132,17 +159,9 @@ const AddPetScreen = ({route, navigation}) => {
     };
 
     const handleImageUrl = (url) => {
-        pet.name = name;
-        pet.kind = kind;
-        pet.gender = gender;
-        pet.species = species;
-        pet.photo = url;
-        pet.height = parseFloat(height);
-        pet.weight = parseFloat(weight);
-        pet.birthday = date;
-        pet.status = status;
-        pet.breed = breed;
-        addPetToFirestore(pet, handlePetAdded);
+        initPetData(url);
+        action==='add' ?
+        addPetToFirestore(pet, handlePetAdded) : updatePetInFirestore(pet, handlePetUpdated)
     }
 
     const showResultToast = (result) => {
@@ -150,12 +169,12 @@ const AddPetScreen = ({route, navigation}) => {
             Toast.show({
                 type: 'success',
                 text1: strings.success,
-                text2: strings.msg_add_pet_success,
+                text2: action==='add' ? strings.msg_add_pet_success : strings.msg_update_pet_success,
                 position: 'top',
                 autoHide: true,
             });
 
-            console.log('Pet added!');
+            action==='add' ? console.log('Pet added!') : console.log('Pet updated!');
         }
         else {
             Toast.show({
@@ -166,7 +185,9 @@ const AddPetScreen = ({route, navigation}) => {
                 autoHide: true,
             });
 
-            console.log('Add to firestore error => ' + e);
+            action==='add' ?
+            console.log('Add to firestore error => ' + result) :
+            console.log('Update to firestore error => ' + result);
         }
     }
 
@@ -179,6 +200,21 @@ const AddPetScreen = ({route, navigation}) => {
             params: { newPet: pet},
             merge: true,
         });
+    }
+
+    const handlePetUpdated = (result) => {
+        setUploading(false);
+        showResultToast(result);
+
+        // navigation.navigate({
+        //     name: 'PetProfile',
+        //     params: { pet: pet},
+        //     merge: true,
+        // });
+        navigation.reset({
+            index: 0,
+            routes: [{name: 'MyPets'}],
+        })
     }
 
     const addPetPhoto = (method) => {
@@ -368,7 +404,7 @@ const AddPetScreen = ({route, navigation}) => {
                 />
 
                 <Text style={styles.header_title}>
-                    {strings.add_pet}
+                    {action==='add' ? strings.add_pet : strings.edit_pet_info}
                 </Text>
             </View>
 
@@ -697,11 +733,12 @@ const AddPetScreen = ({route, navigation}) => {
                 />
             )}
 
+            {/* Overlay */}
             {isUploading ?
                 (
                     <View style={styles.overlay}>
                         <Text style={[styles.header_title, {fontSize: 24}]}>
-                            {strings.loading}
+                            {strings.processing}
                         </Text>
 
                         <Text style={[styles.header_title, {fontSize: 18}]}>
@@ -710,8 +747,6 @@ const AddPetScreen = ({route, navigation}) => {
                     </View>
                 ) : (null)
             }
-
-            <Toast ref={(ref) => Toast.setRef(ref)} />
         </View>
     )
 }
@@ -741,7 +776,7 @@ const styles = StyleSheet.create({
         width: '74%',
         fontSize: 24,
         marginTop: 16,
-        fontFamily: 'Roboto-Bold',
+        fontFamily: 'Roboto-Medium',
         color: COLORS.white,
         textAlign: 'center',
     },
@@ -759,7 +794,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Roboto-Bold',
         color: COLORS.black,
-        opacity: 0.7,
+        opacity: 0.8,
         marginBottom: 10,
     },
     pet_photo_holder: {

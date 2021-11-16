@@ -2,14 +2,19 @@ import React, { useMemo, useRef, useState, useEffect } from 'react';
 import BottomSheet from '@gorhom/bottom-sheet';
 import Toast from "react-native-toast-message";
 import Dialog from "react-native-dialog";
+import { ProgressCircle } from 'react-native-svg-charts';
 import {
     Image, StyleSheet, View, Text, ScrollView, TouchableOpacity, LogBox,
-    TouchableHighlight, TouchableWithoutFeedback
+    TouchableHighlight, TouchableWithoutFeedback, Switch
 } from 'react-native';
+import {
+    deletePetFromFirestore
+} from '../api/PetAPI';
 
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
+import Pet from '../models/pet';
 
 LogBox.ignoreLogs([
     'Non-serializable values were found in the navigation state',
@@ -18,12 +23,91 @@ LogBox.ignoreLogs([
 const PetProfileScreen = ({route, navigation}) => {
     const [petAge, setPetAge] = useState('');
     const [setting, setSetting] = useState('');
+    const [deleteName, setDeleteName] = useState('');
+    const [unmatchInput, setUnmatchInput] = useState(false);
     const [dialogVisible, setDialogVisible] = useState(false);
     const bottomSheetRef = useRef<BottomSheet>(null);
-    const snapPoints = useMemo(() => ['45%', '80%'], []);
+    const snapPoints = useMemo(() => ['39%', '73%'], []);
     const snapPointsDropdown = useMemo(() => ['19%', '19%'], []);
 
     const { pet } = route.params;
+    const care_section = [
+        {
+            task: 'Shower',
+            activated: true,
+            due_date: new Date()
+        },
+        {
+            task: 'Shopping',
+            activated: false,
+            due_date: new Date()
+        },
+        {
+            task: 'Vaccination',
+            activated: true,
+            due_date: new Date()
+        },
+        {
+            task: 'Walking',
+            activated: false,
+            due_date: new Date()
+        },
+        {
+            task: 'Cleaning',
+            activated: true,
+            due_date: new Date()
+        }
+    ];
+
+    const showResultToast = (result) => {
+        if (result === 'Success') {
+            Toast.show({
+                type: 'success',
+                text1: strings.success,
+                text2: strings.msg_delete_pet_success,
+                position: 'top',
+                autoHide: true,
+            });
+
+            console.log('Pet deleted!');
+        }
+        else {
+            Toast.show({
+                type: 'error',
+                text1: strings.fail,
+                text2: strings.msg_delete_pet_fail,
+                position: 'top',
+                autoHide: true,
+            });
+
+            console.log('Delete from firestore error => ' + e);
+        }
+    }
+
+    const handlePetDeleted = (result) => {
+        showResultToast(result);
+
+        navigation.navigate({
+            name: 'MyPets',
+            params: { deletedPet: pet},
+            merge: true,
+        });
+    }
+
+    const handleDeleteButton = () => {
+        if (deleteName===pet.name) {
+            deletePetFromFirestore(pet._id, pet.photo, handlePetDeleted);
+        } else {
+            setUnmatchInput(true);
+        }
+    }
+
+    const handleEditButton = () => {
+        navigation.navigate('AddPet', {
+            action: 'edit',
+            petObj: pet,
+        })
+    }
 
     //Find correct animal kind icon
     const GenderIcon = () => {
@@ -47,7 +131,75 @@ const PetProfileScreen = ({route, navigation}) => {
         )
     }
 
-    //Calculate age in year
+    //Care boxes
+    const CareContent = () => {
+        var boxes = [];
+        var icon;
+        for (let i = 0; i < care_section.length; i++) {
+            switch (care_section[i].task) {
+                case 'Shower':
+                    icon = require('../assets/icons/ic_shampoo.png')
+                    break;
+                case 'Shopping':
+                    icon = require('../assets/icons/ic_shop.png')
+                    break;
+                case 'Vaccination':
+                    icon = require('../assets/icons/ic_vaccination.png')
+                    break;
+                case 'Walking':
+                    icon = require('../assets/icons/ic_leash.png')
+                    break;
+                default:
+                    icon = require('../assets/icons/ic_scoop.png')
+            }
+
+            boxes.push(
+                <View style={style.care_box} key={i}>
+                    <ProgressCircle
+                        style={{height: 115}}
+                        progress={0.5}
+                        startAngle={-Math.PI * 0.8}
+                        endAngle={Math.PI * 0.8}
+                        progressColor={COLORS.pet_green}
+                    />
+
+                    <View style={style.care_uppers_chart}>
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                        >
+                            <Image
+                                style={[
+                                    style.pet_gender,
+                                    {
+                                        marginLeft: 0,
+                                        marginBottom: 4,
+                                        width: 50,
+                                        height: 50,
+                                    }
+                                ]}
+                                source={icon}
+                            />
+                        </TouchableOpacity>
+
+                        <Switch
+                            thumbColor={"#f4f3f4"}
+                            trackColor={{ false: "#767577", true: "#81b0ff" }}
+                            ios_backgroundColor="#3e3e3e"
+                            value={care_section[i].activated}
+                        />
+                    </View>
+                </View>
+            )
+        }
+
+        return (
+            <View style={style.care_content}>
+                {boxes}
+            </View>
+        )
+    }
+
+    //Calculate age
     useEffect(() => {
         var isMounted = true;
         if (isMounted) {
@@ -87,10 +239,15 @@ const PetProfileScreen = ({route, navigation}) => {
     return (
         <View style={style.container}>
             <View style={style.pet_photo_conatainer}>
-                <Image
-                    style={style.pet_photos}
-                    source={{uri: pet.photo}}
-                />
+                {
+                    pet.photo!='' ? 
+                        <Image
+                            style={style.pet_photos}
+                            source={{uri: pet.photo}}
+                        />
+                    :
+                        (null)
+                }
 
                 <View style={style.header}>
                     <BackButton
@@ -165,11 +322,13 @@ const PetProfileScreen = ({route, navigation}) => {
                     </View>
                 </View>
 
-                {/* Process */}
+                {/* Care */}
                 <View style={style.care_information}>
                     <Text style={style.section_title}>
                         {strings.care_title}
                     </Text>
+
+                    <CareContent/>
                 </View>
             </BottomSheet>
 
@@ -199,7 +358,8 @@ const PetProfileScreen = ({route, navigation}) => {
                                         underlayColor='#EEEEEE'
                                         style={style.dropdown_option}
                                         onPress={() => {
-
+                                            handleEditButton();
+                                            setSetting('');
                                         }}
                                     >
                         
@@ -243,8 +403,6 @@ const PetProfileScreen = ({route, navigation}) => {
                     )
             }
 
-            <Toast ref={(ref) => Toast.setRef(ref)} />
-
             {/* Delete pet dialog */}
             <Dialog.Container visible={dialogVisible}>
                 <Dialog.Title
@@ -257,8 +415,20 @@ const PetProfileScreen = ({route, navigation}) => {
                     {strings.delete_pet_msg}
                 </Dialog.Description>
 
-                <Dialog.Input placeholder={'Nhập tên thú cưng'}/>
+                <Dialog.Input
+                    style={
+                        unmatchInput ? [style.input, {color: '#ed134a'}] : style.input
+                    }
+                    underlineColorAndroid={'transparent'}
+                    placeholder={strings.enterPetName}
+                    value={deleteName}
+                    onChangeText={(value) => {
+                        setDeleteName(value)
+                        setUnmatchInput(false)
+                    }}
+                />
 
+                {/* Cancel */}
                 <Dialog.Button
                     color={COLORS.black}
                     label={strings.cancel}
@@ -267,11 +437,12 @@ const PetProfileScreen = ({route, navigation}) => {
                     }}
                 />
 
+                {/* Sure */}
                 <Dialog.Button
                     color={COLORS.black}
                     label={strings.sure}
                     onPress={() => {
-
+                        handleDeleteButton();
                     }}
                 />
             </Dialog.Container>
@@ -306,7 +477,7 @@ const style = StyleSheet.create({
         backgroundColor: 'transparent',
     },
     pet_photo_conatainer: {
-        height: '58%',
+        height: '63%',
     },
     pet_photos: {
         height: '100%',
@@ -405,6 +576,38 @@ const style = StyleSheet.create({
         color: COLORS.black,
         fontSize: 16,
         fontFamily: 'Roboto-Regular',
+    },
+    care_content: {
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    care_box: {
+        width: 116,
+        margin: 4
+    },
+    care_uppers_chart: {
+        width: 98,
+        height: 98,
+        left: 8,
+        top: 12,
+        position: 'absolute',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+    },
+    input: {
+        width: '96%',
+        height: 46,
+        fontSize: 16,
+        color:COLORS.black,
+        paddingLeft: 12,
+        borderRadius: 10,
+        alignSelf: 'center',
+        backgroundColor: COLORS.grey,
     },
     overlay: {
         width: '100%',

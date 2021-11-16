@@ -6,7 +6,7 @@ function onError(error) {
   console.error(error);
 }
 
-export const getPetList = (handlePets) => {
+export const getPetList = (handlePets) => { 
   var petList = new Array();
 
   firestore()
@@ -23,7 +23,7 @@ export const getPetList = (handlePets) => {
 
     handlePets(petList);
   }, onError);
-}
+};
 
 export const uploadImageToStorage = async (uri, name, handleImageUrl) => {
     let reference = storage().ref(`${name}`);
@@ -65,4 +65,52 @@ export const addPetToFirestore = (pet, handlePetAdded) => {
     .catch((e) => {
         handlePetAdded(e);
     });
-}
+};
+
+export const updatePetInFirestore = (pet, handlePetUpdated) => {
+    firestore()
+    .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/pets')
+    .doc(pet._id)
+    .update({
+        name: pet.name,
+        kind: pet.kind,
+        gender: pet.gender,
+        species: pet.species,
+        dob: firestore.Timestamp.fromDate(pet.birthday),
+        breed: pet.breed,
+        status: pet.status,
+        height: pet.height,
+        weight: pet.weight,
+        photo: pet.photo,
+    })
+    .then(() => {
+        handlePetUpdated('Success');
+    })
+    .catch((e) => {
+        handlePetUpdated(e);
+    });
+};
+
+export const deletePetFromFirestore = (id, photoUrl, handlePetDeleted) => {
+    firestore()
+    .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/pets')
+    .doc(id)
+    .delete()
+    .then(() => {
+        deleteImageFromStorage(photoUrl);
+        handlePetDeleted('Success');
+    })
+    .catch((e) => {
+        handlePetDeleted(e);
+    });
+};
+
+export const deleteImageFromStorage = (url) => {
+    var imgRef = storage().refFromURL(url);
+
+    imgRef.delete().then(() => {
+        console.log('pet photo deleted!')
+    }).catch((error) => {
+        console.log('Error deleting pet photo: ' + error);
+    });
+};
