@@ -4,7 +4,7 @@ import { Image, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 
-const HomeScreen = () => {
+const HomeScreen = ({navigation}) => {
 
 
     //Main 
@@ -50,6 +50,9 @@ const HomeScreen = () => {
                     <TouchableOpacity
                         style={style.menu_box}
                         activeOpacity={0.7}
+                        onPress={() => {
+                            navigation.navigate('MyPets')
+                        }}
                     >
                         <Image
                             source={require('../assets/icons/ic_cat_fl.png')}
@@ -63,6 +66,9 @@ const HomeScreen = () => {
                     <TouchableOpacity
                         style={style.menu_box}
                         activeOpacity={0.7}
+                        onPress={() => {
+                            navigation.navigate('Schedules')
+                        }}
                     >
                         <Image
                             source={require('../assets/icons/ic_schedules_fl.png')}
@@ -76,6 +82,9 @@ const HomeScreen = () => {
                     <TouchableOpacity
                         activeOpacity={0.7}
                         style={style.menu_box}
+                        onPress={() => {
+                            navigation.navigate('Expenditure')
+                        }}
                     >
                         <Image
                             source={require('../assets/icons/ic_shopping_fl.png')}

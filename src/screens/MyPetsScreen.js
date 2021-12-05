@@ -43,67 +43,67 @@ const MyPetsScreen = ({route, navigation}) => {
     }, []);
 
     //Add new added pet to list
-    useEffect(() => {
-        if (route.params?.newPet) {
-            if (route.params.newPet != null) {
-                console.log('add pet to list');
-                var kinds = [];
-                var pets = [];
-                var isHasNewKind = false;
-                myPet.forEach((pet) => {
-                    pets.push(pet);
+    // useEffect(() => {
+    //     if (route.params?.newPet) {
+    //         if (route.params.newPet != null) {
+    //             console.log('add pet to list');
+    //             var kinds = [];
+    //             var pets = [];
+    //             var isHasNewKind = false;
+    //             myPet.forEach((pet) => {
+    //                 pets.push(pet);
 
-                    if (!kinds.includes(pet.kind)) {
-                        kinds.push(pet.kind);
-                    }
-                });
-                pets.push(route.params.newPet);
+    //                 if (!kinds.includes(pet.kind)) {
+    //                     kinds.push(pet.kind);
+    //                 }
+    //             });
+    //             pets.push(route.params.newPet);
 
-                if (!kinds.includes(route.params.newPet.kind)) {
-                    kinds.push(route.params.newPet.kind);
-                    isHasNewKind = true;
-                }
+    //             if (!kinds.includes(route.params.newPet.kind)) {
+    //                 kinds.push(route.params.newPet.kind);
+    //                 isHasNewKind = true;
+    //             }
 
-                setMyPet(pets);
-                if (isHasNewKind) {
-                    setPetKind(kinds);
-                }
-                navigation.setParams({
-                    newPet: null,
-                })
-            }
-        }
-    });
+    //             setMyPet(pets);
+    //             if (isHasNewKind) {
+    //                 setPetKind(kinds);
+    //             }
+    //             navigation.setParams({
+    //                 newPet: null,
+    //             })
+    //         }
+    //     }
+    // });
 
     //Remove deleted pet from list
-    useEffect(() => {
-        if (route.params?.deletedPet) {
-            if (route.params.deletedPet != null)
-            console.log('remove pet from list');
-            var kinds = [];
-            var pets = [];
-            myPet.forEach((pet) => {
-                if (pet._id != route.params.deletedPet._id) {
-                    pets.push(pet);
-                }
-            });
+    // useEffect(() => {
+    //     if (route.params?.deletedPet) {
+    //         if (route.params.deletedPet != null)
+    //         console.log('remove pet from list');
+    //         var kinds = [];
+    //         var pets = [];
+    //         myPet.forEach((pet) => {
+    //             if (pet._id != route.params.deletedPet._id) {
+    //                 pets.push(pet);
+    //             }
+    //         });
 
-            pets.forEach((pet) => {
-                if (!kinds.includes(pet.kind)) {
-                    kinds.push(pet.kind);
-                }
-            });
+    //         pets.forEach((pet) => {
+    //             if (!kinds.includes(pet.kind)) {
+    //                 kinds.push(pet.kind);
+    //             }
+    //         });
 
-            setMyPet(pets);
-            if (kinds.length < petKind.length) {
-                setPetKind(kinds);
-            }
+    //         setMyPet(pets);
+    //         if (kinds.length < petKind.length) {
+    //             setPetKind(kinds);
+    //         }
             
-            navigation.setParams({
-                deletedPet: null,
-            })
-        }
-    });
+    //         navigation.setParams({
+    //             deletedPet: null,
+    //         })
+    //     }
+    // });
 
     const PetKinds = () => {
         var kinds = [];

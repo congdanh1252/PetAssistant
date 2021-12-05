@@ -11,17 +11,17 @@ const Stack = createNativeStackNavigator();
 
 const PetStack = () => {
   return (
-    <NavigationContainer>
+    //  <NavigationContainer>
         <Stack.Navigator 
           screenOptions={{
             animation: 'slide_from_right'
           }}
         >
-            <Stack.Screen name="MyPets" component={MyPetsScreen} options={{headerShown: false}}/>
+            <Stack.Screen name="MyPet" component={MyPetsScreen} options={{headerShown: false}}/>
             <Stack.Screen name="AddPet" component={AddPetScreen} options={{headerShown: false}}/>
             <Stack.Screen name="PetProfile" component={PetProfileScreen} options={{headerShown: false}}/>
         </Stack.Navigator>
-    </NavigationContainer>
+    /* </NavigationContainer> */
   );
 }
 
