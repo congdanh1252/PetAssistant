@@ -1,7 +1,6 @@
 import React from "react";
 import COLORS from '../theme/colors'
 import { StyleSheet, Text, View } from 'react-native'
-import { TouchableOpacity } from "react-native-gesture-handler";
 
 const ProgressBar = (props) => {
     var dotLoop=[];
