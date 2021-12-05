@@ -13,6 +13,7 @@
     "@react-native-firebase/auth": "^12.8.0",
     "@react-native-firebase/firestore": "^12.8.0",
     "@react-native-firebase/storage": "^12.9.1",
+    "@react-native-picker/picker": "^2.1.0",
     "@react-navigation/bottom-tabs": "^6.0.5",
     "@react-navigation/native": "^6.0.2",
     "@react-navigation/native-stack": "^6.1.0",
@@ -26,12 +27,14 @@
     "react-native": "~0.63.4",
     "react-native-calendar-strip": "^2.2.5",
     "react-native-calendars": "^1.1267.0",
-    "react-native-dialog": "^9.2.0",
+    "react-native-dialog": "^9.1.2",
+    "react-native-dropdown-picker": "^5.2.3",
     "react-native-elements": "^3.4.2",
     "react-native-gesture-handler": "~1.10.2",
     "react-native-image-picker": "^4.1.1",
     "react-native-keyboard-aware-scroll-view": "^0.9.4",
-    "react-native-reanimated": "^2.2.3",
+    "react-native-month-year-picker": "^1.8.0",
+    "react-native-reanimated": "^2.3.0-beta.2",
     "react-native-safe-area-context": "^3.3.2",
     "react-native-screens": "^3.4.0",
     "react-native-svg": "^12.1.1",
@@ -41,7 +44,8 @@
     "react-native-web": "~0.13.12"
   },
   "devDependencies": {
-    "@babel/core": "^7.9.0"
+    "@babel/core": "^7.9.0",
+    "@babel/preset-typescript": "^7.16.0"
   },
   "private": true
 }

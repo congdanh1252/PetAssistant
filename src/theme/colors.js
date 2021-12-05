@@ -15,6 +15,11 @@ const COLORS = {
     pet_green: '#A4DA88',
     pet_blue: '#7AC6E4',
     pet_pink: '#FCDDEC',
+    success: "#22CB5C",
+    green: "#A4DA88",
+    ocean: "#7AC6E4",
+    pink: "#FCDDEC",
+    
 };
   
   export default COLORS;

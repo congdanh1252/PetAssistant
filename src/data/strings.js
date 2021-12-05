@@ -1,4 +1,5 @@
 export default strings = {
+    title: "Tiêu đề",
     date: "Ngày",
     time: "Thời gian",
     pet: "Thú cưng",
@@ -61,5 +62,26 @@ export default strings = {
     care_title: "Chăm sóc",
     edit_pet_info: "Chỉnh sửa thông tin",
     delete_pet: "Xóa thú cưng",
-    delete_pet_msg: "Bạn chắc chắn muốn xóa thú cưng? Nhập lại tên thú cưng để xác nhận."
+    delete_pet_msg: "Bạn chắc chắn muốn xóa thú cưng? Nhập lại tên thú cưng để xác nhận.",
+    addNewEvent: "Thêm hoạt động mới",
+    cancel: "Hủy",
+    delete: "Xóa",
+    add: "Thêm",
+    save: "Lưu",
+    amount: "Số tiền",
+    success: "Thành công",
+    statistic: "Thống kê",
+    findInfomation: "Tìm kiếm thông tin",
+    saveSuccessful: "Lưu hoạt động thành công!",
+    deletePetInEvent: "Xóa thú cưng trong hoạt động?",
+    confirmDeletePetInEvent: "Bạn có chắc chắn muốn xóa thú cưng, thao tác sẽ không thể hoàn tác",
+    deleteEventDetail: "Xóa hoạt động?",
+    confirmDeleteEventDetail: "Bạn có chắc chắn muốn xóa hoạt động này, thao tác sẽ không thể hoàn tác",
+    addPetInEvent: "Thêm thú cưng cho hoạt động",
+    enterPetName: "Nhập tên thú cưng",
+    addDetailInEvent: "Thêm hoạt động mới",
+    addExpenditure: "Thêm chi tiêu mới",
+    enterDetailDescription: "Mô tả cho hoạt động",
+    cannotFindExpenditure: "Không tìm thấy chi tiêu!",
+    addExpenditureInformation: "Thêm thông tin chi tiết cho chi tiêu"
 }
