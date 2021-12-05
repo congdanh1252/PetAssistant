@@ -18,7 +18,7 @@ import {
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
 
-export function StatisticScreen() {
+export function StatisticScreen({navigation}) {
     const keys = ['Sức khỏe', 'Thức ăn', 'Dịch vụ', 'Dụng cụ', 'Khác'];
     const types = ['Doctor', 'Food', 'Service', 'Stuff', 'Other']
     const [percentage, setPercentage] = useState([20, 20, 20, 20, 20]);
@@ -33,7 +33,6 @@ export function StatisticScreen() {
                 if (!isCancelled) {
                     console.log(values)
                     console.log(percentage)
-                    var total = 0;
                     setPercentage(percentage)
                     setValues(values)
                 }
@@ -74,7 +73,7 @@ export function StatisticScreen() {
                     {`${selectedSliceLabel} - ${selectedSliceValue}%`}
                 </Text>
                 <PieChart
-                    style={{ height: 250, marginBottom: 20 }}
+                    style={{ height: 180, marginBottom: 20 }}
                     outerRadius={'80%'}
                     innerRadius={'30%'}
                     data={data}
@@ -188,11 +187,10 @@ export function StatisticScreen() {
                         source={require('../assets/icons/BackArrow.png')}
                     />
                 </TouchableOpacity>
-                <TouchableOpacity>
+                <TouchableOpacity
+                >
                     <Image 
-                        onPress={() => {
-                            navigation.navigate('Statistic');
-                        }}
+                        
                         style={{
                             height: 30,
                             width: 30,
@@ -269,7 +267,7 @@ const styles = StyleSheet.create({
     },
     detail: {
         fontFamily: 'Roboto-Bold',
-        fontSize: 16,
+        fontSize: 12,
     },
     bottomBar: {
         position: 'absolute',

@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react'
-import { View, Text, StyleSheet, TextInput, Image } from 'react-native'
+import React, { useEffect, useState, useCallback  } from 'react'
+import { View, Text, StyleSheet, TextInput, Image, Button } from 'react-native'
 import COLORS from '../theme/colors'
 import { windowHeight, windowWidth } from '../models/common/Dimensions'
 import moment from 'moment';
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
+import MonthPicker from 'react-native-month-year-picker';
+
 import Dialog from "react-native-dialog";
 import Animated,
 {
@@ -16,7 +18,7 @@ import Animated,
     withSpring,
     FadeOutRight, 
 } from 'react-native-reanimated';
-
+ 
 import strings from '../data/strings';
 import Expenditure from '../models/expenditure';
 import { 
@@ -32,12 +34,17 @@ import {
     DoctorIcon,
     FoodIcon,
     StuffIcon, 
-    HelpIcon
+    HelpIcon,
+    PenIcon
 } from '../assets/icons/index'
 
 export function ExpenditureScreen({navigation}) {
     const [selectedMonth, setSelectedMonth] = useState(new Date())
     const [datesList, setDatesList] = useState([])
+
+    const setMonthChange = (month) => {
+        setSelectedMonth(month)
+    }
     
     const SearchBar = () => {
         const [searchKeyword, setSearchKeyword] = useState("")
@@ -69,8 +76,8 @@ export function ExpenditureScreen({navigation}) {
                     >
                         <Image
                             style={{
-                                width: 24,
-                                height: 24,
+                                width: 20,
+                                height: 20,
                             }}
                             source={require('../assets/icons/Search.png')}
                         />
@@ -92,10 +99,12 @@ export function ExpenditureScreen({navigation}) {
         )
     }
     
-    const renderHeaderCard = () => {
+    const Header = () => {
         const [monthLimit, setMonthLimit] = useState(0);
         const [monthSpent, setMonthSpent] = useState(0)
         const [monthAverage, setMonthAverage] = useState(0);
+        const [show, setShow] = useState(false)
+        const showPicker = useCallback((value) => setShow(value), []);
 
         const handleTotalCallback = (Total) => {
             setMonthSpent(Total)
@@ -105,6 +114,15 @@ export function ExpenditureScreen({navigation}) {
             setMonthLimit(Limit)
             setMonthAverage(avg)
         }
+
+        const onMonthChange = useCallback(
+            (event, newDate) => {
+                const selectedDate = newDate || selectedMonth;
+                showPicker(false);
+                setMonthChange(selectedDate);
+            },
+            [selectedMonth, showPicker],
+        );
 
         useEffect(() => {
             const total = getMonthTotal(selectedMonth, handleTotalCallback)
@@ -121,57 +139,75 @@ export function ExpenditureScreen({navigation}) {
         }, [])
     
         return (
-            <View style={{
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-            }}>
-                <View style={styles.cardHeader}
-                >
-                    <Text style={styles.cardTextBold}>
-                        {monthLimit / 1000}k
-                    </Text>
-                    <Text>
-                        Hạn mức
-                    </Text>
+            <View style={styles.headerContainer}>
+                <View>
+                    <TouchableOpacity
+                        onPress={()=>showPicker(true)}>
+                        <Text style={styles.headerTitle}>
+                            {moment(selectedMonth).format('MMMM - YYYY')}
+                        </Text>
+                    </TouchableOpacity>
+                    
                 </View>
-
-                <View style={styles.cardHeader}
-                >
-                    <Text 
-                        style={monthSpent < monthLimit ? styles.successText : styles.errorText}                    
+                <View style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                }}>
+                    <View style={styles.cardHeader}
                     >
-                        {monthSpent / 1000}k
-                    </Text>
-                    <Text>
-                        Tổng chi
-                    </Text>
-                </View>
+                        <Text style={styles.cardTextBold}>
+                            {monthLimit / 1000}k
+                        </Text>
+                        <Text>
+                            Hạn mức
+                        </Text>
+                    </View>
 
-                <View style={styles.cardHeader}
-                >
-                    <Text 
-                        style={monthAverage > monthSpent ? styles.successText : styles.errorText}                    
+                    <View style={styles.cardHeader}
                     >
-                        {
-                        monthAverage > 0 
-                        ? monthAverage / 1000 + "k"
-                        : monthAverage == 0 
-                        ? monthAverage / 1000 + "k"
-                        : monthAverage / 1000 + "k"
-                        }
-                    </Text>
+                        <Text 
+                            style={monthSpent < monthLimit ? styles.successText : styles.errorText}                    
+                        >
+                            {monthSpent / 1000}k
+                        </Text>
+                        <Text>
+                            Tổng chi
+                        </Text>
+                    </View>
 
-                    <Text>
-                        Trung bình
-                    </Text>
+                    <View style={styles.cardHeader}
+                    >
+                        <Text 
+                            style={monthAverage > monthSpent ? styles.successText : styles.errorText}                    
+                        >
+                            {
+                            monthAverage > 0 
+                            ? monthAverage / 1000 + "k"
+                            : monthAverage == 0 
+                            ? monthAverage / 1000 + "k"
+                            : monthAverage / 1000 + "k"
+                            }
+                        </Text>
+
+                        <Text>
+                            Trung bình
+                        </Text>
+                    </View>
+                    {show && (
+                        <MonthPicker
+                            onChange={onMonthChange}
+                            value={selectedMonth}
+                            locale="vi"
+                        />
+                    )}
                 </View>
-
             </View>
         )
     }
 
     const SubDetails = (props) => {
+
         var imgSource = WaitIcon;
         switch (props.expenditure.type) {
             case 'Food':
@@ -191,32 +227,39 @@ export function ExpenditureScreen({navigation}) {
             <View style={styles.subDetailsContainer}>
                 <View
                     style={{
+                        position: 'relative',
                         width: '100%',
                         display: 'flex',
                         flexDirection: 'row',
                         alignItems: 'center',
+                        justifyContent: 'space-between',
                         padding: 10,
                     }}
                 >
                     <Image
-                        style={{
-                            marginRight: 20,
-                        }}
                         source={imgSource}
                     />
-                    <Text>
+                    <Text
+                        style={{
+                            marginLeft: -30,
+                            marginRight: 50,
+                        }}
+                    >
                         {props.expenditure.title}
                     </Text>
                     <Text
-                        style={{
-                            position: 'absolute',
-                            right: 20,
-                        }}
                     >
                         {props.expenditure.amount} vnd
                     </Text>
+                    <TouchableOpacity
+                        onPress={() => {
+                            
+                        }}
+                    >
+                        <Image
+                            source={PenIcon}/>
+                    </TouchableOpacity>
                 </View>
-                
             </View>
         )
     }
@@ -376,7 +419,7 @@ export function ExpenditureScreen({navigation}) {
         return () => {
             unsubscribe
         }
-    }, [])
+    }, [selectedMonth])
 
     const BottomBar = () => {
         const [isShowDialog, setIsShowDialog] = useState(false)
@@ -416,7 +459,11 @@ export function ExpenditureScreen({navigation}) {
                     <Image 
                         source={require('../assets/icons/Add.png')}/>
                 </TouchableOpacity>
-                <TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => {
+                        navigation.navigate('Statistic')
+                    }}
+                >
                     <Image 
                         style={{
                             height: 30,
@@ -499,10 +546,11 @@ export function ExpenditureScreen({navigation}) {
                         {strings.type}
                     </Text>
                     <Picker
-                        selectedValue={expenditure.type}
-                        onValueChange={(itemValue, itemIndex) =>
+                        selectedValue={selectedValue}
+                        onValueChange={(itemValue, itemIndex) => {
+                            setSelectedValue(itemValue)
                             expenditure.type = itemValue
-                        }>
+                        }}>
                         <Picker.Item label="Sức khỏe" value="Doctor" />
                         <Picker.Item label="Dụng cụ" value="Stuff" />
                         <Picker.Item label="Dịch vụ" value="Service" />
@@ -557,21 +605,13 @@ export function ExpenditureScreen({navigation}) {
     }
 
     const getDateByKeyword = (Keyword) => {
-        console.log("Start finding: " + Keyword)
         findDateByKeyword(Keyword, handleDatesCallback)
     } 
 
     return (
         <View style={styles.container}>
             {/* Header */}
-            <View style={styles.headerContainer}>
-                <View>
-                    <Text style={styles.headerTitle}>
-                        {moment(selectedMonth).format('MMMM - YYYY')}
-                    </Text>
-                </View>
-                {renderHeaderCard()}
-            </View>
+            <Header />
 
             {/* Body */}
             <View style={styles.bodyContainer}>
@@ -617,8 +657,6 @@ export function ExpenditureScreen({navigation}) {
 
             {/* Footer */}
             <BottomBar />
-                        
-
         </View>
     )
 }
@@ -635,13 +673,13 @@ const styles = StyleSheet.create({
     headerTitle: {
         textAlign: 'center',
         fontFamily: 'Roboto-Bold',
-        fontSize: 24,
+        fontSize: 20,
         color: COLORS.white,
         marginBottom: 16,
     },
     cardHeader: {
-        height: 65,
-        width: 100,
+        height: 50,
+        width: 80,
         backgroundColor: COLORS.white,
         borderRadius: 15,
         justifyContent: 'center',
@@ -649,11 +687,11 @@ const styles = StyleSheet.create({
     },
     cardTextBold: {
         fontFamily: 'Roboto-Bold',
-        fontSize: 16,
+        fontSize: 12,
     },
     successText: {
         fontFamily: 'Roboto-Bold',
-        fontSize: 16,
+        fontSize: 12,
         color: COLORS.success,
     },
     errorText: {
@@ -662,7 +700,7 @@ const styles = StyleSheet.create({
         color: COLORS.error,
     },
     bodyContainer: {
-        padding: 20,
+        padding: 15,
         flex: 7.5,
         backgroundColor: COLORS.white,
         borderTopLeftRadius: 15,
@@ -676,14 +714,13 @@ const styles = StyleSheet.create({
     },  
     input: {
         width: windowWidth - windowWidth / 4,
-        height: 50,
+        height: 40,
         color: "#000",
         backgroundColor: '#EEEEEE',
         borderRadius: 15,
-        padding: 15,
+        paddingHorizontal: 15,
     },
     inputBox: {
-        padding: 10,
         alignItems: 'center',
         marginBottom: 20,
     },

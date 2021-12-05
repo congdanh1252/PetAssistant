@@ -4,6 +4,7 @@ import FoodIcon from '../icons/Food.png'
 import StuffIcon from '../icons/Stuff.png'
 import HelpIcon from '../icons/Help.png'
 import StoreIcon from '../icons/Store.png'
+import PenIcon from '../icons/Pen.png'
 
 export { 
     WaitIcon,
@@ -12,4 +13,5 @@ export {
     StuffIcon,
     HelpIcon,
     StoreIcon,
+    PenIcon
 };

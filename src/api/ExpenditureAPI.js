@@ -109,7 +109,7 @@ export const addExpenditure = (expenditure, handleAddExpenditureCallback) => {
   .add({
     title: expenditure.title,
     amount: expenditure.amount,
-    month: expenditure.date.getMonth(),
+    month: expenditure.date.getMonth() + 1,
     date: firestore.Timestamp.fromDate(new Date(expenditure.date)),
     year: expenditure.date.getFullYear(),
     type: expenditure.type,
