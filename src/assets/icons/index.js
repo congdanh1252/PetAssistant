@@ -5,6 +5,8 @@ import StuffIcon from '../icons/Stuff.png'
 import HelpIcon from '../icons/Help.png'
 import StoreIcon from '../icons/Store.png'
 import PenIcon from '../icons/Pen.png'
+import ShowerIcon from '../icons/Shower.png'
+
 
 export { 
     WaitIcon,
@@ -13,5 +15,6 @@ export {
     StuffIcon,
     HelpIcon,
     StoreIcon,
-    PenIcon
+    PenIcon,
+    ShowerIcon
 };

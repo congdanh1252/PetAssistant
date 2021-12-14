@@ -8,17 +8,17 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import MonthPicker from 'react-native-month-year-picker';
 
+import { moneyFormat } from '../models/common/moneyStringFormat';
+import { checkDateAfterToday } from '../models/common/validateFunctions';
 import Dialog from "react-native-dialog";
 import Animated,
 {
-    AnimatedComponent,
     FadeInRight,
     useSharedValue, 
     useAnimatedStyle,  
     withSpring,
     FadeOutRight, 
 } from 'react-native-reanimated';
- 
 import strings from '../data/strings';
 import Expenditure from '../models/expenditure';
 import { 
@@ -27,7 +27,9 @@ import {
     getMonthTotal,
     findDateByKeyword, 
     getMonthLimitAndAvg,
-    addExpenditure
+    addExpenditure,
+    updateExpenditure,
+    deleteExpenditure,
 } from '../api/ExpenditureAPI';
 import {
     WaitIcon,
@@ -207,7 +209,6 @@ export function ExpenditureScreen({navigation}) {
     }
 
     const SubDetails = (props) => {
-
         var imgSource = WaitIcon;
         switch (props.expenditure.type) {
             case 'Food':
@@ -223,11 +224,44 @@ export function ExpenditureScreen({navigation}) {
                 imgSource = WaitIcon;
                 break;
         }
+        const [isShowDialog, setIsShowDialog] = useState(false);
+        const [isShowDatePicker, setIsShowDatePicker] = useState(false)
+        const [expenditure, setExpenditure] = useState(props.expenditure)
+        const [expenditureTitle, setExpenditureTitle] = useState(expenditure.title)
+        const [expenditureAmount, setExpenditureAmount] = useState(expenditure.amount)
+        const [selectedValue, setSelectedValue] = useState("Doctor")
+        const handleCancel = () => {
+            setIsShowDialog(false)
+        }
+        const handleUpdate = () => {
+            if (checkDateAfterToday(expenditure.date)) {
+                setIsShowDialog(false)
+                expenditure.title = expenditureTitle
+                expenditure.amount = expenditureAmount
+                updateExpenditure(expenditure, () => {
+                    setSelectedMonth(expenditure.date)
+                    console.log("success");
+                })
+            } else {
+                console.log("invalid");
+            }
+        }
+        const handleDelete = () => {
+            setIsShowDialog(false)
+            deleteExpenditure(expenditure, () => {
+                setSelectedMonth(expenditure.date)
+                console.log("success");
+            })
+        }
+        const onFinishDatePicker = (event, selectedDate) => {
+            const currentDate = selectedDate || expenditure.date
+            expenditure.date = currentDate
+            setIsShowDatePicker(false)
+        }
         return (
             <View style={styles.subDetailsContainer}>
                 <View
                     style={{
-                        position: 'relative',
                         width: '100%',
                         display: 'flex',
                         flexDirection: 'row',
@@ -236,30 +270,187 @@ export function ExpenditureScreen({navigation}) {
                         padding: 10,
                     }}
                 >
-                    <Image
-                        source={imgSource}
-                    />
-                    <Text
+                    <View
                         style={{
-                            marginLeft: -30,
-                            marginRight: 50,
-                        }}
-                    >
-                        {props.expenditure.title}
-                    </Text>
-                    <Text
-                    >
-                        {props.expenditure.amount} vnd
-                    </Text>
-                    <TouchableOpacity
-                        onPress={() => {
-                            
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
                         }}
                     >
                         <Image
-                            source={PenIcon}/>
-                    </TouchableOpacity>
+                            source={imgSource}
+                        />
+                        <Text
+                            style={{
+                                marginLeft: 10,
+                            }}
+                        >
+                            {props.expenditure.title}
+                        </Text>
+                    </View>
+                    <View
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                        }}
+                    >
+                        <Text
+                            style={{
+                                marginRight: 10,
+                            }}
+                        >
+                            {moneyFormat(props.expenditure.amount)} vnd
+                        </Text>
+                        <TouchableOpacity
+                            onPress={() => {
+                                setIsShowDialog(true)
+                            }}
+                        >
+                            <Image
+                                source={PenIcon}/>
+                        </TouchableOpacity>
+                    </View>
                 </View>
+
+                <Dialog.Container
+                    visible={isShowDialog}
+                >
+                    <Dialog.Title
+                        style={{
+                            fontFamily: 'Roboto-Bold'
+                        }}
+                    >
+                        {strings.editExpenditure}
+                    </Dialog.Title>
+                    {/* <Dialog.Description
+                            style={{
+                                fontFamily: 'Roboto-Medium',
+                                fontSize: 14,
+                            }}
+                        >
+                            {strings.addExpenditureInformation}
+                    </Dialog.Description> */}
+                    {/* Title */}
+                    <Text
+                        style={{
+                            fontFamily: 'Roboto-Medium',
+                            fontSize: 14,
+                            marginBottom: 4,
+                        }}
+                    >
+                        {strings.title}
+                    </Text>
+                    <View style={styles.inputBox}>
+                        <TextInput
+                            value={expenditureTitle}
+                            onChangeText={setExpenditureTitle}
+                            maxLength={100}
+                            style={styles.input}
+                            placeholder='Mua đồ ăn'
+                            placeholderTextColor = 'rgba(0, 0, 0, 0.5)'
+                        >
+                        </TextInput>
+                    </View>
+                    {/* Date */}
+                    <Text
+                        style={{
+                            fontFamily: 'Roboto-Medium',
+                            fontSize: 14,
+                            marginBottom: 4,
+
+                        }}
+                    >
+                        {strings.date}
+                    </Text>
+                    <View style={styles.inputBox}>
+                        <TextInput
+                            onEndEditing={event => {
+                                var date = moment(event.nativeEvent.text, 'DD/MM/YYYY')
+                                if (date.isValid())
+                                    expenditure.date = date
+                            }}
+                            onFocus={() => {
+                                setIsShowDatePicker(true)
+                            }}
+                            style={styles.input}
+                            placeholder={moment(props.expenditure.date).format('DD/MM/YYYY')}
+                            placeholderTextColor = 'rgba(0, 0, 0, 0.5)'
+                        >
+                        </TextInput>
+                    </View>
+                    {/* Type */}
+                    <Text
+                        style={{
+                            fontFamily: 'Roboto-Medium',
+                            fontSize: 14,
+                            marginBottom: 4,
+                        }}
+                    >
+                        {strings.type}
+                    </Text>
+                    <Picker
+                        selectedValue={props.expenditure.type}
+                        onValueChange={(itemValue, itemIndex) => {
+                            setSelectedValue(itemValue)
+                            expenditure.type = itemValue
+                        }}>
+                        <Picker.Item label="Sức khỏe" value="Doctor" />
+                        <Picker.Item label="Dụng cụ" value="Stuff" />
+                        <Picker.Item label="Dịch vụ" value="Service" />
+                        <Picker.Item label="Thức ăn" value="Food" />
+                        <Picker.Item label="Khác" value="Other" />
+                    </Picker>
+                    {/* Amount */}
+                    <Text
+                        style={{
+                            fontFamily: 'Roboto-Medium',
+                            fontSize: 14,
+                            marginBottom: 4,
+                        }}
+                    >
+                        {strings.amount} (VNĐ)
+                    </Text>
+                    <View style={styles.inputBox}>
+                        <TextInput
+                            value={expenditureAmount.toString()}
+                            keyboardType='numeric'
+                            onChangeText={setExpenditureAmount}
+                            style={styles.input}
+                            placeholder='10000'
+                            placeholderTextColor = 'rgba(0, 0, 0, 0.5)'
+                        >
+                        </TextInput>
+                    </View>
+                        
+                    <Dialog.Button 
+                        label={strings.cancel}
+                        onPress={handleCancel}    
+                    />
+                    <Dialog.Button 
+                        label={strings.delete}
+                        onPress={handleDelete}    
+                    />
+                    <Dialog.Button 
+                        label={strings.save}
+                        onPress={handleUpdate}
+                    />
+                    {
+                        isShowDatePicker
+                        ? 
+                        <DateTimePicker 
+                            value={expenditure.date}
+                            mode='date'
+                            is24Hour={true}
+                            display="default"
+                            onChange={onFinishDatePicker}
+                            maximumDate={new Date()}
+                        />
+                        : null
+                    }   
+                </Dialog.Container> 
             </View>
         )
     }
@@ -285,7 +476,7 @@ export function ExpenditureScreen({navigation}) {
                     if (!isCancelled) {
                         var total = 0;
                         ExpenditureList.forEach(expenditure => {
-                            total += expenditure.amount
+                            total += parseInt(expenditure.amount)
                         });
                         setTotal(total)
                         setExpenditureList(ExpenditureList)
@@ -355,7 +546,7 @@ export function ExpenditureScreen({navigation}) {
                                 color: COLORS.success,
                             }}
                         >
-                        {total}
+                        {moneyFormat(total)}
                         </Text>
 
                         <Text
@@ -414,15 +605,8 @@ export function ExpenditureScreen({navigation}) {
         setDatesList(DatesList)
     }
 
-    useEffect(() => {
-        const unsubscribe = getAllDate(selectedMonth, handleDatesCallback)
-        return () => {
-            unsubscribe
-        }
-    }, [selectedMonth])
-
     const BottomBar = () => {
-        const [isShowDialog, setIsShowDialog] = useState(false)
+        const [isShowDialog, setIsShowDialog] = useState(false);
         const [isShowDatePicker, setIsShowDatePicker] = useState(false)
         const [expenditure, setExpenditure] = useState(new Expenditure())
         const [selectedValue, setSelectedValue] = useState()
@@ -432,7 +616,7 @@ export function ExpenditureScreen({navigation}) {
         const handelAdd = () => {
             setIsShowDialog(false)
             addExpenditure(expenditure, () => {
-                // Success
+                setSelectedMonth(expenditure.date)
             })
         }
         const onFinishDatePicker = (event, selectedDate) => {
@@ -440,7 +624,6 @@ export function ExpenditureScreen({navigation}) {
             expenditure.date = currentDate
             setIsShowDatePicker(false)
         }
-        
         return (
             <View style={styles.bottomBar}>
                 <TouchableOpacity
@@ -503,7 +686,7 @@ export function ExpenditureScreen({navigation}) {
                     <View style={styles.inputBox}>
                         <TextInput
                             onChangeText={value => {
-                                setDialogInput(value)
+                                expenditure.title = value
                             }}
                             style={styles.input}
                             placeholder='Mua đồ ăn'
@@ -522,6 +705,7 @@ export function ExpenditureScreen({navigation}) {
                     </Text>
                     <View style={styles.inputBox}>
                         <TextInput
+                            value={moment(expenditure.date).format('DD/MM/YYYY')}
                             onEndEditing={event => {
                                 var date = moment(event.nativeEvent.text, 'DD/MM/YYYY')
                                 if (date.isValid())
@@ -531,7 +715,7 @@ export function ExpenditureScreen({navigation}) {
                                 setIsShowDatePicker(true)
                             }}
                             style={styles.input}
-                            placeholder={moment(expenditure.date).format('DD/MM/YYYY')}
+                            //placeholder={}
                             placeholderTextColor = 'rgba(0, 0, 0, 0.5)'
                         >
                         </TextInput>
@@ -569,8 +753,8 @@ export function ExpenditureScreen({navigation}) {
                     <View style={styles.inputBox}>
                         <TextInput
                             keyboardType='numeric'
-                            onEndEditing={event => {
-                                expenditure.amount = moment(event.nativeEvent.text)
+                            onChangeText={value => {
+                                expenditure.amount = value 
                             }}
                             style={styles.input}
                             placeholder='10000'
@@ -586,20 +770,21 @@ export function ExpenditureScreen({navigation}) {
                     <Dialog.Button 
                         label={strings.add}
                         onPress={handelAdd}/>
-                </Dialog.Container>
 
-                {
-                    isShowDatePicker
-                    ? 
-                    <DateTimePicker 
-                        value={expenditure.date}
-                        mode='date'
-                        is24Hour={true}
-                        display="default"
-                        onChange={onFinishDatePicker}
-                    />
-                    : null
-                }
+                    {
+                        isShowDatePicker
+                        ? 
+                        <DateTimePicker 
+                            value={expenditure.date}
+                            mode='date'
+                            is24Hour={true}
+                            display="default"
+                            onChange={onFinishDatePicker}
+                            maximumDate={new Date()}
+                        />
+                        : null
+                    }   
+                </Dialog.Container> 
             </View>
         )
     }
@@ -621,7 +806,6 @@ export function ExpenditureScreen({navigation}) {
                     datesList.length > 0
                     ?
                     <ScrollView
-
                     >
                         {
                             datesList.map(day => {

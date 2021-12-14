@@ -81,7 +81,9 @@ export default strings = {
     enterPetName: "Nhập tên thú cưng",
     addDetailInEvent: "Thêm hoạt động mới",
     addExpenditure: "Thêm chi tiêu mới",
+    editExpenditure: "Chỉnh sửa chi tiêu",
     enterDetailDescription: "Mô tả cho hoạt động",
     cannotFindExpenditure: "Không tìm thấy chi tiêu!",
+    edit: "Chỉnh sửa",
     addExpenditureInformation: "Thêm thông tin chi tiết cho chi tiêu"
 }

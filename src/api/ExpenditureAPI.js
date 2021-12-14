@@ -65,7 +65,7 @@ export const getMonthTotal = (date, handleTotalCallback) => {
   .get()
   .then(querySnapshot => {
       querySnapshot.forEach(documentSnapshot => {
-        total += documentSnapshot.data().amount
+        total += parseInt(documentSnapshot.data().amount)
       });
       handleTotalCallback(total);
   }, onError);
@@ -119,6 +119,33 @@ export const addExpenditure = (expenditure, handleAddExpenditureCallback) => {
   }, onError);
 }
 
+export const updateExpenditure = (expenditure, handleUpdateExpenditureCallback) => {
+  firestore()
+  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/expenditures')
+  .doc(expenditure._id)
+  .set({
+    title: expenditure.title,
+    amount: expenditure.amount,
+    month: expenditure.date.getMonth() + 1,
+    date: firestore.Timestamp.fromDate(new Date(expenditure.date)),
+    year: expenditure.date.getFullYear(),
+    type: expenditure.type,
+  })
+  .then(() => {
+    handleUpdateExpenditureCallback()
+  }, onError);
+}
+
+export const deleteExpenditure = (expenditure, handleDeleteExpenditureCallback) => {
+  firestore()
+  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/expenditures')
+  .doc(expenditure._id)
+  .delete()
+  .then(() => {
+    handleDeleteExpenditureCallback()
+  }, onError);
+}
+
 export const getMonthStatistic = (date, handleStatisticCallback) => {
   var values = [0, 0, 0, 0, 0]
   var percentage = [0, 0, 0, 0, 0]
@@ -154,6 +181,6 @@ export const getMonthStatistic = (date, handleStatisticCallback) => {
       for (var i = 0; i < values.length; i++) {
         percentage[i] = Math.round(values[i] / total * 100)
       }
-      handleStatisticCallback(values, percentage);
+      handleStatisticCallback(values, percentage)
   }, onError);
 }
