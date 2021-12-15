@@ -8,7 +8,6 @@ import { Button } from "react-native-elements/dist/buttons/Button";
 import { launchImageLibrary, launchCamera } from "react-native-image-picker";
 import BottomSheet from '@gorhom/bottom-sheet';
 import DateTimePicker from "@react-native-community/datetimepicker";
-import Toast from "react-native-toast-message";
 import {
     uploadImageToStorage,
     addPetToFirestore,
@@ -20,6 +19,7 @@ import COLORS from '../theme/colors';
 import strings from "../data/strings";
 import BackButton from "../components/BackButton";
 import Pet from "../models/pet";
+import Toast from "react-native-toast-message";
 
 const AddPetScreen = ({route, navigation}) => {
     var elseOption = '';
@@ -206,15 +206,11 @@ const AddPetScreen = ({route, navigation}) => {
         setUploading(false);
         showResultToast(result);
 
-        // navigation.navigate({
-        //     name: 'PetProfile',
-        //     params: { pet: pet},
-        //     merge: true,
-        // });
-        navigation.reset({
-            index: 0,
-            routes: [{name: 'MyPets'}],
-        })
+        navigation.navigate({
+            name: 'PetProfile',
+            params: { pet: pet},
+            merge: true,
+        });
     }
 
     const addPetPhoto = (method) => {

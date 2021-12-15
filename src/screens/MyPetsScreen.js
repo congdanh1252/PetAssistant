@@ -76,34 +76,34 @@ const MyPetsScreen = ({route, navigation}) => {
     // });
 
     //Remove deleted pet from list
-    // useEffect(() => {
-    //     if (route.params?.deletedPet) {
-    //         if (route.params.deletedPet != null)
-    //         console.log('remove pet from list');
-    //         var kinds = [];
-    //         var pets = [];
-    //         myPet.forEach((pet) => {
-    //             if (pet._id != route.params.deletedPet._id) {
-    //                 pets.push(pet);
-    //             }
-    //         });
+    useEffect(() => {
+        if (route.params?.deletedPet) {
+            if (route.params.deletedPet != null)
+            console.log('remove pet from list');
+            var kinds = [];
+            var pets = [];
+            myPet.forEach((pet) => {
+                if (pet._id != route.params.deletedPet._id) {
+                    pets.push(pet);
+                }
+            });
 
-    //         pets.forEach((pet) => {
-    //             if (!kinds.includes(pet.kind)) {
-    //                 kinds.push(pet.kind);
-    //             }
-    //         });
+            pets.forEach((pet) => {
+                if (!kinds.includes(pet.kind)) {
+                    kinds.push(pet.kind);
+                }
+            });
 
-    //         setMyPet(pets);
-    //         if (kinds.length < petKind.length) {
-    //             setPetKind(kinds);
-    //         }
+            setMyPet(pets);
+            if (kinds.length < petKind.length) {
+                setPetKind(kinds);
+            }
             
-    //         navigation.setParams({
-    //             deletedPet: null,
-    //         })
-    //     }
-    // });
+            navigation.setParams({
+                deletedPet: null,
+            })
+        }
+    });
 
     const PetKinds = () => {
         var kinds = [];
