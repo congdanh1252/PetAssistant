@@ -40,6 +40,7 @@ export default strings = {
     age: "Tuổi",
     save: "Lưu",
     cancel: "Hủy",
+    predictHeath: "Chuẩn đoán bệnh",
     type_value: "Nhập giá trị",
     find: "Tìm kiếm",
     pick_photo_fr_lib: "Chọn ảnh từ thư viện",
@@ -61,6 +62,7 @@ export default strings = {
     enterPetName: "Nhập tên thú cưng",
     care_title: "Chăm sóc",
     edit_pet_info: "Chỉnh sửa thông tin",
+    noPet: "Không có thú cưng",
     delete_pet: "Xóa thú cưng",
     delete_pet_msg: "Bạn chắc chắn muốn xóa thú cưng? Nhập lại tên thú cưng để xác nhận.",
     addNewEvent: "Thêm hoạt động mới",
@@ -85,5 +87,7 @@ export default strings = {
     enterDetailDescription: "Mô tả cho hoạt động",
     cannotFindExpenditure: "Không tìm thấy chi tiêu!",
     edit: "Chỉnh sửa",
+    frequency: "Tần suất",
+    editType: "Chỉnh sửa thể loại",
     addExpenditureInformation: "Thêm thông tin chi tiết cho chi tiêu"
 }

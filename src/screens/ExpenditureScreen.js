@@ -493,13 +493,13 @@ export function ExpenditureScreen({navigation}) {
         
         return (
             <View style={{
-            backgroundColor: COLORS.grey,
-            borderRadius: 15,
-            marginBottom: 10,
-            paddingTop: 10,
-            paddingBottom: 10,
-            paddingLeft: 20,
-            paddingRight: 10,
+                backgroundColor: COLORS.grey,
+                borderRadius: 15,
+                marginBottom: 10,
+                paddingTop: 10,
+                paddingBottom: 10,
+                paddingLeft: 20,
+                paddingRight: 10,
             }}>
                 <View style={styles.detailContainer}>
                     {/* Date */}

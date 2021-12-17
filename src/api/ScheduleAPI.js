@@ -20,7 +20,7 @@ function sort(array) {
 export const getAllMonthReminder = (date, handleCallback) => {
     var remindersList = new Array();
     firestore()
-    .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminder')
+    .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
     .where('month', '==', date.getMonth() + 1)
     .where('year', '==', date.getFullYear())
     .get()
@@ -56,4 +56,34 @@ export const getDateReminder = (date, handleCallback) => {
         });
         handleCallback(sort(remindersList), sort(oldRemindersList));
     }, onError);
+}
+
+export const getReminder = (reminderID, handleCallback) => {
+    var reminder = new Reminder(reminderID);
+    firestore()
+    .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
+    .doc(reminderID)
+    .onSnapshot(documentSnapshot => {
+        reminder.update(documentSnapshot.data())
+        reminder._id = reminderID
+        handleCallback(reminder)
+    }, onError);
+}
+
+export const updateReminder = (reminder) => {
+    firestore()
+    .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
+    .doc(reminder._id)
+    .update({
+      _id: reminder._id,
+      datetime: firestore.Timestamp.fromDate(new Date(reminder.datetime)),
+      description: reminder.description,
+      details: reminder.details,
+      pets: reminder.pets,
+      title: reminder.title,
+      type: reminder.type
+    })
+    .then(() => {
+      console.log("Success")
+    })
 }

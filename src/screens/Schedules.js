@@ -11,8 +11,10 @@ import moment from 'moment';
 import COLORS from '../theme/colors';
 import {windowHeight, windowWidth} from '../models/common/Dimensions'
 import {
-    getDateReminder
-} from '../api/ScheduleAPI'
+    getDateReminder,
+    getPetsReminder,
+    getMonthReminderDate
+} from '../api/ReminderAPI'
 import {
     WaitIcon,
     DoctorIcon,
@@ -33,39 +35,71 @@ LocaleConfig.defaultLocale = 'vi';
 export function Schedules () {
     const bottomSheetRef = useRef<BottomSheet>(null);
     // variables
-    const snapPoints = useMemo(() => ['50%', '80%'], []);
+    const snapPoints = useMemo(() => ['50%', '80%'], [])
     const [state, setState] = useState(0)
     const [selectedDate, setSelectedDate] = useState(new Date())
     const [reminderList, setReminderList] = useState([])
     const [oldReminderList, setOldReminderList] = useState([])
+    const [dates, setDates] = useState([])
+    const [monthData, setMonthData] = useState(JSON)
 
     const PetsName = (props) => {
+        const [pets, setPets] = useState([])
+
+        useEffect(() => {
+            let isCancelled = false;
+            getPetsReminder(props.pets, (existPets, addingPets) => {
+                try {
+                    if (!isCancelled) {
+                        setPets(existPets)
+                    }
+                } catch (error) {
+                    if (!isCancelled)
+                        throw error;
+                }
+            })
+            return () => {
+                isCancelled = true
+            }
+        }, [])
         return (
             <View
                 style={styles.petsContainer}
             >
-                <View
-                    style={styles.petName}
-                >
-                    <Text>
-                        {props.pets[0]}
-                    </Text>
-                </View>
-                <View
-                    style={styles.petName}
-                >
-                    <Text>
-                        {props.pets[1]}
-                    </Text>
-                </View>
                 {
-                    props.pets.length >= 2
+                    pets[0] != null 
+                    ? (
+                    <View
+                        style={styles.petName}
+                    >
+                        <Text>
+                            {pets[0].name}
+                        </Text>
+                    </View>
+                    ) : null
+                }
+                
+                {
+                    pets[1] != null 
+                    ? (
+                    <View
+                        style={styles.petName}
+                    >
+                        <Text>
+                            {pets[1].name}
+                        </Text>
+                    </View>
+                    ) : null
+                }
+
+                {
+                    pets.length > 2
                     ?
                     <View
                         style={styles.petName}
                     >
                         <Text>
-                            {"+" + (props.pets.length - 2)}
+                            {"+" + (pets.length - 2)}
                         </Text>
                     </View>
                     : 
@@ -83,6 +117,47 @@ export function Schedules () {
                     console.log(reminderList);
                     setReminderList(reminderList)
                     setOldReminderList(oldReminderList)
+                }
+            } catch (error) {
+                if (!isCancelled)
+                    throw error;
+            }
+        })
+        return () => {
+            isCancelled = true
+        }
+    }, [selectedDate])
+
+    useEffect(() => {
+        let isCancelled = false;
+        getMonthReminderDate(selectedDate, dates => {
+            try {
+                if (!isCancelled) {
+                    console.log(dates);
+                    var today = new Date()
+                    let data = "{"
+                    for (var i = 0; i < dates.length; i++) {
+                        if (dates[i] < today.getDate()) {
+                            data += '"' + selectedDate.getFullYear() + '-' + (selectedDate.getMonth() + 1) + '-' + dates[i] + '"'
+                            + ': {"marked": true}'
+                        } else {
+                            data += '"' + selectedDate.getFullYear() + '-' + (selectedDate.getMonth() + 1) + '-' + dates[i] + '"'
+                            + ': {"marked": true}'
+                        }
+                        
+                        if (i != dates.length - 1) {
+                            data += ","
+                        } 
+                    }
+                    // dates.forEach(date => {
+                    //     data += '"' + selectedDate.getFullYear() + '-' + (selectedDate.getMonth() + 1) + '-' + date + '"'
+                    //     + ': {"marked": true}'
+                    //     if (date.) 
+                    // });
+                    data += '}'
+                    console.log(data);
+                    setMonthData(JSON.parse(data))
+                    //console.log(data);
                 }
             } catch (error) {
                 if (!isCancelled)
@@ -114,7 +189,13 @@ export function Schedules () {
         }
         return (
             <TouchableOpacity
-                style={styles.eventContainer}
+                style={[styles.eventContainer, 
+                    props.reminder.type == "Doctor"
+                    ? styles.yellowBackground 
+                    : props.reminder.type == "Stuff"
+                    ? styles.pinkBackground
+                    : styles.greenBackground
+                ]}
             >
                 <View
                     style={styles.eventTitle}
@@ -146,7 +227,7 @@ export function Schedules () {
                 </View>
 
                 <PetsName
-                        pets={props.reminder.pets}
+                    pets={props.reminder.pets}
                 />
 
                 <View
@@ -195,12 +276,7 @@ export function Schedules () {
     const handleSheetChanges = useCallback(index => {
         setState(index)
     }, [])
-
-    const handleCallback = (reminderList, oldReminderList) => {
-        setReminderList(reminderList);
-        setOldReminderList(oldReminderList);
-    }
-
+    
     return (
         <View
             style={styles.container}
@@ -209,17 +285,9 @@ export function Schedules () {
                 state == 0
                 ?
                 <CalendarList
-                    daySelectionAnimation={{
-                        type: 'background', 
-                        duration: 100,
-                        highlightColor: COLORS.white,
-                    }}
                     horizontal={true}
                     pagingEnabled={true}
-                    markedDates={{
-                        '2021-12-07': {marked: true,},
-                        '2021-12-08': {selected: true, marked: true,},
-                    }}
+                    markedDates={monthData}
                     theme={{
                         calendarBackground: COLORS.dark,
                         textSectionTitleColor: '#E5E5E5',
@@ -335,7 +403,6 @@ export function Schedules () {
                 </View>
             </BottomSheet>
         </View>
-        
     )
 }
 
@@ -353,10 +420,18 @@ const styles = StyleSheet.create({
         width: '90%',
         alignSelf: 'center',
         height: 100,
-        backgroundColor: COLORS.yellow,
         borderRadius: 15,
         padding: 12,
         marginTop: 12,
+    },
+    yellowBackground: {
+        backgroundColor: COLORS.yellow,
+    },
+    greenBackground: {
+        backgroundColor: COLORS.green,
+    },
+    pinkBackground: {
+        backgroundColor: COLORS.pink,
     },
     eventTitle: {
         display: 'flex',

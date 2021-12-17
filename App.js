@@ -6,13 +6,17 @@ import { MyPetsScreen } from './src/screens/MyPetsScreen';
 import { StatisticScreen } from './src/screens/StatisticScreen';
 import { ExpenditureScreen } from './src/screens/ExpenditureScreen';
 import { Schedules } from './src/screens/Schedules';
+import { ScheduleEvent } from './src/screens/ScheduleEvent';
+import { PredictScreen } from './src/screens/PredictScreen';
+import { PredictDetailsScreen } from './src/screens/PredictDetailsScreen';
+
 
 import MainStack from './src/navigations/MainStack';
 // import { PetProfileScreen } from './src/screens/PetProfileScreen';
 
 export default function App() {
   return (
-    <Schedules />
+    <PredictDetailsScreen  />
   );
 }
 
