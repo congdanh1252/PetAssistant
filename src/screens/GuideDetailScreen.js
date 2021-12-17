@@ -90,7 +90,7 @@ const GuideDetailScreen = ({route, navigation}) => {
             guideDetail.push(
                 <View key={i}>
                     <Text style={style.section_title}>{i + 1}. {guide.section[i].title}</Text>
-                    <Text style={style.detail_text}>{guide.section[i].detail}</Text>
+                    <Text style={style.detail_text}>{AddLineBreak(guide.section[i].detail)}</Text>
                     {
                         guide.section[i].image == ""
                         ?
@@ -111,6 +111,10 @@ const GuideDetailScreen = ({route, navigation}) => {
                 {guideDetail}
             </View>
         )
+    }
+
+    const AddLineBreak = (text) => {
+        return text.replace(/\\n/g, "\n\n");
     }
 
     //Main 
@@ -136,11 +140,21 @@ const GuideDetailScreen = ({route, navigation}) => {
                 <GuideDetail/>
 
                 <View style={style.footer}>
-                    <Text style={style.title}>{strings.helpful_rating}</Text>
+                    <TouchableOpacity
+                        activeOpacity={0.7}
+                    >
+                        <Text style={style.title}>{strings.helpful_rating}</Text>
+                    </TouchableOpacity>
 
-                    <View>
+                    <TouchableOpacity
+                        activeOpacity={0.7}
+                    >
+                        <View style={style.saved_button}>
+                            <Image style={style.saved_icon} source={require('../assets/icons/ic_save.png')}/>
 
-                    </View>
+                            <Text style={style.save_label}>Lưu</Text>
+                        </View>
+                    </TouchableOpacity>
                 </View>
             </ScrollView>
         </View>
@@ -178,14 +192,27 @@ const style = StyleSheet.create({
         width: '76%',
         textAlign: 'center',
         fontFamily: 'Roboto-Medium',
-        fontSize: 24,
+        fontSize: 22,
         marginTop: 12,
         color: COLORS.white,
     },
     saved_button : {
-        height: 30,
+        height: 44,
+        width: 90,
+        borderRadius: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: COLORS.black
+    },
+    saved_icon: {
         width: 30,
-        marginTop: 8,
+        height: 30,
+        marginRight: 8
+    },
+    save_label: {
+        fontSize: 17,
+        color: COLORS.white
     },
     tocs_holder: {
         width: '100%',

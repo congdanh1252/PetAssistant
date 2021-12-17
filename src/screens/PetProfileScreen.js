@@ -7,10 +7,10 @@ import {
     Image, StyleSheet, View, Text, ScrollView, TouchableOpacity, LogBox,
     TouchableHighlight, TouchableWithoutFeedback, Switch
 } from 'react-native';
-import {
-    deletePetFromFirestore
-} from '../api/PetAPI';
+import { deletePetFromFirestore } from '../api/PetAPI';
+import { windowWidth } from '../models/common/Dimensions';
 
+import firestore from '@react-native-firebase/firestore';
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
@@ -21,16 +21,18 @@ LogBox.ignoreLogs([
 ]);
 
 const PetProfileScreen = ({route, navigation}) => {
+    const [pet, setPet] = useState(new Pet());
     const [petAge, setPetAge] = useState('');
     const [setting, setSetting] = useState('');
     const [deleteName, setDeleteName] = useState('');
     const [unmatchInput, setUnmatchInput] = useState(false);
     const [dialogVisible, setDialogVisible] = useState(false);
     const bottomSheetRef = useRef<BottomSheet>(null);
-    const snapPoints = useMemo(() => ['39%', '73%'], []);
-    const snapPointsDropdown = useMemo(() => ['19%', '19%'], []);
+    const snapPoints = useMemo(() => ['40%', '78%'], []);
+    const snapPointsDropdown = useMemo(() => ['20%', '20%'], []);
 
-    const { pet } = route.params;
+    const { pet_id } = route.params;
+    
     const care_section = [
         {
             task: 'Shower',
@@ -199,24 +201,33 @@ const PetProfileScreen = ({route, navigation}) => {
         )
     }
 
-    //Calculate age
+    const calculateAge = (num) => {
+        var bornDays = Math.abs(new Date() - num) / 86400000;
+        var age = Math.round(bornDays / 365);
+        var ageWithoutRound = (bornDays / 365) - age;
+        if (ageWithoutRound === 0) {
+            setPetAge(age);
+        } else {
+            setPetAge('<' + age);
+        }
+    }
+
+    //get pet data
     useEffect(() => {
-        var isMounted = true;
-        if (isMounted) {
-            var bornDays = Math.abs(new Date() - pet.birthday) / 86400000;
-            var age = Math.round(bornDays / 365);
-            var ageWithoutRound = (bornDays / 365) - age;
-            if (ageWithoutRound === 0) {
-                setPetAge(age);
-            } else {
-                setPetAge('<' + age);
-            }
-        }
-        
-        return () => {
-            isMounted = false;
-        }
-    }, []);
+        const subscriber = firestore()
+        .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/pets')
+        .doc(pet_id)
+        .onSnapshot(documentSnapshot => {
+            var newPet = new Pet();
+            newPet.update(documentSnapshot.data());
+            newPet.birthday = new Date(documentSnapshot.data().dob.toDate());
+            newPet._id = documentSnapshot.id;
+            calculateAge(newPet.birthday);
+            setPet(newPet);
+        })
+
+        return () => subscriber();
+    }, [])
     
     const SettingButton = () => {
         return (
@@ -406,12 +417,12 @@ const PetProfileScreen = ({route, navigation}) => {
             {/* Delete pet dialog */}
             <Dialog.Container visible={dialogVisible}>
                 <Dialog.Title
-                    style={{fontFamily: 'Roboto-Bold'}}
+                    style={{fontFamily: 'Roboto-Bold', color: COLORS.black}}
                 >
                     {strings.delete_pet}
                 </Dialog.Title>
 
-                <Dialog.Description>
+                <Dialog.Description style={{color: COLORS.black}}>
                     {strings.delete_pet_msg}
                 </Dialog.Description>
 
@@ -548,7 +559,7 @@ const style = StyleSheet.create({
         marginBottom: 15,
     },
     care_information: {
-        marginTop: 20,
+        marginTop: 16,
     },
     dropdown_bottomsheet: {
         borderRadius: 10,
@@ -585,8 +596,8 @@ const style = StyleSheet.create({
         justifyContent: 'center',
     },
     care_box: {
-        width: 116,
-        margin: 4
+        width: windowWidth / 4,
+        margin: 4,
     },
     care_uppers_chart: {
         width: 98,

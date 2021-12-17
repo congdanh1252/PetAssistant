@@ -1,6 +1,5 @@
 import React from "react";
-import { StyleSheet, Image } from 'react-native'
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { StyleSheet, Image, TouchableOpacity } from 'react-native'
 import COLORS from '../theme/colors'
 
 const BackButton = (props) => {

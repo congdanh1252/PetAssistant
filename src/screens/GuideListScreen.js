@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Image, StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput,
-    TouchableWithoutFeedback, TouchableHighlight
+    TouchableWithoutFeedback, TouchableHighlight,
 } from 'react-native';
 
 import firestore from '@react-native-firebase/firestore';
@@ -13,18 +13,18 @@ import Guide from '../models/guide';
 const GuideListScreen = ({route, navigation}) => {
     const [show, setShow] = useState(false);
     const [guides, setGuides] = useState([]);
+    const [dataList, setDataList] = useState([]);
+    const [filter, setFilter] = useState('');
 
     const snapPoints = useMemo(() => ['19%', '19%'], []);
 
-    const handleGuides = (list) => {
-        setGuides(list);
-    }
-
-    //load list guide
-    useEffect(() => {
-        const subscriber = firestore()
+    const getGuideListOrderByRating = (filter) => {
+        const subscribe =
+        firestore()
         .collection('camnang')
-        .onSnapshot(querySnapshot => {
+        .orderBy('rating', filter)
+        .get()
+        .then(querySnapshot => {
             var guideList = new Array();
             querySnapshot.forEach(documentSnapshot => {
                 var guide = new Guide();
@@ -34,9 +34,38 @@ const GuideListScreen = ({route, navigation}) => {
             });
             setGuides(guideList);
         });
+    }
+
+    const filterListBySearch = (input) => {
+        var newList = [];
+        dataList.forEach(guide => {
+            if (guide.title.toLowerCase().includes(input.toLowerCase())) {
+                newList.push(guide);
+            }
+        });
+        setGuides(newList);
+        input == "" ? setFilter('') : setFilter(filter);
+    }
+
+    //load list guide
+    useEffect(() => {
+        const subscriber = firestore()
+        .collection('camnang')
+        .onSnapshot(querySnapshot => {
+            var guideList = new Array();
+            setFilter('');
+            querySnapshot.forEach(documentSnapshot => {
+                var guide = new Guide();
+                guide.update(documentSnapshot.data());
+                guide._id = documentSnapshot.id;
+                guideList.push(guide);
+            });
+            setGuides(guideList);
+            setDataList(guideList);
+        });
 
         return () => subscriber();
-    }, [show]);
+    }, []);
 
     const GuideList = () => {
         var guideList = [];
@@ -101,6 +130,9 @@ const GuideListScreen = ({route, navigation}) => {
                 <TextInput
                     style={style.input}
                     placeholder={strings.find}
+                    onChangeText={(value) => {
+                        filterListBySearch(value)
+                    }}
                 />
 
                 <TouchableOpacity
@@ -130,17 +162,22 @@ const GuideListScreen = ({route, navigation}) => {
                                 style={style.dropdown_bottomsheet}
                                 enableOverDrag={false}
                                 enablePanDownToClose={true}
-                                onClose={() => setShow(false)}
                             >
                                 <TouchableHighlight
                                     key={1}
                                     activeOpacity={0.7}
                                     underlayColor='#EEEEEE'
                                     style={
+                                        filter != 'desc'
+                                        ?
                                         style.dropdown_option
+                                        :
+                                        [style.dropdown_option, {backgroundColor: COLORS.grey}]
                                     }
                                     onPress={() => {
-
+                                        getGuideListOrderByRating('desc');
+                                        setShow(false)
+                                        setFilter('desc')
                                     }}
                                 >
                                     <Text style={style.dropdown_option_text}>
@@ -153,10 +190,16 @@ const GuideListScreen = ({route, navigation}) => {
                                     activeOpacity={0.7}
                                     underlayColor='#EEEEEE'
                                     style={
+                                        filter != 'asc'
+                                        ?
                                         style.dropdown_option
+                                        :
+                                        [style.dropdown_option, {backgroundColor: COLORS.grey}]
                                     }
                                     onPress={() => {
-
+                                        getGuideListOrderByRating('asc')
+                                        setShow(false)
+                                        setFilter('asc')
                                     }}
                                 >
                                     <Text style={style.dropdown_option_text}>
@@ -203,7 +246,7 @@ const style = StyleSheet.create({
         width: '76%',
         textAlign: 'center',
         fontFamily: 'Roboto-Medium',
-        fontSize: 24,
+        fontSize: 22,
         marginTop: 16,
         color: COLORS.white,
     },
@@ -224,7 +267,7 @@ const style = StyleSheet.create({
     title: {
         color: COLORS.black,
         fontFamily: 'Roboto-Bold',
-        fontSize: 20,
+        fontSize: 18,
         marginTop: 28,
     },
     guide_list_container: {
@@ -263,7 +306,7 @@ const style = StyleSheet.create({
     guide_title: {
         color: COLORS.black,
         fontFamily: 'Roboto-Bold',
-        fontSize: 18,
+        fontSize: 16,
     },
     guide_rating_label: {
         color: COLORS.black,

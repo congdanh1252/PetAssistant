@@ -195,22 +195,14 @@ const AddPetScreen = ({route, navigation}) => {
         setUploading(false);
         showResultToast(result);
 
-        navigation.navigate({
-            name: 'MyPets',
-            params: { newPet: pet},
-            merge: true,
-        });
+        navigation.goBack();
     }
 
     const handlePetUpdated = (result) => {
         setUploading(false);
         showResultToast(result);
 
-        navigation.navigate({
-            name: 'PetProfile',
-            params: { pet: pet},
-            merge: true,
-        });
+        navigation.goBack();
     }
 
     const addPetPhoto = (method) => {
@@ -770,7 +762,7 @@ const styles = StyleSheet.create({
     },
     header_title: {
         width: '74%',
-        fontSize: 24,
+        fontSize: 22,
         marginTop: 16,
         fontFamily: 'Roboto-Medium',
         color: COLORS.white,
