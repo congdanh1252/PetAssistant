@@ -65,6 +65,13 @@ export default strings = {
     noPet: "Không có thú cưng",
     delete_pet: "Xóa thú cưng",
     delete_pet_msg: "Bạn chắc chắn muốn xóa thú cưng? Nhập lại tên thú cưng để xác nhận.",
+    guide: "Cẩm nang",
+    filter: "Bộ lọc",
+    rating_desc_filter: "Hữu ích giảm dần",
+    rating_asc_filter: "Hữu ích tăng dần",
+    table_of_contents: "Mục lục",
+    helpful_rating: "❤️ Đánh giá hữu ích",
+
     addNewEvent: "Thêm hoạt động mới",
     cancel: "Hủy",
     delete: "Xóa",

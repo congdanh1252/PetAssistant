@@ -2,27 +2,22 @@ import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import Pet from '../models/pet';
 
-function onError(error) {
-  console.error(error);
-}
-
 export const getPetList = (handlePets) => { 
-  var petList = new Array();
+    var petList = new Array();
 
-  firestore()
-  .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/pets')
-  .get()
-  .then(querySnapshot => {
+    firestore()
+    .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/pets')
+    .onSnapshot(querySnapshot => {
+        var petList = new Array();
         querySnapshot.forEach(documentSnapshot => {
-        var pet = new Pet();
-        pet.update(documentSnapshot.data());
-        pet.birthday = new Date(documentSnapshot.data().dob.toDate());
-        pet._id = documentSnapshot.id;
-        petList.push(pet);
-    });
-
-    handlePets(petList);
-  }, onError);
+            var pet = new Pet();
+            pet.update(documentSnapshot.data());
+            pet.birthday = new Date(documentSnapshot.data().dob.toDate());
+            pet._id = documentSnapshot.id;
+            petList.push(pet);
+        })
+        handlePets(petList);
+    })
 };
 
 export const uploadImageToStorage = async (uri, name, handleImageUrl) => {
