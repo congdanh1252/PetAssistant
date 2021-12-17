@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { View, Text, StyleSheet, Dimensions, Image } from 'react-native'
 import { color } from 'react-native-elements/dist/helpers';
 import { PieChart } from 'react-native-svg-charts'
 import moment from 'moment';
-
 import COLORS from '../theme/colors'
 import { moneyFormat } from '../models/common/moneyStringFormat';
 import { getMonthStatistic } from '../api/ExpenditureAPI';
@@ -16,7 +15,8 @@ import {
     StoreIcon,
 } from '../assets/icons/index'
 import { TouchableOpacity } from 'react-native-gesture-handler';
-
+import MonthPicker from 'react-native-month-year-picker';
+import { Value } from 'react-native-reanimated';
 
 export function StatisticScreen({navigation}) {
     const keys = ['Sức khỏe', 'Thức ăn', 'Dịch vụ', 'Dụng cụ', 'Khác'];
@@ -25,16 +25,20 @@ export function StatisticScreen({navigation}) {
     const [values, setValues] = useState([0, 0, 0, 0, 0]);
     const colors = [COLORS.yellow, COLORS.ocean, COLORS.green, COLORS.pink, COLORS.primaryDark]
     const [month, setMonth] = useState(new Date())
+    const [showData, setShowData] = useState(true)
 
     useEffect(() => {
         let isCancelled = false
         getMonthStatistic(month, (values, percentage) => {
             try {
                 if (!isCancelled) {
-                    console.log(values)
-                    console.log(percentage)
-                    setPercentage(percentage)
-                    setValues(values)
+                    if (values[0] == values[1] == values[2] == values[3] == values[4] == 0) {
+                        setShowData(false)
+                    } else {
+                        setShowData(true)
+                        setPercentage(percentage)
+                        setValues(values)
+                    }
                 }
             } catch (error) {
                 if (!isCancelled)
@@ -44,7 +48,42 @@ export function StatisticScreen({navigation}) {
         return () => {
             isCancelled = true
         }
-    }, [])
+    }, [month])
+
+    const Header = () => {
+        const [show, setShow] = useState(false)
+        const showPicker = useCallback((value) => setShow(value), []);
+        
+        const onMonthChange = useCallback(
+            (event, newDate) => {
+                const selectedDate = newDate || month;
+                showPicker(false);
+                setMonth(selectedDate);
+            },
+            [month, showPicker],
+        );
+
+        return (
+            <View style={styles.headerContainer}>
+                <Text style={styles.headerTitle}>
+                    {strings.statistic}
+                </Text>
+                <TouchableOpacity
+                    onPress={()=>showPicker(true)}>
+                    <Text style={styles.headerTitle}>
+                        {moment(month).format('MMMM - YYYY')}
+                    </Text>
+                </TouchableOpacity>
+                {show && (
+                    <MonthPicker
+                        onChange={onMonthChange}
+                        value={month}
+                        locale="vi"
+                    />
+                )}
+            </View>
+        )
+    }
 
     const PieChar = () => {
         const [selectedSliceLabel, setSelectedSliceLabel] = useState('')
@@ -63,114 +102,128 @@ export function StatisticScreen({navigation}) {
         })
         return (
             <View>
-                <Text
-                    style={{
-                        fontFamily: 'Roboto-Medium',
-                        textAlign: 'center',
-                        fontSize: 16,
-                        paddingBottom: 10,
-                    }}>
-                    {`${selectedSliceLabel} - ${selectedSliceValue}%`}
-                </Text>
-                <PieChart
-                    style={{ height: 180, marginBottom: 20 }}
-                    outerRadius={'80%'}
-                    innerRadius={'30%'}
-                    data={data}
-                />
+                {showData ? (
+                    <View>
+                        <Text
+                            style={{
+                                fontFamily: 'Roboto-Medium',
+                                textAlign: 'center',
+                                fontSize: 16,
+                                paddingBottom: 10,
+                            }}>
+                            {`${selectedSliceLabel} - ${selectedSliceValue}%`}
+                        </Text>
+                        <PieChart
+                            style={{ height: 180, marginBottom: 20 }}
+                            outerRadius={'80%'}
+                            innerRadius={'30%'}
+                            data={data}
+                        />
+                    </View>
+                    ) : (
+                        <Text style={styles.notFound}>
+                            Không có dữ liệu
+                        </Text>
+                    )
+                }
             </View>
         )
     }
 
     const TypeList = () => {
         return (
-            <View
-                style={styles.typeListContainer}
-            >
-                {keys.map((value, index) => {
-                    const color = colors[index]
-                    var imgSource = HelpIcon;
-                    switch (types[index]) {
-                        case 'Food':
-                            imgSource = FoodIcon
-                            break;
-                        case 'Stuff':
-                            imgSource = StuffIcon
-                            break;
-                        case 'Service': 
-                            imgSource = StoreIcon
-                            break;
-                        case 'Doctor': 
-                            imgSource = DoctorIcon
-                            break
-                        default:
-                            imgSource = HelpIcon;
-                            break;
-                    }
-                    return (
-                        <View 
-                            key={value}
-                            style={{
-                                width: '90%',
-                                display: 'flex',
-                                flexDirection: 'row',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                padding: 8,
-                            }}
-                        >
-                            <View
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                }}
-                            >
-                                <Image
+            <View>
+                {showData && (
+                    <View
+                        style={styles.typeListContainer}
+                    >
+                        {keys.map((value, index) => {
+                            const color = colors[index]
+                            var imgSource = HelpIcon;
+                            switch (types[index]) {
+                                case 'Food':
+                                    imgSource = FoodIcon
+                                    break;
+                                case 'Stuff':
+                                    imgSource = StuffIcon
+                                    break;
+                                case 'Service': 
+                                    imgSource = StoreIcon
+                                    break;
+                                case 'Doctor': 
+                                    imgSource = DoctorIcon
+                                    break
+                                default:
+                                    imgSource = HelpIcon;
+                                    break;
+                            }
+                            return (
+                                <View 
+                                    key={value}
                                     style={{
-                                        height: 20,
-                                        width: 20,
-                                        marginRight: 8,
-                                    }}
-                                    source={imgSource}
-                                />
-                                <Text
-                                    style={styles.detail}
-                                >
-                                    {value}
-                                </Text>
-                            </View>
-
-                            <View
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                }}
-                            >
-                                <Text
-                                    style={styles.detail}
-                                >
-                                    {moneyFormat(values[index]) + " vnđ"}
-                                </Text>
-
-                                <View
-                                    style={{
-                                        marginLeft: 16,
-                                        backgroundColor: color,
-                                        width: 20,
-                                        height: 20,
-                                        borderRadius: 10,
+                                        width: '90%',
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        padding: 8,
                                     }}
                                 >
+                                    <View
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'row',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <Image
+                                            style={{
+                                                height: 20,
+                                                width: 20,
+                                                marginRight: 8,
+                                            }}
+                                            source={imgSource}
+                                        />
+                                        <Text
+                                            style={styles.detail}
+                                        >
+                                            {value}
+                                        </Text>
+                                    </View>
+        
+                                    <View
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'row',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <Text
+                                            style={styles.detail}
+                                        >
+                                            {moneyFormat(values[index]) + " vnđ"}
+                                        </Text>
+        
+                                        <View
+                                            style={{
+                                                marginLeft: 16,
+                                                backgroundColor: color,
+                                                width: 20,
+                                                height: 20,
+                                                borderRadius: 10,
+                                            }}
+                                        >
+                                        </View>
+                                    </View>
                                 </View>
-                            </View>
-                        </View>
-                    )
-                })}
+                            )
+                        })}
+                    </View>
+                )}
             </View>
+            
         )
     }
 
@@ -204,21 +257,7 @@ export function StatisticScreen({navigation}) {
     return (
         <View style={styles.container}>
             {/* Header */}
-            <View style={styles.headerContainer}>
-                <Text style={styles.headerTitle}>
-                    {strings.statistic}
-                </Text>
-                <Text
-                    style={{
-                        color: COLORS.white,
-                        fontFamily: 'Roboto-Bold',
-                        fontSize: 20,
-                        alignSelf: 'center',
-                    }}
-                >
-                    {moment(month).format('MMMM YYYY')}
-                </Text>
-            </View>
+            <Header />
 
             {/* Body */}
             <View style={styles.bodyContainer}>
@@ -254,6 +293,10 @@ const styles = StyleSheet.create({
         color: COLORS.white,
         fontSize: 16,
         fontFamily: 'Roboto-Medium'
+    },
+    notFound : {
+        textAlign: 'center',
+        fontFamily: 'Roboto-Italic'
     },
     bodyContainer: {
         padding: 20,
