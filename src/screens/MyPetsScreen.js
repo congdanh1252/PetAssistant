@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Image, StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
 
+import firestore from '@react-native-firebase/firestore';
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
-
-import {
-    getPetList
-} from '../api/PetAPI';
+import Pet from '../models/pet';
 
 const MyPetsScreen = ({route, navigation}) => {
     const [chosenKind, setChosenKind] = useState(strings.all);
@@ -31,15 +29,21 @@ const MyPetsScreen = ({route, navigation}) => {
 
     //load pet list
     useEffect(() => {
-        let isMounted = true;
-        if (isMounted) {
-            const getPets = getPetList(handlePets);
-            console.log('load pet list');
-        }
+        const subscriber = firestore()
+        .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/pets')
+        .onSnapshot(querySnapshot => {
+            var petList = new Array();
+            querySnapshot.forEach(documentSnapshot => {
+                var pet = new Pet();
+                pet.update(documentSnapshot.data());
+                pet.birthday = new Date(documentSnapshot.data().dob.toDate());
+                pet._id = documentSnapshot.id;
+                petList.push(pet);
+            })
+            handlePets(petList);
+        })
 
-        return () => {
-            isMounted = false;
-        };
+        return () => subscriber();
     }, []);
 
     const PetKinds = () => {

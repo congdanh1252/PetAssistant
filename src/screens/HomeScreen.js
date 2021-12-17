@@ -98,6 +98,9 @@ const HomeScreen = ({navigation}) => {
                     <TouchableOpacity
                         activeOpacity={0.7}
                         style={style.menu_box}
+                        onPress={() => {
+                            navigation.navigate('Guides');
+                        }}
                     >
                         <Image
                             source={require('../assets/icons/ic_guide_fl.png')}

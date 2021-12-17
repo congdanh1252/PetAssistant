@@ -118,6 +118,9 @@ const GuideListScreen = ({route, navigation}) => {
                 <TouchableOpacity
                     style={style.saved_button}
                     activeOpacity={0.6}
+                    onPress={() => {
+                        navigation.navigate('SavedList');
+                    }}
                 >
                     <Image
                         style={style.saved_button}

@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
     StyleSheet, View, TextInput, Text, TouchableOpacity, Image, TouchableWithoutFeedback,
-    Keyboard, TouchableHighlight, Alert
+    Keyboard, TouchableHighlight, Alert,
 } from 'react-native'
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Button } from "react-native-elements/dist/buttons/Button";
@@ -9,6 +9,7 @@ import { launchImageLibrary, launchCamera } from "react-native-image-picker";
 import BottomSheet from '@gorhom/bottom-sheet';
 import DateTimePicker from "@react-native-community/datetimepicker";
 import {
+    getSpeciesList,
     uploadImageToStorage,
     addPetToFirestore,
     updatePetInFirestore,
@@ -20,6 +21,7 @@ import strings from "../data/strings";
 import BackButton from "../components/BackButton";
 import Pet from "../models/pet";
 import Toast from "react-native-toast-message";
+import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 
 const AddPetScreen = ({route, navigation}) => {
     var elseOption = '';
@@ -45,21 +47,17 @@ const AddPetScreen = ({route, navigation}) => {
 
     const snapPoints = useMemo(() => ['100%', '100%'], []);
 
-    const speciesOpt = {
-        dog: [
-            'Husky Bắc Cực',
-            'Husky Nam Cực',
-            'Husky Alaska',
-            'Husky Tây Tạng'
-        ],
-        cat: [
-            'Munchkin',
-            'Xiêm',
-            'Bengal',
-            'Anh lông ngắn'
-        ],
-    };
+    const [speciesOpt, setSpeciesOpt] = useState({
+        dog: [],
+        cat: [],
+        bird: [],
+        hamster: []
+    });
     const [species_choice_base, setSpeciesChoiceBase] = useState([]);
+
+    const handleSpeciesList = (list) => {
+        setSpeciesOpt(list);
+    }
 
     const initPetData = (photoUrl) => {
         pet.name = name;
@@ -127,7 +125,9 @@ const AddPetScreen = ({route, navigation}) => {
     const cancelAddingPet = () => {
         Alert.alert(
             'Cảnh báo',
-            'Bạn có chắc muốn hủy việc thêm thông tin thú cưng?',
+            (action == 'add'
+            ? 'Bạn có chắc muốn hủy việc thêm thông tin thú cưng?'
+            : 'Bạn có chắc muốn hủy việc chỉnh sửa thông tin thú cưng?'),
             [
                 {
                     text: strings.cancel,
@@ -135,7 +135,9 @@ const AddPetScreen = ({route, navigation}) => {
                 {
                     text: strings.sure,
                     onPress: () => {
-                        resetAllFields();
+                        action == 'add'
+                        ? resetAllFields()
+                        : navigation.goBack();
                     }
                 }
             ]
@@ -354,9 +356,9 @@ const AddPetScreen = ({route, navigation}) => {
         }
 
         return (
-            <View>
+            <BottomSheetScrollView>
                 {optionViews}
-            </View>
+            </BottomSheetScrollView>
         )
     }
     
@@ -381,6 +383,18 @@ const AddPetScreen = ({route, navigation}) => {
         }
         setSpeciesChoiceBase(map);
     }
+
+    //get species list
+    useEffect(() => {
+        let isMounted = true;
+        if (isMounted) {
+            const getSpecies = getSpeciesList(handleSpeciesList); 
+        }
+
+        return () => {
+            isMounted = false;
+        }
+    }, [])
 
     return (
         <View style={styles.screen}>
@@ -446,6 +460,7 @@ const AddPetScreen = ({route, navigation}) => {
 
                                 <TextInput
                                     style={styles.input}
+                                    placeholderTextColor={'#898989'}
                                     placeholder={strings.name}
                                     value={name}
                                     onChangeText={value => {
@@ -467,6 +482,7 @@ const AddPetScreen = ({route, navigation}) => {
                                         <TextInput
                                             editable={false}
                                             style={styles.input}
+                                            placeholderTextColor={'#898989'}
                                             placeholder={strings.kind}
                                             value={kind}
                                         />
@@ -489,6 +505,7 @@ const AddPetScreen = ({route, navigation}) => {
                                         <TextInput
                                             editable={false}
                                             style={styles.input}
+                                            placeholderTextColor={'#898989'}
                                             placeholder={strings.gender}
                                             value={gender}
                                         />
@@ -512,6 +529,7 @@ const AddPetScreen = ({route, navigation}) => {
                                     <TextInput
                                         editable={false}
                                         style={styles.input}
+                                        placeholderTextColor={'#898989'}
                                         placeholder={strings.species}
                                         value={species}
                                     />
@@ -531,6 +549,7 @@ const AddPetScreen = ({route, navigation}) => {
                                     <TextInput
                                         editable={false}
                                         style={styles.input}
+                                        placeholderTextColor={'#898989'}
                                         placeholder={strings.birthday}
                                         value={
                                             choseDate
@@ -572,6 +591,7 @@ const AddPetScreen = ({route, navigation}) => {
                                         <TextInput
                                             editable={false}
                                             style={styles.input}
+                                            placeholderTextColor={'#898989'}
                                             placeholder={strings.breed}
                                             value={breed}
                                         />
@@ -594,6 +614,7 @@ const AddPetScreen = ({route, navigation}) => {
                                         <TextInput
                                             editable={false}
                                             style={styles.input}
+                                            placeholderTextColor={'#898989'}
                                             placeholder={strings.status}
                                             value={status}
                                         />
@@ -619,6 +640,7 @@ const AddPetScreen = ({route, navigation}) => {
                                             style={styles.input}
                                             keyboardType={'numeric'}
                                             textContentType={"telephoneNumber"}
+                                            placeholderTextColor={'#898989'}
                                             placeholder={strings.height}
                                             onChangeText={value => {
                                                 setHeight(value)
@@ -639,6 +661,7 @@ const AddPetScreen = ({route, navigation}) => {
                                             style={styles.input}
                                             keyboardType={'numeric'}
                                             textContentType={"telephoneNumber"}
+                                            placeholderTextColor={'#898989'}
                                             placeholder={strings.weight}
                                             onChangeText={value => {
                                                 setWeight(value)
@@ -672,8 +695,6 @@ const AddPetScreen = ({route, navigation}) => {
                 </TouchableWithoutFeedback>
             </KeyboardAwareScrollView>
 
-            {/* Header */}
-
             {/* Dropdown bottomsheet */}
             {
                 dropdown=='' ?
@@ -682,7 +703,7 @@ const AddPetScreen = ({route, navigation}) => {
                     <BottomSheet
                         index={1}
                         snapPoints={snapPoints}
-                        backgroundStyle={{borderWidth: 1}}
+                        backgroundStyle={{borderWidth: 0}}
                         style={styles.dropdown_bottomsheet}
                         enableOverDrag={false}
                         enablePanDownToClose={true}
@@ -704,6 +725,7 @@ const AddPetScreen = ({route, navigation}) => {
                                 />
                             ) : (null)
                         }
+
                         <DropDownOptions/>
                     </BottomSheet>
             }
@@ -870,9 +892,10 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
     dropdown_option: {
-        width: '100%',
+        width: '99%',
         height: 60,
-        padding: 24,
+        padding: 12,
+        alignSelf: 'center',
         justifyContent: 'center',
         borderBottomWidth: 1.5,
         borderColor: COLORS.grey,

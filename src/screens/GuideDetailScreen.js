@@ -1,19 +1,69 @@
-import React, { useState, useEffect } from 'react';
-import { Image, StyleSheet, View, Text, ScrollView, TouchableOpacity,
-    TouchableWithoutFeedback,
+import React, { useState, useEffect, useMemo } from 'react';
+import { Image, StyleSheet, View, Text, ScrollView,
+    TouchableOpacity, TouchableWithoutFeedback, TouchableHighlight
 } from 'react-native';
+import BottomSheet from '@gorhom/bottom-sheet';
 import firestore from '@react-native-firebase/firestore';
 
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
+import Toast from "react-native-toast-message";
 import { windowHeight } from '../models/common/Dimensions';
 import Guide from '../models/guide';
+import { 
+    addGuideToSavedList,
+    getSavedGuides,
+    deleteGuideFromSavedList 
+} from '../api/GuideAPI';
 
 const GuideDetailScreen = ({route, navigation}) => {
     const [tocs, setToCs] = useState(false);
     const { guide_id } = route.params;
     const [guide, setGuide] = useState(new Guide());
+    const [rating, setRating] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
+
+    const snapPoints = useMemo(() => ['45%', '45%'], []);
+
+    const handleSaveGuide = (msg) => {
+        if (msg == 'Success') {
+            Toast.show({
+                type: 'success',
+                text1: strings.success,
+                text2: !isSaved ? strings.msg_save_guide_success : strings.msg_unsave_guide_success,
+                position: 'top',
+                autoHide: true,
+            });
+
+            setIsSaved(!isSaved);
+        }
+        else {
+            Toast.show({
+                type: 'error',
+                text1: strings.fail,
+                text2: !isSaved ? strings.msg_save_guide_fail : strings.msg_unsave_guide_fail,
+                position: 'top',
+                autoHide: true,
+            });
+        }
+    }
+
+    const handleGetSaveList = (list) => {
+        if (list.includes(guide_id)) {
+            setIsSaved(true);
+        }
+    }
+
+    //check is guide saved
+    useEffect(() => {
+        let isMounted = true;
+        if (isMounted) {
+            const subscribe = getSavedGuides(handleGetSaveList)
+        }
+        
+        return () => isMounted = false;
+    }, []),
 
     //load guide detail
     useEffect(() => {
@@ -114,6 +164,7 @@ const GuideDetailScreen = ({route, navigation}) => {
     }
 
     const AddLineBreak = (text) => {
+        text = text.replace(/\\z/g, "\n");
         return text.replace(/\\n/g, "\n\n");
     }
 
@@ -142,21 +193,119 @@ const GuideDetailScreen = ({route, navigation}) => {
                 <View style={style.footer}>
                     <TouchableOpacity
                         activeOpacity={0.7}
+                        onPress={() => {
+                            setRating(true)
+                        }}
                     >
                         <Text style={style.title}>{strings.helpful_rating}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         activeOpacity={0.7}
+                        onPress={() => {
+                            !isSaved ?
+                            addGuideToSavedList(guide_id, handleSaveGuide)
+                            :
+                            deleteGuideFromSavedList(guide_id, handleSaveGuide)
+                        }}
                     >
-                        <View style={style.saved_button}>
+                        <View
+                            style={
+                                !isSaved ?
+                                style.saved_button
+                                :
+                                [style.saved_button, {width: 104}]
+                            }
+                        >
                             <Image style={style.saved_icon} source={require('../assets/icons/ic_save.png')}/>
 
-                            <Text style={style.save_label}>Lưu</Text>
+                            <Text style={style.save_label}>
+                                {isSaved ? strings.unsave : strings.save}
+                            </Text>
                         </View>
                     </TouchableOpacity>
                 </View>
             </ScrollView>
+
+            {
+                rating ?
+                <TouchableWithoutFeedback onPress={() => { setRating(false)}}>
+                    <View style={style.overlay}>
+                        <BottomSheet
+                            index={1}
+                            snapPoints={snapPoints}
+                            backgroundStyle={{borderWidth: 0}}
+                            style={style.dropdown_bottomsheet}
+                            enableOverDrag={false}
+                            enablePanDownToClose={true}
+                            onClose={() => {
+                                setRating(false)
+                            }}
+                        >
+                            <TouchableHighlight
+                                key={21}
+                                activeOpacity={0.7}
+                                underlayColor='#EEEEEE'
+                                style={style.dropdown_option}
+                                onPress={() => {
+                                    setRating(false)
+                                }}
+                            >
+                                <Text style={style.dropdown_option_text}>1 ❤️</Text>
+                            </TouchableHighlight>
+
+                            <TouchableHighlight
+                                key={22}
+                                activeOpacity={0.7}
+                                underlayColor={'#EEEEEE'}
+                                style={style.dropdown_option}
+                                onPress={() => {
+                                    setRating(false)
+                                }}
+                            >
+                                <Text style={style.dropdown_option_text}>2 ❤️</Text>
+                            </TouchableHighlight>
+                            
+                            <TouchableHighlight
+                                key={23}
+                                activeOpacity={0.7}
+                                underlayColor={'#EEEEEE'}
+                                style={style.dropdown_option}
+                                onPress={() => {
+                                    setRating(false)
+                                }}
+                            >
+                                <Text style={style.dropdown_option_text}>3 ❤️</Text>
+                            </TouchableHighlight>
+
+                            <TouchableHighlight
+                                key={24}
+                                activeOpacity={0.7}
+                                underlayColor={'#EEEEEE'}
+                                style={style.dropdown_option}
+                                onPress={() => {
+                                    setRating(false)
+                                }}
+                            >
+                                <Text style={style.dropdown_option_text}>4 ❤️</Text>
+                            </TouchableHighlight>
+
+                            <TouchableHighlight
+                                key={25}
+                                activeOpacity={0.7}
+                                underlayColor={'#EEEEEE'}
+                                style={style.dropdown_option}
+                                onPress={() => {
+                                    setRating(false)
+                                }}
+                            >
+                                <Text style={style.dropdown_option_text}>5 ❤️</Text>
+                            </TouchableHighlight>
+                        </BottomSheet>
+                    </View>
+                </TouchableWithoutFeedback>
+                : (null)
+            }
         </View>
     );
 }
@@ -278,5 +427,31 @@ const style = StyleSheet.create({
         justifyContent: 'space-between',
         marginTop: 20,
         marginBottom: 40,
+    },
+    dropdown_bottomsheet: {
+        borderRadius: 10,
+    },
+    dropdown_option: {
+        width: '99%',
+        height: 60,
+        padding: 12,
+        alignSelf: 'center',
+        justifyContent: 'center',
+        borderBottomWidth: 1.5,
+        borderColor: COLORS.grey,
+    },
+    dropdown_option_text: {
+        color: COLORS.black,
+        textAlign: 'center',
+        fontSize: 16,
+        fontFamily: 'Roboto-Regular',
+    },
+    overlay: {
+        width: '100%',
+        height: '100%',
+        position: 'absolute',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
     },
 });

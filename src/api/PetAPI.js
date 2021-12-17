@@ -1,22 +1,34 @@
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
-import Pet from '../models/pet';
 
-export const getPetList = (handlePets) => { 
-    var petList = new Array();
+export const getSpeciesList = (handleCallback) => {
+    var species = {
+        dog: [],
+        cat: [],
+        bird: [],
+        hamster: [],
+    }
 
     firestore()
-    .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/pets')
-    .onSnapshot(querySnapshot => {
-        var petList = new Array();
+    .collection('petSpecies')
+    .get()
+    .then(querySnapshot => {
         querySnapshot.forEach(documentSnapshot => {
-            var pet = new Pet();
-            pet.update(documentSnapshot.data());
-            pet.birthday = new Date(documentSnapshot.data().dob.toDate());
-            pet._id = documentSnapshot.id;
-            petList.push(pet);
+            switch (documentSnapshot.id) {
+                case 'dog':
+                    species.dog = species.dog.concat(species.dog, documentSnapshot.data().name);
+                    break;
+                case 'cat':
+                    species.cat = species.cat.concat(species.cat, documentSnapshot.data().name);
+                    break;
+                case 'bird':
+                    species.bird = species.bird.concat(species.bird, documentSnapshot.data().name);
+                    break;
+                default:
+                    species.hamster = species.hamster.concat(species.hamster, documentSnapshot.data().name);
+            }
         })
-        handlePets(petList);
+        handleCallback(species);
     })
 };
 
