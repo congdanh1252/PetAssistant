@@ -109,3 +109,13 @@ export const deleteImageFromStorage = (url) => {
         console.log('Error deleting pet photo: ' + error);
     });
 };
+
+export const getPetName = (id, handleCallback) => {
+    firestore()
+    .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/pets')
+    .doc(id)
+    .get()
+    .then(documentSnapshot => {
+        handleCallback(documentSnapshot.data().name);
+    }, onError);
+}

@@ -1,5 +1,5 @@
 import firestore from '@react-native-firebase/firestore';
-import Expenditure from '../models/expenditure';
+import HeathPredict from '../models/heathPredict';
 
 function onError(error) {
   console.error(error);
@@ -17,25 +17,34 @@ function sort(array) {
   return array;
 }
 
-export const getExpenditures = (date, handleExpenditures) => {
-  var expenditureList = new Array();
 
-  var startOfToday =  firestore.Timestamp.fromDate(new Date(date.setHours(0, 0, 0, 0))); 
-  var endOfToday = firestore.Timestamp.fromDate(new Date(date.setHours(23, 59, 59, 999))); 
+export const getPredictList = (handleCallback) => {
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/expenditures')
-  .where('date','>=',startOfToday)
-  .where('date', '<=', endOfToday)
+  .collection('heathPredict')
   .get()
   .then(querySnapshot => {
       querySnapshot.forEach(documentSnapshot => {
-        var expenditure = new Expenditure();
-        expenditure.update(documentSnapshot.data())
-        expenditure.date = documentSnapshot.data().date.toDate()
-        expenditure._id = documentSnapshot.id;
-        expenditureList.push(expenditure);
+        var heathPredict = new HeathPredict();
+        heathPredict.update(documentSnapshot.data())
+        heathPredict._id = documentSnapshot.id;
+        PredictList.push(heathPredict);
       });
-      handleExpenditures(expenditureList);
+      handleCallback(PredictList);
+  }, onError);
+}
+
+
+export const getPredictDetail = (id, handleCallback) => {
+  firestore()
+  .collection('heathPredict')
+  .doc(id)
+  .get()
+  .then(documentSnapshot => {
+    console.log(documentSnapshot);
+    var heathPredict = new HeathPredict();
+    heathPredict.update(documentSnapshot.data())
+    heathPredict._id = documentSnapshot.id;
+    handleCallback(heathPredict);
   }, onError);
 }
 
