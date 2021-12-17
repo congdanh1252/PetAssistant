@@ -27,30 +27,67 @@ const Section = (props) => {
     });
     return (
         <View style={styles.sectionContainer}>
-            <Text>
-                {detail.title}
-            </Text>
-            <Animated.View
-                style={animatedStyle}
+            <View
+                style={{
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                }}
             >
-                <TouchableOpacity 
+                <View
                     style={{
-                        
-                    }}
-                    onPress={() => {
-                        setIsOpen(!isOpen)
-                        isOpen
-                        ?
-                        rotation.value = withSpring(0)
-                        :   
-                        rotation.value = withSpring(-90)
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                     }}
                 >
-                    <Image
-                        source={require('../assets/icons/Back_black.png')}
-                    />
-                </TouchableOpacity>
-            </Animated.View>
+                    <View
+                        style={[
+                            styles.dot,
+                            {
+                                backgroundColor: props.section.color,
+                                marginRight: 20,
+                            }
+                        ]}
+                    >
+                    </View>
+                    <Text
+                        style={{
+                            fontFamily: 'Roboto-Bold',
+                            fontSize: 18,
+                        }}
+                    >
+                        {detail.title}
+                    </Text>
+                </View>
+                
+                
+                <Animated.View
+                    style={animatedStyle}
+                >
+                    <TouchableOpacity 
+                        style={{
+                            
+                        }}
+                        onPress={() => {
+                            setIsOpen(!isOpen)
+                            isOpen
+                            ?
+                            rotation.value = withSpring(0)
+                            :   
+                            rotation.value = withSpring(-90)
+                        }}
+                    >
+                        <Image
+                            source={require('../assets/icons/Back_black.png')}
+                        />
+                    </TouchableOpacity>
+                </Animated.View>
+            </View>
+
             {/* Sub-details */}
             {
                 isOpen
@@ -69,30 +106,50 @@ const Section = (props) => {
 
 const SubDetail = (props) => {
     return (
-        <View>
-            <View style={{
-                display: 'flex',
-                flexDirection: 'row',
-            }}>
-                <Text>
+        <View
+            style={{
+                width: '90%',
+                justifyContent: 'center',
+            }}
+        >
+            <View style={styles.sectionDetailContainer}>
+                <Text
+                    style={{
+                        flex: 4,
+                        fontFamily: 'Roboto-Light',
+                        fontSize: 14,
+                        alignItems: 'center',
+                    }}
+                >
                     Chuẩn đoán
                 </Text>
 
-                <Text>
+                <Text
+                    style={{
+                        flex: 6,
+                    }}
+                >
                     {props.detail.predict}
                 </Text>
 
             </View>
 
-            <View style={{
-                display: 'flex',
-                flexDirection: 'row',
-            }}>
-                <Text>
+            <View style={styles.sectionDetailContainer}>
+                <Text
+                    style={{
+                        flex: 4,
+                        fontFamily: 'Roboto-Light',
+                        fontSize: 14,
+                    }}
+                >
                     Gợi ý
                 </Text>
 
-                <Text>
+                <Text 
+                    style={{
+                        flex: 6,
+                    }}
+                >
                     {props.detail.advice}
                 </Text>
 
@@ -179,8 +236,6 @@ const styles = StyleSheet.create({
         left: 0,
     },
     sectionContainer: {
-        display: 'flex',
-        flexDirection: 'row',
         position: 'relative',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -189,14 +244,25 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginBottom: 8,
     },
+    dot: {
+        backgroundColor: COLORS.green,
+        width: 25,
+        height: 25,
+        borderRadius: 20,
+    },
     sectionTitle: {
         fontFamily: 'Roboto-Bold',
         fontSize: 18,
-        //color: COLORS.white,
     },
     sectionDescription: {
         fontFamily: 'Roboto-Light',
         fontSize: 14,
-        //color: COLORS.white,
-    }
+    },
+    sectionDetailContainer: {
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingTop: 20,
+    },
 })
