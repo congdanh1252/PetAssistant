@@ -24,7 +24,7 @@ import {
     ShowerIcon
 } from '../assets/icons/index'
 
-export function ScheduleEvent (props) {
+export function ScheduleEvent ({route, navigation}) {
     const [reminder, setReminder] = useState(new Reminder())
     const [imgSoucre, setImgSource] = useState(WaitIcon);
     const [pets, setPets] = useState([]);
@@ -219,7 +219,9 @@ export function ScheduleEvent (props) {
 
     useEffect(() => {
         let isCancelled = false;
-        getReminder(props.reminder_id, reminder => {
+        const { reminder_id } = route.params
+        console.log(reminder_id);
+        getReminder(reminder_id, reminder => {
             try {
                 if (!isCancelled) {
                     console.log(reminder);
@@ -261,10 +263,15 @@ export function ScheduleEvent (props) {
             <View
                 style={styles.headerContainer}
             >
-                <TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => {
+                        navigation.goBack()
+                    }}
+                >
                     <Image 
                         style={{
-                            margin: 8,
+                            marginTop: 10,
+                            marginLeft: 10,
                         }}
                         source={require('../assets/icons/Back.png')}
                     />
@@ -287,54 +294,37 @@ export function ScheduleEvent (props) {
                 {
                     isEdit
                     ? (
-                        <View
-                            style={{
-                                position: 'absolute',
-                                top: 10,
-                                right: 10,
-                            }}
+                        <TouchableOpacity
+                            onPress={() => {
+                                setIsEdit(!isEdit)
+                            }}  
                         >
-                            <TouchableOpacity
-                                onPress={() => {
-                                    setIsEdit(!isEdit)
-                                    // Toast.show({
-                                    //     type: 'success',
-                                    //     text1: strings.success,
-                                    //     text2: strings.saveSuccessful
-                                    // });
-                                }}  
-                            >
-                                <Image
-                                    style={{
-                                        width: 50,
-                                        height: 50,
-                                    }}
-                                    source={require('../assets/icons/save.png')}
-                                />
-                            </TouchableOpacity>
-                        </View>
-                    ) : (
-                        <View
-                            style={{
-                                position: 'absolute',
-                                top: 10,
-                                right: 10,
-                            }}
-                        >
-                            <TouchableOpacity
-                                onPress={() => {
-                                    setIsEdit(!isEdit)
+                            <Image
+                                style={{
+                                    width: 50,
+                                    height: 50,
+                                    marginTop: 10,
+                                    marginRight: 10
                                 }}
-                            >
-                                <Image
-                                    style={{
-                                        width: 50,
-                                        height: 50,
-                                    }}
-                                    source={require('../assets/icons/edit.png')}
-                                />
-                            </TouchableOpacity>
-                        </View>
+                                source={require('../assets/icons/save.png')}
+                            />
+                        </TouchableOpacity>
+                    ) : (
+                        <TouchableOpacity
+
+                            onPress={() => {
+                                setIsEdit(!isEdit)
+                            }}
+                        >
+                            <Image
+                                style={{
+                                    width: 50,
+                                    height: 50,
+                                    marginTop: 20,
+                                }}
+                                source={require('../assets/icons/edit.png')}
+                            />
+                        </TouchableOpacity>
                     )
                 }
             </View>
@@ -787,13 +777,16 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.dark,
     },
     headerContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         position: 'relative',
         flex: 1.5,
     },
     title: {
         color: COLORS.white,
         fontSize: 28,
-        marginLeft: '20%',
+        alignSelf: 'center',
     },
     bodyContainer: {
         flex: 8.5,

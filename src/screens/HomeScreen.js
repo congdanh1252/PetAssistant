@@ -67,7 +67,7 @@ const HomeScreen = ({navigation}) => {
                         style={style.menu_box}
                         activeOpacity={0.7}
                         onPress={() => {
-                            navigation.navigate('Schedules')
+                            navigation.navigate('ScheduleStack')
                         }}
                     >
                         <Image
@@ -83,7 +83,7 @@ const HomeScreen = ({navigation}) => {
                         activeOpacity={0.7}
                         style={style.menu_box}
                         onPress={() => {
-                            navigation.navigate('Expenditure')
+                            navigation.navigate('ExpenditureStack')
                         }}
                     >
                         <Image
@@ -118,6 +118,9 @@ const HomeScreen = ({navigation}) => {
                     <TouchableOpacity
                         activeOpacity={0.7}
                         style={style.menu_box}
+                        onPress={() => {
+                            navigation.navigate('PredictStack')
+                        }}
                     >
                         <Image
                             source={require('../assets/icons/ic_doctor_fl.png')}

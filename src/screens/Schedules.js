@@ -32,7 +32,7 @@ LocaleConfig.locales['vi'] = {
 };
 LocaleConfig.defaultLocale = 'vi';
 
-export function Schedules () {
+export function Schedules ({navigation}) {
     const bottomSheetRef = useRef<BottomSheet>(null);
     // variables
     const snapPoints = useMemo(() => ['50%', '80%'], [])
@@ -189,6 +189,12 @@ export function Schedules () {
         }
         return (
             <TouchableOpacity
+                onPress={() => {
+                    //console.log(props.reminder._id);
+                    navigation.navigate('ScheduleEvent', {
+                        reminder_id: props.reminder._id
+                    })
+                }}
                 style={[styles.eventContainer, 
                     props.reminder.type == "Doctor"
                     ? styles.yellowBackground 
@@ -254,7 +260,11 @@ export function Schedules () {
             bottomInset={10}
         >
             <View style={styles.footerContainer}>
-                <TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => {
+                        navigation.goBack()
+                    }}
+                >
                     <Image
                         source={require('../assets/icons/BackArrow.png')}
                     />
@@ -298,6 +308,10 @@ export function Schedules () {
                         dayTextColor: '#E5E5E5',
                         monthTextColor: '#E5E5E5'
                     }}
+                    onDayPress={date => {
+                        console.log(date);
+                        setSelectedDate(new Date(date.dateString))
+                    }}
                 />
                 :
                 <CalendarStrip
@@ -333,6 +347,14 @@ export function Schedules () {
                 onChange={handleSheetChanges}
             >
                 <View style={styles.contentContainer}>
+                    <Text
+                       style={{
+                            alignSelf: 'center',
+                            fontSize: 20,
+                    }} 
+                    >
+                        Ngày {moment(selectedDate).format('DD MMMM')}
+                    </Text>
                     <ScrollView>
                         <Text
                             style={{
