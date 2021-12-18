@@ -4,6 +4,7 @@ export default class Guide {
       this.title = '';
       this.thumbnail = '';
       this.rating = '';
+      this.rating_count = 0;
       this.section = new Array();
     }
 
@@ -12,6 +13,7 @@ export default class Guide {
       this.title = data.title || '';
       this.thumbnail = data.thumbnail || '';
       this.rating = data.rating || '';
+      this.rating_count = parseInt(data.rating_count) || 0;
       this.section = data.section || '';
     }
 

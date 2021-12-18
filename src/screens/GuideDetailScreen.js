@@ -14,7 +14,9 @@ import Guide from '../models/guide';
 import { 
     addGuideToSavedList,
     getSavedGuides,
-    deleteGuideFromSavedList 
+    deleteGuideFromSavedList ,
+    rateGuide,
+    getRatedUserList
 } from '../api/GuideAPI';
 
 const GuideDetailScreen = ({route, navigation}) => {
@@ -23,6 +25,7 @@ const GuideDetailScreen = ({route, navigation}) => {
     const [guide, setGuide] = useState(new Guide());
     const [rating, setRating] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
+    const [isRated, setIsRated] = useState(false);
 
     const snapPoints = useMemo(() => ['45%', '45%'], []);
 
@@ -49,9 +52,20 @@ const GuideDetailScreen = ({route, navigation}) => {
         }
     }
 
+    const handleGuideRated = (msg) => {
+        setIsRated(true);
+    }
+
     const handleGetSaveList = (list) => {
         if (list.includes(guide_id)) {
             setIsSaved(true);
+        }
+    }
+
+    const handleUserRatedList = (list) => {
+        const userId = "gwjLJ986xHN56PLYQ0uYPWMOB7g1";
+        if (list.includes(userId)) {
+            setIsRated(true);
         }
     }
 
@@ -65,20 +79,34 @@ const GuideDetailScreen = ({route, navigation}) => {
         return () => isMounted = false;
     }, []),
 
+    //check is guide rated
+    useEffect(() => {
+        let isMounted = true;
+        if (isMounted) {
+            const subscribe = getRatedUserList(guide_id, handleUserRatedList)
+        }
+        
+        return () => isMounted = false;
+    }, []),
+
     //load guide detail
     useEffect(() => {
-        const subscriber = firestore()
-        .collection('camnang')
-        .doc(guide_id)
-        .onSnapshot(documentSnapshot => {
-            var newGuide = new Guide();
-            newGuide.update(documentSnapshot.data());
-            newGuide._id = documentSnapshot.id;
-            setGuide(newGuide);
-        });
+        let isMounted = true;
+        if (isMounted) {
+            const subscriber = firestore()
+            .collection('camnang')
+            .doc(guide_id)
+            .get()
+            .then(documentSnapshot => {
+                var newGuide = new Guide();
+                newGuide.update(documentSnapshot.data());
+                newGuide._id = documentSnapshot.id;
+                setGuide(newGuide);
+            });
+        }
 
-        return () => subscriber();
-    }, [guide_id]);
+        return () => isMounted = false;
+    }, []);
 
     const GuideTableOfContents = () => {
         var table_of_contents = [];
@@ -163,6 +191,32 @@ const GuideDetailScreen = ({route, navigation}) => {
         )
     }
 
+    const FiveRatingBars = () => {
+        var bars = [];
+        for (let i = 0; i < 5; i++) {
+            bars.push(
+                <TouchableHighlight
+                    key={i}
+                    activeOpacity={0.7}
+                    underlayColor='#EEEEEE'
+                    style={style.dropdown_option}
+                    onPress={() => {
+                        setRating(false)
+                        rateGuide(guide, i + 1, handleGuideRated)
+                    }}
+                >
+                    <Text style={style.dropdown_option_text}>{i + 1} ❤️</Text>
+                </TouchableHighlight>
+            )
+        }
+
+        return (
+            <View>
+                {bars}
+            </View>
+        )
+    }
+
     const AddLineBreak = (text) => {
         text = text.replace(/\\z/g, "\n");
         return text.replace(/\\n/g, "\n\n");
@@ -191,14 +245,18 @@ const GuideDetailScreen = ({route, navigation}) => {
                 <GuideDetail/>
 
                 <View style={style.footer}>
-                    <TouchableOpacity
-                        activeOpacity={0.7}
-                        onPress={() => {
-                            setRating(true)
-                        }}
-                    >
-                        <Text style={style.title}>{strings.helpful_rating}</Text>
-                    </TouchableOpacity>
+                    {
+                        isRated ?
+                        <Text style={style.title}>{strings.msg_guide_rated}</Text> :
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={() => {
+                                setRating(true)
+                            }}
+                        >
+                            <Text style={style.title}>{strings.helpful_rating}</Text>
+                        </TouchableOpacity>
+                    }
 
                     <TouchableOpacity
                         activeOpacity={0.7}
@@ -242,65 +300,7 @@ const GuideDetailScreen = ({route, navigation}) => {
                                 setRating(false)
                             }}
                         >
-                            <TouchableHighlight
-                                key={21}
-                                activeOpacity={0.7}
-                                underlayColor='#EEEEEE'
-                                style={style.dropdown_option}
-                                onPress={() => {
-                                    setRating(false)
-                                }}
-                            >
-                                <Text style={style.dropdown_option_text}>1 ❤️</Text>
-                            </TouchableHighlight>
-
-                            <TouchableHighlight
-                                key={22}
-                                activeOpacity={0.7}
-                                underlayColor={'#EEEEEE'}
-                                style={style.dropdown_option}
-                                onPress={() => {
-                                    setRating(false)
-                                }}
-                            >
-                                <Text style={style.dropdown_option_text}>2 ❤️</Text>
-                            </TouchableHighlight>
-                            
-                            <TouchableHighlight
-                                key={23}
-                                activeOpacity={0.7}
-                                underlayColor={'#EEEEEE'}
-                                style={style.dropdown_option}
-                                onPress={() => {
-                                    setRating(false)
-                                }}
-                            >
-                                <Text style={style.dropdown_option_text}>3 ❤️</Text>
-                            </TouchableHighlight>
-
-                            <TouchableHighlight
-                                key={24}
-                                activeOpacity={0.7}
-                                underlayColor={'#EEEEEE'}
-                                style={style.dropdown_option}
-                                onPress={() => {
-                                    setRating(false)
-                                }}
-                            >
-                                <Text style={style.dropdown_option_text}>4 ❤️</Text>
-                            </TouchableHighlight>
-
-                            <TouchableHighlight
-                                key={25}
-                                activeOpacity={0.7}
-                                underlayColor={'#EEEEEE'}
-                                style={style.dropdown_option}
-                                onPress={() => {
-                                    setRating(false)
-                                }}
-                            >
-                                <Text style={style.dropdown_option_text}>5 ❤️</Text>
-                            </TouchableHighlight>
+                            <FiveRatingBars/>
                         </BottomSheet>
                     </View>
                 </TouchableWithoutFeedback>

@@ -132,6 +132,9 @@ const HomeScreen = ({navigation}) => {
                     <TouchableOpacity
                         activeOpacity={0.7}
                         style={style.menu_box}
+                        onPress={() => {
+                            navigation.navigate('Searching')
+                        }}
                     >
                         <Image
                             source={require('../assets/icons/ic_search_fl.png')}

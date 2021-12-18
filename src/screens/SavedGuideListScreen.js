@@ -11,6 +11,7 @@ const SavedGuideListScreen = ({route, navigation}) => {
     const [guides, setGuides] = useState([]);
     const [dataList, setDataList] = useState([]);
     const [saveList, setSaveList] = useState([]);
+    const [msgEmpty, setMsgEmpty] = useState('');
 
     const filterListBySearch = (input) => {
         var newList = [];
@@ -31,6 +32,10 @@ const SavedGuideListScreen = ({route, navigation}) => {
             querySnapshot.forEach(documentSnapshot => {
                 guide_list.push(documentSnapshot.data().id);
             })
+
+            if (guide_list.length == 0) {
+                setMsgEmpty(strings.msg_saved_guide_list_empty);
+            }
             setSaveList(guide_list);
         })
         
@@ -124,7 +129,7 @@ const SavedGuideListScreen = ({route, navigation}) => {
                             textAlign: 'center',
                         }]}
                     >
-                        {strings.msg_saved_guide_list_empty}
+                        {msgEmpty}
                     </Text>
                     :
                     <GuideList/>
