@@ -9,7 +9,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 
 
 
-export function PredictScreen() {
+export function PredictScreen({navigation}) {
     const [predictList, setPredictList] = useState([])
 
     useEffect(() => {
@@ -34,6 +34,11 @@ export function PredictScreen() {
         return (
             <View style={styles.sectionContainer}>
                 <TouchableOpacity
+                    onPress={() => {
+                        navigation.navigate('PredictDetail', {
+                            predict_id: props.predict._id
+                        })
+                    }}
                 >
                     <Text style={styles.sectionTitle}>
                         {props.predict.title}
@@ -50,7 +55,12 @@ export function PredictScreen() {
     return (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
-                <TouchableOpacity style={styles.headerIcon}>
+                <TouchableOpacity 
+                    style={styles.headerIcon}
+                    onPress={() => {
+                        navigation.goBack()
+                    }}
+                >
                     <Image source={require('../assets/icons/Back.png')} />
                 </TouchableOpacity>
 

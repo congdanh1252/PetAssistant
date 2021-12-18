@@ -85,11 +85,12 @@ export const getMonthLimitAndAvg = (handleMonthLimitCallback) => {
   }, onError);
 }
 
-export const findDateByKeyword = (keyword, handleDatesCallback) => {
+export const findDateByKeyword = (keyword, date, handleDatesCallback) => {
   var datesList = new Array();
   firestore()
   .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/expenditures')
-  .orderBy('date', 'desc')
+  .where('month', '==', date.getMonth() + 1)
+  .where('year', '==', date.getFullYear())
   .get()
   .then(querySnapshot => {
     querySnapshot.forEach(documentSnapshot => {
@@ -99,7 +100,7 @@ export const findDateByKeyword = (keyword, handleDatesCallback) => {
           datesList.push(tempDate)
       }
     });
-    handleDatesCallback(datesList)
+    handleDatesCallback(sort(datesList))
   }, onError);
 }
 

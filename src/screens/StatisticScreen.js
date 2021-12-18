@@ -32,6 +32,7 @@ export function StatisticScreen({navigation}) {
         getMonthStatistic(month, (values, percentage) => {
             try {
                 if (!isCancelled) {
+                    console.log(values);
                     if (values[0] == values[1] == values[2] == values[3] == values[4] == 0) {
                         setShowData(false)
                     } else {
@@ -231,6 +232,9 @@ export function StatisticScreen({navigation}) {
         return (
             <View style={styles.bottomBar}>
                 <TouchableOpacity
+                    onPress={() => {
+                        navigation.goBack()
+                    }}
                 >
                     <Image 
                         style={{

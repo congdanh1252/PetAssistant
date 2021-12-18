@@ -602,6 +602,7 @@ export function ExpenditureScreen({navigation}) {
     }
 
     const handleDatesCallback = (DatesList) => {
+        console.log(DatesList)
         setDatesList(DatesList)
     }
 
@@ -627,6 +628,9 @@ export function ExpenditureScreen({navigation}) {
         return (
             <View style={styles.bottomBar}>
                 <TouchableOpacity
+                    onPress={() => {
+                        navigation.goBack()
+                    }}
                 >
                     <Image 
                         style={{
@@ -790,8 +794,25 @@ export function ExpenditureScreen({navigation}) {
     }
 
     const getDateByKeyword = (Keyword) => {
-        findDateByKeyword(Keyword, handleDatesCallback)
+        findDateByKeyword(Keyword, selectedMonth, handleDatesCallback)
     } 
+
+    useEffect(() => {
+        let isCancelled = false;
+        getAllDate(selectedMonth, datesList => {
+            try {
+                if (!isCancelled) {
+                    setDatesList(datesList)
+                }
+            } catch (error) {
+                if (!isCancelled)
+                    throw error;
+            }
+        })
+        return () => {
+            isCancelled = true
+        }
+    }, [])
 
     return (
         <View style={styles.container}>
@@ -811,7 +832,6 @@ export function ExpenditureScreen({navigation}) {
                             datesList.map(day => {
                                 return (
                                     <Animated.View
-
                                         key={day}
                                         entering={FadeInRight.duration(1000)}
                                         exiting={FadeOutRight.duration(1000)}
@@ -820,23 +840,20 @@ export function ExpenditureScreen({navigation}) {
                                             date={day}
                                         />
                                     </Animated.View>
-                                    
                                 )
                             })
                         }
                     </ScrollView>
-                    : 
-                    <Text
-                        style={{
-                            fontFamily: 'Roboto-MediumItalic',
-                            alignSelf: 'center'
-                        }}
-                    >
-                        {strings.cannotFindExpenditure}
-                    </Text>
+                    : null
+                    // <Text
+                    //     style={{
+                    //         fontFamily: 'Roboto-MediumItalic',
+                    //         alignSelf: 'center'
+                    //     }}
+                    // >
+                    //     {strings.cannotFindExpenditure}
+                    // </Text>
                 }
-
-                
             </View>
 
             {/* Footer */}

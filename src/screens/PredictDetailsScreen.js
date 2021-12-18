@@ -158,12 +158,13 @@ const SubDetail = (props) => {
     )    
 }
 
-export function PredictDetailsScreen() {
+export function PredictDetailsScreen({route, navigation}) {
     const [predict, setPredict] = useState(new HeathPredict())
 
     useEffect(() => {
         let isCancelled = false;
-        getPredictDetail("GZi6kjzrEwuS1ej5jutm", predict => {
+        const { predict_id } = route.params;
+        getPredictDetail(predict_id, predict => {
             try {
                 if (!isCancelled) {
                     console.log(predict);
@@ -182,7 +183,12 @@ export function PredictDetailsScreen() {
     return (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
-                <TouchableOpacity style={styles.headerIcon}>
+                <TouchableOpacity 
+                    style={styles.headerIcon}
+                    onPress={() => {
+                        navigation.goBack()
+                    }}
+                >
                     <Image source={require('../assets/icons/Back.png')} />
                 </TouchableOpacity>
 
