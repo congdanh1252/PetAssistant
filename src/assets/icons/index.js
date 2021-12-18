@@ -6,6 +6,7 @@ import HelpIcon from '../icons/Help.png'
 import StoreIcon from '../icons/Store.png'
 import PenIcon from '../icons/Pen.png'
 import ShowerIcon from '../icons/Shower.png'
+import QuestionIcon from '../icons/QuestionMark_Black.png'
 
 
 export { 
@@ -16,5 +17,6 @@ export {
     HelpIcon,
     StoreIcon,
     PenIcon,
-    ShowerIcon
+    ShowerIcon,
+    QuestionIcon
 };

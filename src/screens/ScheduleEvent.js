@@ -386,7 +386,7 @@ export function ScheduleEvent ({route, navigation}) {
                         </View>
                         
                         <View>
-                        <View
+                            <View
                                 style={{
                                     display: 'flex',
                                     flexDirection: 'row',
@@ -416,6 +416,7 @@ export function ScheduleEvent ({route, navigation}) {
                                     ) : null
                                 }
                             </View>
+                            
                             <Text
                                 style={styles.sectionTitle}
                             >
@@ -591,7 +592,6 @@ export function ScheduleEvent ({route, navigation}) {
                     <View
                         style={styles.line}
                     >
-
                     </View>
                 
                     {/* Details */}
