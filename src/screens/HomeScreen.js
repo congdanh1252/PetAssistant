@@ -6,7 +6,6 @@ import strings from '../data/strings';
 
 const HomeScreen = ({navigation}) => {
 
-
     //Main 
     return (
         <View style={style.container}>
