@@ -10,7 +10,7 @@ export const getPetList = (handlePets) => {
   var petList = new Array();
 
   firestore()
-  .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/pets')
+  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/pets')
   .get()
   .then(querySnapshot => {
         querySnapshot.forEach(documentSnapshot => {
