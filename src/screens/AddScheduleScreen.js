@@ -5,7 +5,9 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import moment from 'moment';
 import Dialog from "react-native-dialog";
+import Toast from 'react-native-toast-message';
 
+import { windowHeight, windowWidth } from '../models/common/Dimensions'
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import {
@@ -14,25 +16,26 @@ import {
     FoodIcon,
     StuffIcon, 
     ShowerIcon,
-    QuestionIcon
+    QuestionIcon,
+    VaccineIcon,
+    WalkIcon,
+    HairBrushIcon,
+    SandIcon
 } from '../assets/icons/index'
 
 import Reminder from '../models/reminder';
 import { 
-    getReminder, 
-    updateReminder,
-    getPetsReminder
+    addReminder,
 } from '../api/ReminderAPI';
 import Pets from '../models/pet';
 import { getPetList } from '../api/PetAPI';
 
 export function AddScheduleScreen({route, navigation}) {
     const [reminder, setReminder] = useState(new Reminder())
-    const [title, setTitle] = useState('string')
     const [pets, setPets] = useState([]);
     const [addingPets, setAddingPets] = useState([]);
     const [selectedAddingPet, setSelectedAddingPet] = useState(new Pets())
-    const [selectedFrequency, setSelectedFrequency] = useState('')
+    const [selectedFrequency, setSelectedFrequency] = useState('custom')
     const [addItemType, setAddItemType] = useState('')
     const [imgSoucre, setImgSource] = useState(QuestionIcon);
 
@@ -91,6 +94,48 @@ export function AddScheduleScreen({route, navigation}) {
         )
     }
 
+    const EventDetails = (props) => {
+        return (
+            <View
+                style={styles.eventJobs}
+            >
+
+                <View
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center'
+                    }}
+                >
+                    <TouchableOpacity>
+                        <Image
+                            source={require('../assets/icons/Ok.png')}
+                        />
+                    </TouchableOpacity>
+                    
+                    <Text
+                        style={{
+                            fontFamily: 'Roboto-Bold',
+                            fontSize: 16,
+                            paddingHorizontal: 8,
+                        }}
+                    >
+                        {props.job}
+                    </Text>
+                </View>
+                <TouchableOpacity
+                    onPress={() => {
+                        deleteInReminder(props.job, 'job')
+                    }}
+                >
+                    <Image
+                        source={require('../assets/icons/Delete.png')}
+                    />
+                </TouchableOpacity>
+            </View>
+        )
+    }
+
     const showDialog = () => {
         setIsShowDialog(true)
     }
@@ -117,15 +162,11 @@ export function AddScheduleScreen({route, navigation}) {
 
                 break;
             case 'job': 
-                index = reminder.pets.indexOf(item._id);
+                console.log(item);
+                index = reminder.details.indexOf(item);
                 if (index > -1) {
-                    reminder.pets.splice(index, 1)
+                    reminder.details.splice(index, 1)
                 }
-
-                // index = addingPets.indexOf(item);
-                // if (index > -1) {
-                //     addingPets.splice(index, 1)
-                // }
                 break;
             default:
                 break;
@@ -155,9 +196,6 @@ export function AddScheduleScreen({route, navigation}) {
             case 'job': 
                 reminder.details.push(dialogInput)
                 break;
-            case 'eventType': 
-                reminder.type = dialogInput
-                break
             default:
                 break;
         }
@@ -182,6 +220,34 @@ export function AddScheduleScreen({route, navigation}) {
             isCancelled = true
         }
     }, [])
+
+    const checkData = () => {
+        if (reminder.title == '') {
+            Toast.show({
+                type: 'error',
+                text1: 'Thất bại!',
+                text2: 'Vui lòng nhập tiêu đề cho hoạt động!'
+            });
+            return false
+        }
+        return true
+    }
+
+    const hanldleAddReminder = () => {
+        reminder.frequency = selectedFrequency
+        reminder.reminderType = 'custom'
+        console.log(reminder);
+        if (checkData()) {
+            addReminder(reminder, () => {
+                Toast.show({
+                    type: 'success',
+                    text1: 'Thành công!',
+                    text2: 'Đã thêm hoạt động mới!'
+                });
+                navigation.goBack()
+            })
+        }
+    }
 
     return (
         <View style={styles.container}>
@@ -208,6 +274,20 @@ export function AddScheduleScreen({route, navigation}) {
             {/* Body */}
             <View style={styles.bodyContainer}>
                 <ScrollView>
+                    {/* Title */}
+                    <View>
+                        <View style={styles.inputBox}>
+                            <TextInput
+                                onChangeText={value => {
+                                    reminder.title = value
+                                }}
+                                style={styles.input}
+                                placeholder={strings.title}
+                                placeholderTextColor = 'rgba(0, 0, 0, 0.5)'
+                            >
+                            </TextInput>
+                        </View>
+                    </View>
                     {/* Datetime */}
                     <View
                         style={styles.dateTimeContainer}
@@ -387,6 +467,7 @@ export function AddScheduleScreen({route, navigation}) {
                             >
                                 <TouchableOpacity
                                     onPress={() =>{
+                                        setAddItemType('type')
                                         setIsShowDialog(true)
                                         setDialogTitle(strings.editType)
                                         setDialogDescription(strings.type)
@@ -414,7 +495,7 @@ export function AddScheduleScreen({route, navigation}) {
                     </View>
 
                      {/* Frequency */}
-                     <View>
+                    <View>
                         <View
                             style={styles.rowContainer}
                         >
@@ -447,7 +528,63 @@ export function AddScheduleScreen({route, navigation}) {
                         style={styles.line}
                     ></View>
 
+                    {/* Details */}
+                    <View
+                        style={styles.detailsContainer}
+                    >
+                        <Text
+                            style={{
+                                fontFamily: 'Roboto-Medium',
+                                fontSize: 18,
+                                marginBottom: 16,
+                            }}
+                        >
+                            {strings.detail}
+                        </Text>
+                        {
+                            reminder.details.map(job => {
+                                return (
+                                    <EventDetails
+                                        job={job}
+                                        key={job}
+                                    />
+                                )
+                            })
+                        }
+
+                        <TouchableOpacity
+                            onPress={() => {
+                                setAddItemType('job')
+                                showDialog()
+                                setDialogTitle(strings.addDetailInEvent)
+                                setDialogDescription(strings.enterDetailDescription)
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    marginLeft: 16,
+                                    marginTop: 16,
+                                    fontFamily: 'Roboto-LightItalic'
+                                }}
+                            >
+                                {strings.addNewEvent}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
                 </ScrollView>
+
+                <TouchableOpacity
+                    onPress={() => {
+                        hanldleAddReminder()
+                    }}
+                >
+                    <Image
+                        style={{
+                            marginLeft: 'auto'
+                        }}
+                        source={require('../assets/icons/save.png')}
+                    />
+                </TouchableOpacity>
             </View>
 
             {/* Datetime Picker */}
@@ -490,18 +627,28 @@ export function AddScheduleScreen({route, navigation}) {
                                 selectedValue={reminder.type}
                                 onValueChange={(itemValue, itemIndex) => {
                                     reminder.type = itemValue
-                                    switch (reminder.type) {
+                                    console.log(reminder.type);
+                                    switch (itemValue) {
                                         case 'Food':
                                             setImgSource(FoodIcon) 
                                             break;
-                                        case 'Stuff':
-                                            setImgSource(StuffIcon) 
+                                        case 'HairBrush':
+                                            setImgSource(HairBrushIcon) 
+                                            break;
+                                        case 'Walk':
+                                            setImgSource(WalkIcon) 
                                             break;
                                         case 'Doctor': 
                                             setImgSource(DoctorIcon) 
                                             break
+                                        case 'Vaccine':
+                                            setImgSource(VaccineIcon)
+                                            break
                                         case 'Shower': 
                                             setImgSource(ShowerIcon) 
+                                            break
+                                        case 'Sand': 
+                                            setImgSource(SandIcon) 
                                             break
                                         default:
                                             setImgSource(QuestionIcon) 
@@ -511,7 +658,9 @@ export function AddScheduleScreen({route, navigation}) {
                                 <Picker.Item label="Tiêm ngừa" value="Vaccine" />
                                 <Picker.Item label="Khám bệnh" value="Doctor" />
                                 <Picker.Item label="Tắm" value="Shower" />
-                                <Picker.Item label="Dọn cát" value="Poop" />
+                                <Picker.Item label="Đi dạo" value="Walk" />
+                                <Picker.Item label="Chải lông" value="HairBrush" />
+                                <Picker.Item label="Dọn cát" value="Sand" />
                                 <Picker.Item label="Cho ăn" value="Food" />
                                 <Picker.Item label="Khác" value="Other" />
                             </Picker>
@@ -560,7 +709,8 @@ export function AddScheduleScreen({route, navigation}) {
                         label={
                             dialogTitle.includes(strings.edit) 
                             ? strings.save 
-                            : strings.add
+                            :
+                            strings.add
                         }
                         onPress={handleDialogFinish}/>
             </Dialog.Container>
@@ -615,6 +765,15 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
     },
+    eventJobs: {
+        width: '100%',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 12,
+    },
     petName: {
         position: 'relative',
         backgroundColor: COLORS.grey,
@@ -630,5 +789,18 @@ const styles = StyleSheet.create({
         marginBottom: 16,
         height: .5,
         alignSelf: 'center'
+    },
+    input: {
+        position: 'relative',
+        width: windowWidth - windowWidth / 6,
+        color: "#000",
+        textAlign: 'center',
+        backgroundColor: '#EEEEEE',
+        borderRadius: 15,
+        padding: 10,
+    },
+    inputBox: {
+        alignItems: 'center',
+        marginBottom: 20,
     },
 })

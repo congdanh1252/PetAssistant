@@ -9,14 +9,18 @@ import { Schedules } from './src/screens/Schedules';
 import { ScheduleEvent } from './src/screens/ScheduleEvent';
 import { PredictScreen } from './src/screens/PredictScreen';
 import { PredictDetailsScreen } from './src/screens/PredictDetailsScreen';
-
+import { AddScheduleScreen } from './src/screens/AddScheduleScreen'
+import Toast from 'react-native-toast-message';
 
 import MainStack from './src/navigations/MainStack';
 // import { PetProfileScreen } from './src/screens/PetProfileScreen';
 
 export default function App() {
   return (
-    <MainStack  />
+    <>
+      <MainStack  />
+      <Toast />
+    </>
   );
 }
 

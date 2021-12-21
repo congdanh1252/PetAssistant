@@ -22,7 +22,7 @@ import {
     FoodIcon,
     StuffIcon, 
     ShowerIcon
-} from '../assets/icons/index'
+} from '../assets/icons/index'  
 
 export function ScheduleEvent ({route, navigation}) {
     const [reminder, setReminder] = useState(new Reminder())
@@ -781,7 +781,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         position: 'relative',
-        flex: 1.5,
+        flex: 1.2,
     },
     title: {
         color: COLORS.white,

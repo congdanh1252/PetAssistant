@@ -109,7 +109,7 @@ export const addExpenditure = (expenditure, handleAddExpenditureCallback) => {
   .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/expenditures')
   .add({
     title: expenditure.title,
-    amount: expenditure.amount,
+    amount: parseInt(expenditure.amount),
     month: expenditure.date.getMonth() + 1,
     date: firestore.Timestamp.fromDate(new Date(expenditure.date)),
     year: expenditure.date.getFullYear(),
@@ -126,7 +126,7 @@ export const updateExpenditure = (expenditure, handleUpdateExpenditureCallback) 
   .doc(expenditure._id)
   .set({
     title: expenditure.title,
-    amount: expenditure.amount,
+    amount: parseInt(expenditure.amount),
     month: expenditure.date.getMonth() + 1,
     date: firestore.Timestamp.fromDate(new Date(expenditure.date)),
     year: expenditure.date.getFullYear(),

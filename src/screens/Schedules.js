@@ -269,7 +269,11 @@ export function Schedules ({navigation}) {
                         source={require('../assets/icons/BackArrow.png')}
                     />
                 </TouchableOpacity>
-                <TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => {
+                        navigation.navigate('AddScheduleScreen')
+                    }}
+                >
                     <Image
                         source={require('../assets/icons/Add.png')}
                     />

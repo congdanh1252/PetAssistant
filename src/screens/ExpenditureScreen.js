@@ -610,11 +610,13 @@ export function ExpenditureScreen({navigation}) {
         const [isShowDialog, setIsShowDialog] = useState(false);
         const [isShowDatePicker, setIsShowDatePicker] = useState(false)
         const [expenditure, setExpenditure] = useState(new Expenditure())
+        const [expenditureAmount, setExpenditureAmount] = useState(expenditure.amount)
         const [selectedValue, setSelectedValue] = useState()
         const handleCancel = () => {
             setIsShowDialog(false)
         }
         const handelAdd = () => {
+            expenditure.amount = expenditureAmount
             setIsShowDialog(false)
             addExpenditure(expenditure, () => {
                 setSelectedMonth(expenditure.date)
@@ -757,9 +759,7 @@ export function ExpenditureScreen({navigation}) {
                     <View style={styles.inputBox}>
                         <TextInput
                             keyboardType='numeric'
-                            onChangeText={value => {
-                                expenditure.amount = value 
-                            }}
+                            onChangeText={setExpenditureAmount}
                             style={styles.input}
                             placeholder='10000'
                             placeholderTextColor = 'rgba(0, 0, 0, 0.5)'
@@ -868,7 +868,7 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.dark,
     }, 
     headerContainer: {
-        flex: 1.5, 
+        flex: 1.2, 
         padding: 24,
     },
     headerTitle: {
@@ -880,7 +880,7 @@ const styles = StyleSheet.create({
     },
     cardHeader: {
         height: 50,
-        width: 80,
+        width: 100,
         backgroundColor: COLORS.white,
         borderRadius: 15,
         justifyContent: 'center',
@@ -940,12 +940,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     bottomBar: {
-        position: 'absolute',
-        bottom: 0,
+        display: 'flex',
+        flex: 0.3,
+        backgroundColor: COLORS.white,
         paddingVertical: 10,
+        paddingBottom: 20,
         paddingHorizontal: 30,
         width: '100%',
-        display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',

@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.white,
         borderTopLeftRadius: 15,
         borderTopRightRadius: 15,
-        padding: 28, 
+        padding: 16, 
     },
     title: {
         alignSelf: 'center',
