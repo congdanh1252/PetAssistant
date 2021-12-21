@@ -6,7 +6,6 @@ import strings from '../data/strings';
 
 const HomeScreen = ({navigation}) => {
 
-
     //Main 
     return (
         <View style={style.container}>
@@ -98,6 +97,9 @@ const HomeScreen = ({navigation}) => {
                     <TouchableOpacity
                         activeOpacity={0.7}
                         style={style.menu_box}
+                        onPress={() => {
+                            navigation.navigate('Guides');
+                        }}
                     >
                         <Image
                             source={require('../assets/icons/ic_guide_fl.png')}
@@ -132,6 +134,9 @@ const HomeScreen = ({navigation}) => {
                     <TouchableOpacity
                         activeOpacity={0.7}
                         style={style.menu_box}
+                        onPress={() => {
+                            navigation.navigate('Searching')
+                        }}
                     >
                         <Image
                             source={require('../assets/icons/ic_search_fl.png')}

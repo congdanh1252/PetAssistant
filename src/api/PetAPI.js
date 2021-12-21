@@ -1,28 +1,35 @@
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
-import Pet from '../models/pet';
 
-function onError(error) {
-  console.error(error);
-}
+export const getSpeciesList = (handleCallback) => {
+    var species = {
+        dog: [],
+        cat: [],
+        bird: [],
+        hamster: [],
+    }
 
-export const getPetList = (handlePets) => { 
-  var petList = new Array();
-
-  firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/pets')
-  .get()
-  .then(querySnapshot => {
+    firestore()
+    .collection('petSpecies')
+    .get()
+    .then(querySnapshot => {
         querySnapshot.forEach(documentSnapshot => {
-        var pet = new Pet();
-        pet.update(documentSnapshot.data());
-        pet.birthday = new Date(documentSnapshot.data().dob.toDate());
-        pet._id = documentSnapshot.id;
-        petList.push(pet);
-    });
-
-    handlePets(petList);
-  }, onError);
+            switch (documentSnapshot.id) {
+                case 'dog':
+                    species.dog = species.dog.concat(species.dog, documentSnapshot.data().name);
+                    break;
+                case 'cat':
+                    species.cat = species.cat.concat(species.cat, documentSnapshot.data().name);
+                    break;
+                case 'bird':
+                    species.bird = species.bird.concat(species.bird, documentSnapshot.data().name);
+                    break;
+                default:
+                    species.hamster = species.hamster.concat(species.hamster, documentSnapshot.data().name);
+            }
+        })
+        handleCallback(species);
+    })
 };
 
 export const uploadImageToStorage = async (uri, name, handleImageUrl) => {

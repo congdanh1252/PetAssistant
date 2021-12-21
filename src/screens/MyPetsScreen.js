@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Image, StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
 
+import firestore from '@react-native-firebase/firestore';
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
-
-import {
-    getPetList
-} from '../api/PetAPI';
+import Pet from '../models/pet';
 
 const MyPetsScreen = ({route, navigation}) => {
     const [chosenKind, setChosenKind] = useState(strings.all);
@@ -31,79 +29,22 @@ const MyPetsScreen = ({route, navigation}) => {
 
     //load pet list
     useEffect(() => {
-        let isMounted = true;
-        if (isMounted) {
-            const getPets = getPetList(handlePets);
-            console.log('load pet list');
-        }
+        const subscriber = firestore()
+        .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/pets')
+        .onSnapshot(querySnapshot => {
+            var petList = new Array();
+            querySnapshot.forEach(documentSnapshot => {
+                var pet = new Pet();
+                pet.update(documentSnapshot.data());
+                pet.birthday = new Date(documentSnapshot.data().dob.toDate());
+                pet._id = documentSnapshot.id;
+                petList.push(pet);
+            })
+            handlePets(petList);
+        })
 
-        return () => {
-            isMounted = false;
-        };
+        return () => subscriber();
     }, []);
-
-    //Add new added pet to list
-    // useEffect(() => {
-    //     if (route.params?.newPet) {
-    //         if (route.params.newPet != null) {
-    //             console.log('add pet to list');
-    //             var kinds = [];
-    //             var pets = [];
-    //             var isHasNewKind = false;
-    //             myPet.forEach((pet) => {
-    //                 pets.push(pet);
-
-    //                 if (!kinds.includes(pet.kind)) {
-    //                     kinds.push(pet.kind);
-    //                 }
-    //             });
-    //             pets.push(route.params.newPet);
-
-    //             if (!kinds.includes(route.params.newPet.kind)) {
-    //                 kinds.push(route.params.newPet.kind);
-    //                 isHasNewKind = true;
-    //             }
-
-    //             setMyPet(pets);
-    //             if (isHasNewKind) {
-    //                 setPetKind(kinds);
-    //             }
-    //             navigation.setParams({
-    //                 newPet: null,
-    //             })
-    //         }
-    //     }
-    // });
-
-    //Remove deleted pet from list
-    // useEffect(() => {
-    //     if (route.params?.deletedPet) {
-    //         if (route.params.deletedPet != null)
-    //         console.log('remove pet from list');
-    //         var kinds = [];
-    //         var pets = [];
-    //         myPet.forEach((pet) => {
-    //             if (pet._id != route.params.deletedPet._id) {
-    //                 pets.push(pet);
-    //             }
-    //         });
-
-    //         pets.forEach((pet) => {
-    //             if (!kinds.includes(pet.kind)) {
-    //                 kinds.push(pet.kind);
-    //             }
-    //         });
-
-    //         setMyPet(pets);
-    //         if (kinds.length < petKind.length) {
-    //             setPetKind(kinds);
-    //         }
-            
-    //         navigation.setParams({
-    //             deletedPet: null,
-    //         })
-    //     }
-    // });
 
     const PetKinds = () => {
         var kinds = [];
@@ -219,7 +160,7 @@ const MyPetsScreen = ({route, navigation}) => {
                     style={[style.pet_holder, {backgroundColor: color}]}
                     activeOpacity={0.8}
                     onPress={() => {
-                        navigation.navigate('PetProfile', {pet: pets_chosen_kind[i]});
+                        navigation.navigate('PetProfile', {pet_id: pets_chosen_kind[i]._id});
                     }}
                 >
                     <Image
@@ -324,7 +265,7 @@ const style = StyleSheet.create({
         width: '76%',
         textAlign: 'center',
         fontFamily: 'Roboto-Medium',
-        fontSize: 24,
+        fontSize: 22,
         marginTop: 16,
         color: COLORS.white,
     },
@@ -335,7 +276,7 @@ const style = StyleSheet.create({
     title: {
         color: COLORS.black,
         fontFamily: 'Roboto-Bold',
-        fontSize: 22,
+        fontSize: 18,
         marginBottom: 12,
     },
     animal_kind_holder: {
@@ -382,7 +323,7 @@ const style = StyleSheet.create({
         borderRadius: 15,
     },
     pet_name: {
-        fontSize: 20,
+        fontSize: 18,
         fontFamily: 'Roboto-Bold',
         color: COLORS.black,
     },
