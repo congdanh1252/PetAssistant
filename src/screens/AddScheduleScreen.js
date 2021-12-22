@@ -6,6 +6,7 @@ import { Picker } from '@react-native-picker/picker';
 import moment from 'moment';
 import Dialog from "react-native-dialog";
 import Toast from 'react-native-toast-message';
+import PushNotification from "react-native-push-notification";
 
 import { windowHeight, windowWidth } from '../models/common/Dimensions'
 import COLORS from '../theme/colors';
@@ -27,14 +28,14 @@ import Reminder from '../models/reminder';
 import { 
     addReminder,
 } from '../api/ReminderAPI';
-import Pets from '../models/pet';
+import Pet from '../models/pet';
 import { getPetList } from '../api/PetAPI';
 
 export function AddScheduleScreen({route, navigation}) {
     const [reminder, setReminder] = useState(new Reminder())
     const [pets, setPets] = useState([]);
     const [addingPets, setAddingPets] = useState([]);
-    const [selectedAddingPet, setSelectedAddingPet] = useState(new Pets())
+    const [selectedAddingPet, setSelectedAddingPet] = useState(new Pet())
     const [selectedFrequency, setSelectedFrequency] = useState('custom')
     const [addItemType, setAddItemType] = useState('')
     const [imgSoucre, setImgSource] = useState(QuestionIcon);
@@ -202,8 +203,9 @@ export function AddScheduleScreen({route, navigation}) {
     }
 
     useEffect(() => {
-        let isCancelled = false;
+        let isCancelled = false
         getPetList(petList => {
+            console.log(petList);
             try {
                 if (!isCancelled) {
                     setPets(petList)
@@ -228,9 +230,8 @@ export function AddScheduleScreen({route, navigation}) {
                 text1: 'Thất bại!',
                 text2: 'Vui lòng nhập tiêu đề cho hoạt động!'
             });
-            return false
-        }
-        return true
+            result = false
+        } 
     }
 
     const hanldleAddReminder = () => {
@@ -238,11 +239,19 @@ export function AddScheduleScreen({route, navigation}) {
         reminder.reminderType = 'custom'
         console.log(reminder);
         if (checkData()) {
-            addReminder(reminder, () => {
+            addReminder(reminder, (reminder) => {
                 Toast.show({
                     type: 'success',
                     text1: 'Thành công!',
                     text2: 'Đã thêm hoạt động mới!'
+                });
+                console.log(reminder._id);
+                PushNotification.localNotificationSchedule({
+                    id: reminder.notificationId,
+                    channelId: "test-channel",
+                    title: "PetAssistant", 
+                    message: reminder.title,
+                    date: new Date(reminder.datetime), 
                 });
                 navigation.goBack()
             })

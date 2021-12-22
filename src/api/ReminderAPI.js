@@ -40,22 +40,21 @@ export const addReminder = (reminder, handleCallback) => {
   .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
   .add(reminder)
   .then(docRef => {
+    reminder._id = docRef.id
     firestore()
     .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
     .doc(docRef.id)
     .update({
-      _id: docRef.id,
+      _id: reminder._id,
       date: reminder.datetime.getDate(),
       month: reminder.datetime.getMonth() + 1,
       year: reminder.datetime.getFullYear(),
     })
-    .then(()=> {
-      handleCallback()
+    .then(() => {
+      handleCallback(reminder)
     })
   });
 }
-
-
 
 export const updateReminder = (reminder) => {
   firestore()

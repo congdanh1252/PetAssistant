@@ -1,5 +1,6 @@
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
+import Pet from '../models/pet';
 
 export const getSpeciesList = (handleCallback) => {
     var species = {
@@ -131,3 +132,21 @@ export const getPetName = (id, handleCallback) => {
         handleCallback(documentSnapshot.data().name);
     }, onError);
 }
+
+export const getPetList = (handlePets) => { 
+    var petList = new Array();
+
+    firestore()
+    .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/pets')
+    .onSnapshot(querySnapshot => {
+        var petList = new Array();
+        querySnapshot.forEach(documentSnapshot => {
+            var pet = new Pet();
+            pet.update(documentSnapshot.data());
+            pet.birthday = new Date(documentSnapshot.data().dob.toDate());
+            pet._id = documentSnapshot.id;
+            petList.push(pet);
+        })
+        handlePets(petList);
+    })
+};
