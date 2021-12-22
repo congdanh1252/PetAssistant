@@ -9,13 +9,36 @@ import {
 } from 'react-native'
 
 import COLORS from '../../theme/colors'
+import strings from '../../data/strings';
+
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import {
+  SendMailIcon,
+  SMSIcon,
+  AskQuestionIcon
+} from '../../assets/icons'
 
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 const VertificationMethod = (props) => {
+  var methodIcon = SendMailIcon
+  console.log(props.methodName);
+  switch (props.methodName) {
+    case "tin nhắn:":
+      methodIcon = SMSIcon
+      break;
+
+    case "câu hỏi:":
+        methodIcon = AskQuestionIcon
+      break;
+  
+    default:
+    case "email:":
+      methodIcon = SendMailIcon
+      break;
+  }
   return(
     <View
       style={StyleSheet.flatten([
@@ -26,7 +49,7 @@ const VertificationMethod = (props) => {
       ])}
     >
       <Image
-        source={require('../../assets/icons/EmailSend.png')}
+        source={methodIcon}
         style={styles.methodImage}
       />
 
@@ -97,8 +120,7 @@ export const ChangePasswordScreen_2 = (props) => {
         <Text
           style={styles.title}
         >
-          MAKE {"\n"}
-          YOUR CHOICE
+          {strings.choose}
         </Text>
 
         <Text
@@ -107,7 +129,7 @@ export const ChangePasswordScreen_2 = (props) => {
             fontWeight: '700',
           }}
         >
-          Choose your vetification method
+          {strings.chooseVertificationMethod}
         </Text>
 
         <TouchableOpacity
@@ -120,11 +142,11 @@ export const ChangePasswordScreen_2 = (props) => {
         >
           <VertificationMethod
             isActived={isActived[0]}
-            methodName='via email:'
+            methodName='email:'
             userCredential={
               isEmailHidden
               ? transformCredential(props.email, 'email')
-              : 'Not available'
+              : strings.notAvailable
             } 
           />
         </TouchableOpacity>
@@ -140,11 +162,11 @@ export const ChangePasswordScreen_2 = (props) => {
         >
           <VertificationMethod
             isActived={isActived[1]}
-            methodName='via sms:'
+            methodName='tin nhắn:'
             userCredential={
               isPhoneHidden
               ? transformCredential(props.phoneNumber, 'phone')
-              : 'Not available'
+              : strings.notAvailable
             }
           />
         </TouchableOpacity>
@@ -158,8 +180,8 @@ export const ChangePasswordScreen_2 = (props) => {
         >
           <VertificationMethod
             isActived={isActived[2]}
-            methodName='via question:'
-            userCredential='Some question about your pet'
+            methodName='câu hỏi:'
+            userCredential={strings.questionAboutYourPet}
           />
         </TouchableOpacity>
     </View>
@@ -187,7 +209,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   methodContainer: {
-    height: 90,
+    height: 100,
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 20,

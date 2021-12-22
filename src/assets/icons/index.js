@@ -11,6 +11,11 @@ import VaccineIcon from '../icons/Vaccine.png'
 import WalkIcon from '../icons/Walk.png'
 import HairBrushIcon from '../icons/HairBrush.png'
 import SandIcon from '../icons/Sand.png'
+import SMSIcon from '../icons/Android.png'
+import SendMailIcon from '../icons/EmailSend.png'
+import AskQuestionIcon from '../icons/AskQuestion.png'
+
+
 
 
 export { 
@@ -26,5 +31,8 @@ export {
     VaccineIcon,
     WalkIcon,
     HairBrushIcon,
-    SandIcon
+    SandIcon,
+    SendMailIcon,
+    SMSIcon,
+    AskQuestionIcon
 };

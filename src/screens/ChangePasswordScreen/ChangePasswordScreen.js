@@ -28,15 +28,13 @@ import {
 
 import auth from '@react-native-firebase/auth';
 import Toast from 'react-native-toast-message';
+import strings from '../../data/strings';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 
-const sendEmailVertification = (email) => {
-  // console.log(email);
-  auth().sendPasswordResetEmail(email);
-}
+
 
 export const ChangePasswordScreen = () => {
   const [currentState, setCurrentState] = useState(0);
@@ -49,6 +47,12 @@ export const ChangePasswordScreen = () => {
   const [isReadyForNextState, setIsReadyForNextState] = useState(false)
   const [otp, setOTP] = useState()
 
+  const sendEmailVertification = (email) => {
+    console.log("send mail to: " + email);
+    auth().sendPasswordResetEmail(email);
+    setCurrentState(4)
+  }
+
   const Buttons = (props) => {
     return (
       <TouchableOpacity
@@ -59,7 +63,7 @@ export const ChangePasswordScreen = () => {
           : isReadyForNextState
           ? 
             currentState == 1 && method == 'email'
-            ? setCurrentState(4)
+            ?  sendEmailVertification(email)
             : setCurrentState(currentState + 1)
           : null
           setIsReadyForNextState(false)
@@ -83,8 +87,6 @@ export const ChangePasswordScreen = () => {
     <View
       style={styles.background}
     >
-      <Toast ref={(ref) => Toast.setRef(ref)} />
-      
       <View
         style={styles.card}
       >
@@ -180,7 +182,7 @@ export const ChangePasswordScreen = () => {
           if (currentState != 0 && currentState != 4) {
             return (
               <Buttons 
-                buttonName='Back'
+                buttonName={strings.back}
                 state={currentState}
                 onStateChange={(value) => {
                   setCurrentState(value)
@@ -193,8 +195,8 @@ export const ChangePasswordScreen = () => {
         <Buttons
           buttonName={
             currentState == 4
-            ? 'Finish'
-            : 'Next'
+            ? strings.finish
+            : strings.next
           }
         />
       </View>
@@ -213,13 +215,13 @@ export const ChangePasswordScreen = () => {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.white,
     alignItems: 'center',
   },
   card: {
     backgroundColor: COLORS.white,
     marginTop: 16,
-    height: windowHeight - (windowHeight / 4),
+    height: windowHeight - (windowHeight / 5),
     width: windowWidth - (windowWidth / 7),
     borderRadius: 25,
   },

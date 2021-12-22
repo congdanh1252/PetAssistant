@@ -1,5 +1,6 @@
 import React from 'react';
 import { Image, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import auth from '@react-native-firebase/auth';
 
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
@@ -14,10 +15,19 @@ const HomeScreen = ({navigation}) => {
 
                 </View>
 
-                <Image
-                    source={require('../assets/icons/Logo.png')}
-                    style={style.logo}
-                />
+                <TouchableOpacity
+                    onPress={() => {
+                        auth()
+                        .signOut()
+                        .then(() => console.log('User signed out!'));
+                        navigation.navigate('Login')
+                    }}
+                >
+                    <Image
+                        source={require('../assets/icons/Logo.png')}
+                        style={style.logo}
+                    />
+                </TouchableOpacity>
             </View>
 
             <View style={style.content}>
@@ -145,6 +155,7 @@ const HomeScreen = ({navigation}) => {
 
                         <Text style={style.menu_title}>{strings.search_info}</Text>
                     </TouchableOpacity>
+
                 </View>
             </View>
         </View>

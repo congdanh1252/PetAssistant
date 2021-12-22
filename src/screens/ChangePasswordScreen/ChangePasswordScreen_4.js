@@ -5,6 +5,7 @@ import {
     Dimensions, Image, StyleSheet, Text, View, TouchableOpacity, TouchableWithoutFeedback, Keyboard 
 } from 'react-native'
 import { Input } from 'react-native-elements/dist/input/Input';
+import strings from '../../data/strings';
 
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
@@ -27,24 +28,23 @@ export function ChangePasswordScreen_4() {
             }}>
             <View style={style.container}>
                     <Image style={style.icon} source={require('../../assets/icons/print.png')}/>
-                    <Text style={style.new_password_title}>NEW PASSWORD</Text>
+                    <Text style={style.new_password_title}>{strings.newPassword}</Text>
                     <Text style={style.message}>
-                        Your identity has been verified!{'\n'}
-                        Set your new password
+                        {strings.setNewPassword}
                     </Text>
 
                     <Input
                         placeholderTextColor='#4c4c4c'
                         inputStyle={{color: '#000'}}
                         containerStyle={style.input_container}
-                        label='Password'
-                        placeholder='Password'
+                        label={strings.password}
+                        placeholder={strings.password}
                         textContentType='password'
                         secureTextEntry={visiblePassword}
                         multiline={false}
-                        errorMessage={
-                            <Text style={style.pass_requirement}>Password must be at least 8 characters</Text>
-                        }
+                        // errorMessage={
+                        //     <Text style={style.pass_requirement}>Password must be at least 8 characters</Text>
+                        // }
                         leftIcon={
                             <MaterialCommunityIcons style={style.input_icon} name="key" size={28} color="black" />
                         }
@@ -112,8 +112,8 @@ export function ChangePasswordScreen_4() {
                         placeholderTextColor='#4c4c4c'
                         inputStyle={{color: '#000'}}
                         containerStyle={style.input_container}
-                        label='Confirm password'
-                        placeholder='Confirm password'
+                        label={strings.confirmPassword}
+                        placeholder={strings.confirmPassword}
                         textContentType='password'
                         secureTextEntry={visibleConfirmPassword}
                         multiline={false}
