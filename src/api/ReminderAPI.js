@@ -5,6 +5,7 @@ import Pet from '../models/pet';
 import {
   getPetName
 } from '../api/PetAPI'
+import { add } from 'react-native-reanimated';
 
 function onError(error) {
   console.error(error);
@@ -32,6 +33,27 @@ export const getReminder = (reminderID, handleReminder) => {
       reminder.datetime = documentSnapshot.data().datetime.toDate()
       handleReminder(reminder)
   }, onError);
+}
+
+export const addReminder = (reminder, handleCallback) => {
+  firestore()
+  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
+  .add(reminder)
+  .then(docRef => {
+    reminder._id = docRef.id
+    firestore()
+    .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
+    .doc(docRef.id)
+    .update({
+      _id: reminder._id,
+      date: reminder.datetime.getDate(),
+      month: reminder.datetime.getMonth() + 1,
+      year: reminder.datetime.getFullYear(),
+    })
+    .then(() => {
+      handleCallback(reminder)
+    })
+  });
 }
 
 export const updateReminder = (reminder) => {

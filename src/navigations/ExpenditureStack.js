@@ -16,6 +16,7 @@ const ExpenditureStack = () => {
     >
         <Stack.Screen name="Expenditure" component={ExpenditureScreen} options={{headerShown: false}}/>
         <Stack.Screen name="Statistic" component={StatisticScreen} options={{headerShown: false}}/>
+
     </Stack.Navigator>
   );
 }

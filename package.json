@@ -33,6 +33,7 @@
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
     "react-native-month-year-picker": "^1.8.0",
     "react-native-pager-view": "^5.4.9",
+    "react-native-push-notification": "^8.1.1",
     "react-native-reanimated": "^2.3.1",
     "react-native-safe-area-context": "^3.3.2",
     "react-native-screens": "^3.10.1",

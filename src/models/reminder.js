@@ -11,6 +11,7 @@ export default class Reminder {
       this.type = '';
       this.reminderType = '';
       this.frequency = '';
+      this.notificationId = Math.floor(Math.random() * 1000000) + 1;
     }
   
     update(data) {
@@ -23,6 +24,7 @@ export default class Reminder {
       this.type = data.type || '';
       this.reminderType = data.reminderType || '';
       this.frequency = data.frequency || '';
+      this.notificationId = data.notificationId || Math.floor(Math.random() * 1000000) + 1;
     }
   
     static clone(data) {

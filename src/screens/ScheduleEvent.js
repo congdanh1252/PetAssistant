@@ -6,6 +6,8 @@ import { Picker } from '@react-native-picker/picker';
 import moment from 'moment';
 import Dialog from "react-native-dialog";
 import Toast from 'react-native-toast-message';
+import PushNotification from "react-native-push-notification";
+
 
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
@@ -22,10 +24,11 @@ import {
     FoodIcon,
     StuffIcon, 
     ShowerIcon
-} from '../assets/icons/index'
+} from '../assets/icons/index'  
 
 export function ScheduleEvent ({route, navigation}) {
     const [reminder, setReminder] = useState(new Reminder())
+    const [title, setTitle] = useState(reminder.title)
     const [imgSoucre, setImgSource] = useState(WaitIcon);
     const [pets, setPets] = useState([]);
     const [addingPets, setAddingPets] = useState([]);
@@ -217,6 +220,24 @@ export function ScheduleEvent ({route, navigation}) {
         }
     }
 
+    const save = () => {
+        console.log(reminder);
+        updateReminder(reminder);
+        PushNotification.localNotificationSchedule({
+            id: reminder.notificationId,
+            channelId: "test-channel",
+            title: strings.incomingSchedule, 
+            message: reminder.title,
+            date: new Date(reminder.datetime), 
+        });
+        Toast.show({
+            type: 'success',
+            text1: 'Thành công!',
+            text2: 'Hoạt động đã được cập nhật thành công!'
+        });
+    }
+
+
     useEffect(() => {
         let isCancelled = false;
         const { reminder_id } = route.params
@@ -226,6 +247,7 @@ export function ScheduleEvent ({route, navigation}) {
                 if (!isCancelled) {
                     console.log(reminder);
                     setReminder(reminder);
+                    setTitle(reminder.title)
                     getPetsReminder(reminder.pets, handleCallback)
                     switch (reminder.type) {
                         case 'Food':
@@ -277,18 +299,11 @@ export function ScheduleEvent ({route, navigation}) {
                     />
                 </TouchableOpacity>
 
-                {
-                    isEdit
-                    ? (
-                        null
-                    ) : (
-                        <Text
-                            style={styles.title}
-                        >
-                            {reminder.title}
-                        </Text>
-                    )
-                }
+                <Text
+                    style={styles.title}
+                >
+                    {strings.editSchedule}
+                </Text>
 
                 {/* Edit button */}
                 {
@@ -296,6 +311,7 @@ export function ScheduleEvent ({route, navigation}) {
                     ? (
                         <TouchableOpacity
                             onPress={() => {
+                                save()
                                 setIsEdit(!isEdit)
                             }}  
                         >
@@ -334,6 +350,24 @@ export function ScheduleEvent ({route, navigation}) {
                 style={styles.bodyContainer}
             >
                 <ScrollView>
+                    {/* Title */}
+                    <View>
+                        <View style={styles.inputBox}>
+                            <TextInput
+                                editable={reminder.reminderType == "custom" && isEdit}
+                                value={title}
+                                onChangeText={value => {
+                                    setTitle(value)
+                                    reminder.title = value
+                                }}
+                                style={styles.input}
+                                placeholder={strings.title}
+                                placeholderTextColor = 'rgba(0, 0, 0, 0.5)'
+                            >
+                            </TextInput>
+                        </View>
+                    </View>
+
                     {/* Date time */}
                     <View
                         style={styles.dateTimeContainer}
@@ -781,11 +815,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         position: 'relative',
-        flex: 1.5,
+        flex: 1.2,
     },
     title: {
         color: COLORS.white,
-        fontSize: 28,
+        fontSize: 20,
         alignSelf: 'center',
     },
     bodyContainer: {

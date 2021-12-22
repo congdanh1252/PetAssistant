@@ -7,6 +7,10 @@ import StoreIcon from '../icons/Store.png'
 import PenIcon from '../icons/Pen.png'
 import ShowerIcon from '../icons/Shower.png'
 import QuestionIcon from '../icons/QuestionMark_Black.png'
+import VaccineIcon from '../icons/Vaccine.png'
+import WalkIcon from '../icons/Walk.png'
+import HairBrushIcon from '../icons/HairBrush.png'
+import SandIcon from '../icons/Sand.png'
 
 
 export { 
@@ -18,5 +22,9 @@ export {
     StoreIcon,
     PenIcon,
     ShowerIcon,
-    QuestionIcon
+    QuestionIcon,
+    VaccineIcon,
+    WalkIcon,
+    HairBrushIcon,
+    SandIcon
 };
