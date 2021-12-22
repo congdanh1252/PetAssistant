@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { StyleSheet, View, Text, Image } from 'react-native'
 import { ScrollView, TextInput, TouchableOpacity } from 'react-native-gesture-handler';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
@@ -8,33 +8,38 @@ import Dialog from "react-native-dialog";
 import Toast from 'react-native-toast-message';
 import PushNotification from "react-native-push-notification";
 
-
+import { windowHeight, windowWidth } from '../models/common/Dimensions'
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
-import { windowHeight, windowWidth } from '../models/common/Dimensions'
-import { 
-    getReminder, 
-    updateReminder,
-    getPetsReminder
-} from '../api/ReminderAPI';
-import Reminder from '../models/reminder';
 import {
     WaitIcon,
     DoctorIcon,
     FoodIcon,
     StuffIcon, 
-    ShowerIcon
-} from '../assets/icons/index'  
+    ShowerIcon,
+    QuestionIcon,
+    VaccineIcon,
+    WalkIcon,
+    HairBrushIcon,
+    SandIcon
+} from '../assets/icons/index'
 
-export function ScheduleEvent ({route, navigation}) {
+import Reminder from '../models/reminder';
+import { 
+    addReminder,
+} from '../api/ReminderAPI';
+import Pet from '../models/pet';
+import { getPetList } from '../api/PetAPI';
+
+export function AddScheduleScreen({route, navigation}) {
     const [reminder, setReminder] = useState(new Reminder())
-    const [title, setTitle] = useState(reminder.title)
-    const [imgSoucre, setImgSource] = useState(WaitIcon);
     const [pets, setPets] = useState([]);
     const [addingPets, setAddingPets] = useState([]);
-    const [selectedAddingPet, setSelectedAddingPet] = useState("")
-    
-    const [isEdit, setIsEdit] = useState(false)
+    const [selectedAddingPet, setSelectedAddingPet] = useState(new Pet())
+    const [selectedFrequency, setSelectedFrequency] = useState('custom')
+    const [addItemType, setAddItemType] = useState('')
+    const [imgSoucre, setImgSource] = useState(QuestionIcon);
+
     const [showMode, setShowMode] = useState('date')
     const [showDTPicker, setShowDTPicker] = useState(false)
 
@@ -46,9 +51,6 @@ export function ScheduleEvent ({route, navigation}) {
     const [deleteItem, setDeleteItem] = useState('')
     const [deleteItemType, setDeleteItemType] = useState('')
 
-    const [addItemType, setAddItemType] = useState('')
-    const [selectedFrequency, setSelectedFrequency] = useState(reminder.frequency)
-
     const showPicker = (mode) => {
         setShowDTPicker(true)
         setShowMode(mode)
@@ -57,100 +59,35 @@ export function ScheduleEvent ({route, navigation}) {
     const onFinishPicker = (event, selectedDate) => {
         const currentDate = selectedDate || reminder.datetime;
         reminder.datetime = currentDate;
-        updateReminder(reminder)
         setShowDTPicker(false)
-    }   
-
-    const showDialog = () => {
-        setIsShowDialog(true)
-    }
-
-    const handleCancel = () => {
-        setIsShowDialog(false)
-    }
-
-    const handleDelete = () => {
-        setIsShowDialog(false)
-        if (dialogTitle.includes(strings.delete)) {
-            switch (deleteItemType) {
-                case 'pet':
-                    console.log(deleteItem);
-                    const index = reminder.pets.indexOf(deleteItem);
-                    if (index > -1) {
-                        reminder.pets.splice(index, 1)
-                    }
-                    updateReminder(reminder)
-                    break;
-                case 'job': 
-                    const index1 = reminder.details.indexOf(deleteItem);
-                    if (index1 > -1) {
-                        reminder.details.splice(index1, 1)
-                    }
-                    updateReminder(reminder)
-                    break;
-                case 'eventType': 
-                    break
-                default:
-                    break;
-            }
-        } else if (dialogTitle.includes(strings.edit)) {
-            updateReminder(reminder)
-        } else {
-            switch (addItemType) {
-                case 'pet':
-                    console.log(selectedAddingPet);
-                    if (selectedAddingPet != "null") {
-                        reminder.pets.push(selectedAddingPet)
-                        updateReminder(reminder)
-                    }
-                    break;
-                case 'job': 
-                    reminder.details.push(dialogInput)
-                    updateReminder(reminder)
-                    break;
-                case 'eventType': 
-                    reminder.type = dialogInput
-                    break
-                default:
-                    break;
-            }
-        }
-    }
+    }  
 
     const PetName = (props) => {
         return (
             <View
                 style={styles.petName}
             >
-                {
-                    isEdit && (
-                        <View
+                <View
+                    style={{
+                        position: 'absolute',
+                        top: -4,
+                        right: -4,
+                    }}
+                >
+                    <TouchableOpacity
+                        onPress={() => {
+                            deleteInReminder(props.pet, 'pet')
+                        }}
+                    >
+                        <Image
                             style={{
-                                position: 'absolute',
-                                top: -4,
-                                right: -4,
+                                height: 16,
+                                width: 16
                             }}
-                        >
-                            <TouchableOpacity
-                                onPress={() => {
-                                    showDialog()
-                                    setDialogTitle(strings.deletePetInEvent)
-                                    setDialogDescription(strings.confirmDeletePetInEvent)
-                                    setDeleteItem(props.pet._id)
-                                    setDeleteItemType('pet')
-                                }}
-                            >
-                                <Image
-                                    style={{
-                                        height: 16,
-                                        width: 16
-                                    }}
-                                    source={require('../assets/icons/Delete.png')}
-                                />
-                            </TouchableOpacity>
-                        </View>
-                    )
-                }
+                            source={require('../assets/icons/Delete.png')}
+                        />
+                    </TouchableOpacity>
+                </View>
                 <Text>
                     {props.pet.name}
                 </Text>
@@ -187,84 +124,93 @@ export function ScheduleEvent ({route, navigation}) {
                         {props.job}
                     </Text>
                 </View>
-
-
-                {
-                    isEdit 
-                    ? (
-                        <TouchableOpacity
-                            onPress={() => {
-                                showDialog()
-                                setDialogTitle(strings.deleteEventDetail)
-                                setDialogDescription(strings.confirmDeleteEventDetail)
-                                setDeleteItem(props.job)
-                                setDeleteItemType('job')
-                            }}
-                        >
-                            <Image
-                                source={require('../assets/icons/Delete.png')}
-                            />
-                        </TouchableOpacity>
-                    )
-                    : null
-                }
+                <TouchableOpacity
+                    onPress={() => {
+                        deleteInReminder(props.job, 'job')
+                    }}
+                >
+                    <Image
+                        source={require('../assets/icons/Delete.png')}
+                    />
+                </TouchableOpacity>
             </View>
         )
     }
 
-    const handleCallback = (existPets, addingPets) => {
-        setPets(existPets)
-        setAddingPets(addingPets)
-        if (addingPets.length > 0) {
-            setSelectedAddingPet(addingPets[0]._id)
+    const showDialog = () => {
+        setIsShowDialog(true)
+    }
+
+    const handleCancel = () => {
+        setIsShowDialog(false)
+    }
+
+    const deleteInReminder = (item, type) => {
+        let index = -1;
+        switch (type) {
+            case 'pet':
+                index = reminder.pets.indexOf(item._id);
+                if (index > -1) {
+                    reminder.pets.splice(index, 1)
+                }
+
+                index = addingPets.indexOf(item);
+                if (index > -1) {
+                    addingPets.splice(index, 1)
+                    pets.push(item)
+                    setSelectedAddingPet(pets[0])
+                }
+
+                break;
+            case 'job': 
+                console.log(item);
+                index = reminder.details.indexOf(item);
+                if (index > -1) {
+                    reminder.details.splice(index, 1)
+                }
+                break;
+            default:
+                break;
         }
     }
 
-    const save = () => {
-        console.log(reminder);
-        updateReminder(reminder);
-        PushNotification.localNotificationSchedule({
-            id: reminder.notificationId,
-            channelId: "test-channel",
-            title: strings.incomingSchedule, 
-            message: reminder.title,
-            date: new Date(reminder.datetime), 
-        });
-        Toast.show({
-            type: 'success',
-            text1: 'Thành công!',
-            text2: 'Hoạt động đã được cập nhật thành công!'
-        });
+    const handleDialogFinish = () => {
+        setIsShowDialog(false)
+        switch (addItemType) {
+            case 'pet':
+                if (selectedAddingPet._id != '') {
+                    reminder.pets.push(selectedAddingPet._id)
+                    addingPets.push(selectedAddingPet)
+
+                    const index = pets.indexOf(selectedAddingPet)
+                    if (index > -1) {
+                        pets.splice(index, 1);
+                        console.log(pets);
+                        if (pets.length > 0) {
+                            setSelectedAddingPet(pets[0])
+                        } else {
+                            setSelectedAddingPet(new Pets())
+                        }
+                    }
+                }
+                break;
+            case 'job': 
+                reminder.details.push(dialogInput)
+                break;
+            default:
+                break;
+        }
     }
 
-
     useEffect(() => {
-        let isCancelled = false;
-        const { reminder_id } = route.params
-        console.log(reminder_id);
-        getReminder(reminder_id, reminder => {
+        let isCancelled = false
+        getPetList(petList => {
+            console.log(petList);
             try {
                 if (!isCancelled) {
-                    console.log(reminder);
-                    setReminder(reminder);
-                    setTitle(reminder.title)
-                    getPetsReminder(reminder.pets, handleCallback)
-                    switch (reminder.type) {
-                        case 'Food':
-                            setImgSource(FoodIcon) 
-                            break;
-                        case 'Stuff':
-                            setImgSource(StuffIcon) 
-                            break;
-                        case 'Doctor': 
-                            setImgSource(DoctorIcon) 
-                            break
-                        case 'Shower': 
-                            setImgSource(ShowerIcon) 
-                            break
-                        default:
-                            setImgSource(WaitIcon) 
-                            break;
+                    setPets(petList)
+                    if (petList.length > 0) {
+                        setSelectedAddingPet(petList[0])
                     }
                 }
             } catch (error) {
@@ -277,14 +223,45 @@ export function ScheduleEvent ({route, navigation}) {
         }
     }, [])
 
+    const checkData = () => {
+        if (reminder.title == '') {
+            Toast.show({
+                type: 'error',
+                text1: 'Thất bại!',
+                text2: 'Vui lòng nhập tiêu đề cho hoạt động!'
+            });
+            result = false
+        } 
+    }
+
+    const hanldleAddReminder = () => {
+        reminder.frequency = selectedFrequency
+        reminder.reminderType = 'custom'
+        console.log(reminder);
+        if (checkData()) {
+            addReminder(reminder, (reminder) => {
+                Toast.show({
+                    type: 'success',
+                    text1: 'Thành công!',
+                    text2: 'Đã thêm hoạt động mới!'
+                });
+                console.log(reminder._id);
+                PushNotification.localNotificationSchedule({
+                    id: reminder.notificationId,
+                    channelId: "test-channel",
+                    title: "PetAssistant", 
+                    message: reminder.title,
+                    date: new Date(reminder.datetime), 
+                });
+                navigation.goBack()
+            })
+        }
+    }
+
     return (
-        <View
-            style={styles.container}
-        >
+        <View style={styles.container}>
             {/* Header */}
-            <View
-                style={styles.headerContainer}
-            >
+            <View style={styles.headerContainer}>
                 <TouchableOpacity
                     onPress={() => {
                         navigation.goBack()
@@ -298,66 +275,19 @@ export function ScheduleEvent ({route, navigation}) {
                         source={require('../assets/icons/Back.png')}
                     />
                 </TouchableOpacity>
-
-                <Text
-                    style={styles.title}
-                >
-                    {strings.editSchedule}
+                <Text style={styles.title}>
+                    {strings.addNewEvent}
                 </Text>
-
-                {/* Edit button */}
-                {
-                    isEdit
-                    ? (
-                        <TouchableOpacity
-                            onPress={() => {
-                                save()
-                                setIsEdit(!isEdit)
-                            }}  
-                        >
-                            <Image
-                                style={{
-                                    width: 50,
-                                    height: 50,
-                                    marginTop: 10,
-                                    marginRight: 10
-                                }}
-                                source={require('../assets/icons/save.png')}
-                            />
-                        </TouchableOpacity>
-                    ) : (
-                        <TouchableOpacity
-
-                            onPress={() => {
-                                setIsEdit(!isEdit)
-                            }}
-                        >
-                            <Image
-                                style={{
-                                    width: 50,
-                                    height: 50,
-                                    marginTop: 20,
-                                }}
-                                source={require('../assets/icons/edit.png')}
-                            />
-                        </TouchableOpacity>
-                    )
-                }
             </View>
 
-            {/* Sheet */}
-            <View
-                style={styles.bodyContainer}
-            >
+            {/* Body */}
+            <View style={styles.bodyContainer}>
                 <ScrollView>
                     {/* Title */}
                     <View>
                         <View style={styles.inputBox}>
                             <TextInput
-                                editable={reminder.reminderType == "custom" && isEdit}
-                                value={title}
                                 onChangeText={value => {
-                                    setTitle(value)
                                     reminder.title = value
                                 }}
                                 style={styles.input}
@@ -367,8 +297,7 @@ export function ScheduleEvent ({route, navigation}) {
                             </TextInput>
                         </View>
                     </View>
-
-                    {/* Date time */}
+                    {/* Datetime */}
                     <View
                         style={styles.dateTimeContainer}
                     >
@@ -393,23 +322,19 @@ export function ScheduleEvent ({route, navigation}) {
                                         : moment(reminder.datetime).format('dddd, D MMMM')
                                     }
                                 </Text>
-                                {
-                                    isEdit
-                                    ? (
-                                        <TouchableOpacity
-                                            onPress={() => {
-                                                showPicker('date')
-                                            }}
-                                        >
-                                            <Image
-                                                style={{
-                                                    marginLeft: 4,
-                                                }}
-                                                source={require('../assets/icons/Pen.png')}
-                                            />
-                                        </TouchableOpacity>
-                                    ) : null
-                                }
+
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        showPicker('date')
+                                    }}
+                                >
+                                    <Image
+                                        style={{
+                                            marginLeft: 4,
+                                        }}
+                                        source={require('../assets/icons/Pen.png')}
+                                    />
+                                </TouchableOpacity>
                             </View>
                             
                             <Text
@@ -432,34 +357,28 @@ export function ScheduleEvent ({route, navigation}) {
                                 >
                                     {moment(reminder.datetime).format('hh:mm A')}
                                 </Text>
-                                {
-                                    isEdit
-                                    ? (
-                                        <TouchableOpacity
-                                            onPress={() => {
-                                                showPicker('time')
-                                            }}
-                                        >
-                                            <Image
-                                                style={{
-                                                    marginLeft: 4,
-                                                }}
-                                                source={require('../assets/icons/Pen.png')}
-                                            />
-                                        </TouchableOpacity>
-                                    ) : null
-                                }
+
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        showPicker('time')
+                                    }}
+                                >
+                                    <Image
+                                        style={{
+                                            marginLeft: 4,
+                                        }}
+                                        source={require('../assets/icons/Pen.png')}
+                                    />
+                                </TouchableOpacity>
                             </View>
-                            
                             <Text
                                 style={styles.sectionTitle}
                             >
                                 {strings.time}
                             </Text>
                         </View>
-    
                     </View>
-                
+
                     {/* Pet names */}
                     <View
                         style={{
@@ -480,31 +399,31 @@ export function ScheduleEvent ({route, navigation}) {
                                 }}
                             >
                                 {
-                                    pets.length >= 1
-                                    ? <PetName pet={pets[0]}/> 
+                                    addingPets.length >= 1
+                                    ? <PetName pet={addingPets[0]}/> 
                                     : null
                                 }
 
                                 {
-                                    pets.length >= 2 
-                                    ? <PetName pet={pets[1]}/> 
+                                    addingPets.length >= 2 
+                                    ? <PetName pet={addingPets[1]}/> 
                                     : null
                                 }      
 
                                 {
-                                    pets.length >= 3 
-                                    ? <PetName pet={pets[2]}/> 
+                                    addingPets.length >= 3 
+                                    ? <PetName pet={addingPets[2]}/> 
                                     : null
                                 } 
 
                                 {
-                                    pets.length >= 4
+                                    addingPets.length >= 4
                                     ?
                                     <View
                                         style={styles.petName}
                                     >
                                         <Text>
-                                            {"+" + (pets.length - 3)}
+                                            {"+" + (addingPets.length - 3)}
                                         </Text>
                                     </View>
                                     : 
@@ -512,26 +431,22 @@ export function ScheduleEvent ({route, navigation}) {
                                 }
                             </View>
 
-                            {
-                                isEdit && (
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            setIsShowDialog(true)
-                                            setAddItemType('pet')
-                                            setDialogTitle(strings.addPetInEvent)
-                                            setDialogDescription(strings.enterPetName)
-                                        }}                        
-                                    >
-                                        <Image 
-                                            style={{
-                                                height: 32,
-                                                width: 32,
-                                            }}
-                                            source={require('../assets/icons/Add.png')}
-                                        />
-                                    </TouchableOpacity>
-                                )
-                            }
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setIsShowDialog(true)
+                                    setAddItemType('pet')
+                                    setDialogTitle(strings.addPetInEvent)
+                                    setDialogDescription(strings.enterPetName)
+                                }}                        
+                            >
+                                <Image 
+                                    style={{
+                                        height: 32,
+                                        width: 32,
+                                    }}
+                                    source={require('../assets/icons/Add.png')}
+                                />
+                            </TouchableOpacity>
                         </View>
                         
 
@@ -541,45 +456,41 @@ export function ScheduleEvent ({route, navigation}) {
                         >
                             {strings.pet}
                         </Text>
-                    </View>       
-                
+                    </View>  
+
                     {/* Type */}
                     <View
                         style={{
+                            marginTop: 30,
                             position: 'relative',
                         }}
                     >
                         {
-                            reminder.reminderType == "core" 
-                            ?
-                            null :
-                            isEdit
-                            ? (
-                                <View
-                                    style={{
-                                        position: 'absolute',
-                                        top: -4,
-                                        left: 28,
-                                        elevation: 1,
+                            <View
+                                style={{
+                                    position: 'absolute',
+                                    top: -4,
+                                    left: 28,
+                                    elevation: 1,
+                                }}
+                            >
+                                <TouchableOpacity
+                                    onPress={() =>{
+                                        setAddItemType('type')
+                                        setIsShowDialog(true)
+                                        setDialogTitle(strings.editType)
+                                        setDialogDescription(strings.type)
                                     }}
                                 >
-                                    <TouchableOpacity
-                                        onPress={() =>{
-                                            setIsShowDialog(true)
-                                            setDialogTitle(strings.editType)
-                                            setDialogDescription(strings.type)
+                                    <Image
+                                        style={{
+                                            height: 16,
+                                            width: 16
                                         }}
-                                    >
-                                        <Image
-                                            style={{
-                                                height: 16,
-                                                width: 16
-                                            }}
-                                            source={require('../assets/icons/Pen.png')}
-                                        />
-                                    </TouchableOpacity>
-                                </View>
-                            ) : null
+                                        source={require('../assets/icons/Pen.png')}
+                                    />
+                                </TouchableOpacity>
+                            </View>
                         }
 
                         <Image
@@ -592,19 +503,18 @@ export function ScheduleEvent ({route, navigation}) {
                         </Text>
                     </View>
 
-                    {/* Frequency */}
+                     {/* Frequency */}
                     <View>
                         <View
                             style={styles.rowContainer}
                         >
                             <Picker
-                                enabled={isEdit}
+                                enabled={true}
                                 style={{width: '70%'}}
                                 selectedValue={selectedFrequency}
                                 onValueChange={(itemValue, itemIndex) => {
                                     console.log(itemValue)
                                     reminder.frequency = itemValue
-                                    updateReminder(reminder)
                                     setSelectedFrequency(itemValue)
                                 }}
                             >
@@ -621,13 +531,12 @@ export function ScheduleEvent ({route, navigation}) {
                             {strings.frequency}
                         </Text>
                     </View>
-                
+
                     {/* Seperate line */}
                     <View
                         style={styles.line}
-                    >
-                    </View>
-                
+                    ></View>
+
                     {/* Details */}
                     <View
                         style={styles.detailsContainer}
@@ -651,33 +560,40 @@ export function ScheduleEvent ({route, navigation}) {
                                 )
                             })
                         }
-                        {
-                            isEdit
-                            ? (
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        setAddItemType('job')
-                                        showDialog()
-                                        setDialogTitle(strings.addDetailInEvent)
-                                        setDialogDescription(strings.enterDetailDescription)
-                                    }}
-                                >
-                                    <Text
-                                        style={{
-                                            marginLeft: 16,
-                                            marginTop: 16,
-                                            fontFamily: 'Roboto-LightItalic'
-                                        }}
-                                    >
-                                        {strings.addNewEvent}
-                                    </Text>
-                                </TouchableOpacity>
-                            ) : null
-                        }
-                    </View>
 
-                    
+                        <TouchableOpacity
+                            onPress={() => {
+                                setAddItemType('job')
+                                showDialog()
+                                setDialogTitle(strings.addDetailInEvent)
+                                setDialogDescription(strings.enterDetailDescription)
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    marginLeft: 16,
+                                    marginTop: 16,
+                                    fontFamily: 'Roboto-LightItalic'
+                                }}
+                            >
+                                {strings.addNewEvent}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
                 </ScrollView>
+
+                <TouchableOpacity
+                    onPress={() => {
+                        hanldleAddReminder()
+                    }}
+                >
+                    <Image
+                        style={{
+                            marginLeft: 'auto'
+                        }}
+                        source={require('../assets/icons/save.png')}
+                    />
+                </TouchableOpacity>
             </View>
 
             {/* Datetime Picker */}
@@ -712,38 +628,48 @@ export function ScheduleEvent ({route, navigation}) {
                     >
                         {dialogDescription}
                     </Dialog.Description>
-
                     {
-                        dialogTitle.includes(strings.delete)
-                        ? null
-                        : dialogTitle.includes(strings.edit)
+                   
+                        dialogTitle.includes(strings.edit)
                         ? (
                             <Picker
                                 selectedValue={reminder.type}
                                 onValueChange={(itemValue, itemIndex) => {
                                     reminder.type = itemValue
-                                    switch (reminder.type) {
+                                    console.log(reminder.type);
+                                    switch (itemValue) {
                                         case 'Food':
                                             setImgSource(FoodIcon) 
                                             break;
-                                        case 'Stuff':
-                                            setImgSource(StuffIcon) 
+                                        case 'HairBrush':
+                                            setImgSource(HairBrushIcon) 
+                                            break;
+                                        case 'Walk':
+                                            setImgSource(WalkIcon) 
                                             break;
                                         case 'Doctor': 
                                             setImgSource(DoctorIcon) 
                                             break
+                                        case 'Vaccine':
+                                            setImgSource(VaccineIcon)
+                                            break
                                         case 'Shower': 
                                             setImgSource(ShowerIcon) 
                                             break
+                                        case 'Sand': 
+                                            setImgSource(SandIcon) 
+                                            break
                                         default:
-                                            setImgSource(WaitIcon) 
+                                            setImgSource(QuestionIcon) 
                                             break;
                                     }
                                 }}>
                                 <Picker.Item label="Tiêm ngừa" value="Vaccine" />
                                 <Picker.Item label="Khám bệnh" value="Doctor" />
                                 <Picker.Item label="Tắm" value="Shower" />
-                                <Picker.Item label="Dọn cát" value="Poop" />
+                                <Picker.Item label="Đi dạo" value="Walk" />
+                                <Picker.Item label="Chải lông" value="HairBrush" />
+                                <Picker.Item label="Dọn cát" value="Sand" />
                                 <Picker.Item label="Cho ăn" value="Food" />
                                 <Picker.Item label="Khác" value="Other" />
                             </Picker>
@@ -763,15 +689,15 @@ export function ScheduleEvent ({route, navigation}) {
                             </View>
                         ) : (
                             <Picker
-                                selectedValue={selectedAddingPet}
+                                selectedValue={selectedAddingPet._id}
                                 onValueChange={(itemValue, itemIndex) => {
-                                    console.log(itemValue);
                                     setSelectedAddingPet(itemValue)
                                 }}>
                                 {
-                                    addingPets.length > 0
+                                    pets.length > 0
                                     ?
-                                    addingPets.map(pet => {
+
+                                    pets.map(pet => {
                                         return (
                                             <Picker.Item key={pet._id} label={pet.name} value={pet._id} />
                                         )
@@ -790,17 +716,13 @@ export function ScheduleEvent ({route, navigation}) {
                     />
                     <Dialog.Button 
                         label={
-                            dialogTitle.includes(strings.delete)
-                            ? strings.delete
-                            : dialogTitle.includes(strings.edit) 
+                            dialogTitle.includes(strings.edit) 
                             ? strings.save 
-                            : strings.add
+                            :
+                            strings.add
                         }
-                        onPress={handleDelete}/>
+                        onPress={handleDialogFinish}/>
             </Dialog.Container>
-
-            {/* Picker */}
-
         </View>
     )
 }
@@ -813,17 +735,18 @@ const styles = StyleSheet.create({
     headerContainer: {
         display: 'flex',
         flexDirection: 'row',
-        justifyContent: 'space-between',
         position: 'relative',
-        flex: 1.2,
+        flex: 1,
     },
     title: {
         color: COLORS.white,
         fontSize: 20,
         alignSelf: 'center',
+        marginLeft: 'auto',
+        marginRight: 'auto',
     },
     bodyContainer: {
-        flex: 8.5,
+        flex: 9,
         backgroundColor: COLORS.white,
         borderTopLeftRadius: 15,
         borderTopRightRadius: 15,
@@ -851,14 +774,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
     },
-    petName: {
-        position: 'relative',
-        backgroundColor: COLORS.grey,
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 25,
-        marginRight: 4,
-    },
     eventJobs: {
         width: '100%',
         position: 'relative',
@@ -867,6 +782,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: 12,
+    },
+    petName: {
+        position: 'relative',
+        backgroundColor: COLORS.grey,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 25,
+        marginRight: 4,
     },
     line: {
         backgroundColor: COLORS.dark,
@@ -889,11 +812,4 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 20,
     },
-    rowContainer: {
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-    }
 })
-

@@ -32,7 +32,8 @@ export function StatisticScreen({navigation}) {
         getMonthStatistic(month, (values, percentage) => {
             try {
                 if (!isCancelled) {
-                    if (values[0] == values[1] == values[2] == values[3] == values[4] == 0) {
+                    console.log(values);
+                    if (values[0] == 0 && values[1] == 0 && values[2] == 0 &&  values[3] == 0 && values[4] == 0) {
                         setShowData(false)
                     } else {
                         setShowData(true)
@@ -231,6 +232,9 @@ export function StatisticScreen({navigation}) {
         return (
             <View style={styles.bottomBar}>
                 <TouchableOpacity
+                    onPress={() => {
+                        navigation.goBack()
+                    }}
                 >
                     <Image 
                         style={{
@@ -240,16 +244,7 @@ export function StatisticScreen({navigation}) {
                         source={require('../assets/icons/BackArrow.png')}
                     />
                 </TouchableOpacity>
-                <TouchableOpacity
-                >
-                    <Image 
-                        
-                        style={{
-                            height: 30,
-                            width: 30,
-                            }}
-                        source={require('../assets/icons/Chart.png')}/>
-                </TouchableOpacity>
+
             </View>
         )
     }
@@ -285,9 +280,9 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.dark,
     }, 
     headerContainer: {
-        flex: 1,
+        flex: 0.8,
         alignItems: 'center', 
-        padding: 24,
+        padding: 8,
     },
     headerTitle: {
         color: COLORS.white,
@@ -299,7 +294,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Roboto-Italic'
     },
     bodyContainer: {
-        padding: 20,
+        padding: 10,
         flex: 9,
         backgroundColor: COLORS.white,
         borderTopLeftRadius: 15,
@@ -313,14 +308,14 @@ const styles = StyleSheet.create({
         fontSize: 12,
     },
     bottomBar: {
-        position: 'absolute',
-        bottom: 10,
+        flex: 0.2,
+        backgroundColor: COLORS.white,
         paddingVertical: 10,
+        paddingBottom: 20,
         paddingHorizontal: 30,
         width: '100%',
-        display: 'flex',
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         alignItems: 'center',
     },
 })

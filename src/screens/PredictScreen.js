@@ -4,41 +4,10 @@ import { StyleSheet, Text, View, Image} from 'react-native'
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import { getPredictList } from '../api/HeathPredictAPI'
-
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
-const Section = (props) => {
-    return (
-        <View style={styles.sectionContainer}>
-            <View
-                style={{
-                    marginRight: 20,
-                }}
-            >
-                <Text style={styles.sectionTitle}>
-                    {props.predict.title}
-                </Text>
 
-                <Text style={styles.sectionDescription}>
-                    {props.predict.description}
-                </Text>
-
-
-            </View>
-
-            <TouchableOpacity 
-                style={{
-                }}
-            >
-                <Image
-                    source={require('../assets/icons/Back.png')}
-                />
-            </TouchableOpacity>
-        </View>
-    )
-}
-
-export function PredictScreen() {
+export function PredictScreen({navigation}) {
     const [predictList, setPredictList] = useState([])
 
     useEffect(() => {
@@ -46,6 +15,7 @@ export function PredictScreen() {
         getPredictList(predictList => {
             try {
                 if (!isCancelled) {
+                    console.log(predictList);
                     setPredictList(predictList)
                 }
             } catch (error) {
@@ -58,12 +28,44 @@ export function PredictScreen() {
         }
     }, [])
 
+    const Section = (props) => {
+        return (
+            <View style={styles.sectionContainer}>
+                <TouchableOpacity
+                    onPress={() => {
+                        navigation.navigate('PredictDetail', {
+                            predict_id: props.predict._id
+                        })
+                    }}
+                >
+                    <Text style={styles.sectionTitle}>
+                        {props.predict.title}
+                    </Text>
+    
+                    <Text style={styles.sectionDescription}>
+                        {props.predict.description}
+                    </Text>
+                </TouchableOpacity>
+            </View>
+        )
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
+                <TouchableOpacity 
+                    style={styles.headerIcon}
+                    onPress={() => {
+                        navigation.goBack()
+                    }}
+                >
+                    <Image source={require('../assets/icons/Back.png')} />
+                </TouchableOpacity>
+
                 <Text style={styles.title}>
                     {strings.predictHeath}
                 </Text>
+
                 <TouchableOpacity style={styles.headerIcon}>
                     <Image source={require('../assets/icons/QuestionMark.png')} />
                 </TouchableOpacity>
@@ -95,8 +97,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         position: 'relative',
         flex: 1.2,
-        alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'space-between'
     },
     bodyContainer: {
         flex: 8.8,
@@ -106,32 +107,31 @@ const styles = StyleSheet.create({
         padding: 28, 
     },
     title: {
+        alignSelf: 'center',
         fontFamily: 'Roboto-Bold',
-        fontSize: 24,
+        fontSize: 20,
         color: COLORS.white,
     },  
     headerIcon: {
-        top: 0,
-        left: 0,
+        padding: 8,
     },
     sectionContainer: {
         display: 'flex',
         flexDirection: 'row',
-        position: 'relative',
         alignItems: 'center',
+        justifyContent: 'space-between',
         backgroundColor: COLORS.grey,
-        padding: 12,
+        padding: 20,
+        marginRight: -10,
         borderRadius: 8,
         marginBottom: 8,
     },
     sectionTitle: {
         fontFamily: 'Roboto-Bold',
         fontSize: 18,
-        //color: COLORS.white,
     },
     sectionDescription: {
-        fontFamily: 'Roboto-Light',
+        fontFamily: 'Roboto-Regular',
         fontSize: 14,
-        //color: COLORS.white,
     }
 })

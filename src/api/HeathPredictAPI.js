@@ -22,8 +22,7 @@ export const getPredictList = (handleCallback) => {
   var PredictList = new Array()
   firestore()
   .collection('heathPredict')
-  .get()
-  .then(querySnapshot => {
+  .onSnapshot(querySnapshot => {
       querySnapshot.forEach(documentSnapshot => {
         var heathPredict = new HeathPredict();
         heathPredict.update(documentSnapshot.data())

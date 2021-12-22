@@ -85,11 +85,12 @@ export const getMonthLimitAndAvg = (handleMonthLimitCallback) => {
   }, onError);
 }
 
-export const findDateByKeyword = (keyword, handleDatesCallback) => {
+export const findDateByKeyword = (keyword, date, handleDatesCallback) => {
   var datesList = new Array();
   firestore()
   .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/expenditures')
-  .orderBy('date', 'desc')
+  .where('month', '==', date.getMonth() + 1)
+  .where('year', '==', date.getFullYear())
   .get()
   .then(querySnapshot => {
     querySnapshot.forEach(documentSnapshot => {
@@ -99,7 +100,7 @@ export const findDateByKeyword = (keyword, handleDatesCallback) => {
           datesList.push(tempDate)
       }
     });
-    handleDatesCallback(datesList)
+    handleDatesCallback(sort(datesList))
   }, onError);
 }
 
@@ -108,7 +109,7 @@ export const addExpenditure = (expenditure, handleAddExpenditureCallback) => {
   .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/expenditures')
   .add({
     title: expenditure.title,
-    amount: expenditure.amount,
+    amount: parseInt(expenditure.amount),
     month: expenditure.date.getMonth() + 1,
     date: firestore.Timestamp.fromDate(new Date(expenditure.date)),
     year: expenditure.date.getFullYear(),
@@ -125,7 +126,7 @@ export const updateExpenditure = (expenditure, handleUpdateExpenditureCallback) 
   .doc(expenditure._id)
   .set({
     title: expenditure.title,
-    amount: expenditure.amount,
+    amount: parseInt(expenditure.amount),
     month: expenditure.date.getMonth() + 1,
     date: firestore.Timestamp.fromDate(new Date(expenditure.date)),
     year: expenditure.date.getFullYear(),

@@ -6,7 +6,7 @@ import strings from '../data/strings';
 import HeathPredict from '../models/heathPredict';
 import { getPredictDetail, getPredictList } from '../api/HeathPredictAPI'
 
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 import Animated,
 {
     FadeInRight,
@@ -158,12 +158,13 @@ const SubDetail = (props) => {
     )    
 }
 
-export function PredictDetailsScreen() {
+export function PredictDetailsScreen({route, navigation}) {
     const [predict, setPredict] = useState(new HeathPredict())
 
     useEffect(() => {
         let isCancelled = false;
-        getPredictDetail("GZi6kjzrEwuS1ej5jutm", predict => {
+        const { predict_id } = route.params;
+        getPredictDetail(predict_id, predict => {
             try {
                 if (!isCancelled) {
                     console.log(predict);
@@ -182,15 +183,26 @@ export function PredictDetailsScreen() {
     return (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
+                <TouchableOpacity 
+                    style={styles.headerIcon}
+                    onPress={() => {
+                        navigation.goBack()
+                    }}
+                >
+                    <Image source={require('../assets/icons/Back.png')} />
+                </TouchableOpacity>
+
                 <Text style={styles.title}>
-                    {strings.predictHeath}
+                    {strings.predictHeath} - {predict.title}
                 </Text>
+
                 <TouchableOpacity style={styles.headerIcon}>
                     <Image source={require('../assets/icons/QuestionMark.png')} />
                 </TouchableOpacity>
             </View>
 
             <View style={styles.bodyContainer}>
+                <ScrollView>
                 {
                     predict.predictDetail.map(section => {
                         return (
@@ -201,6 +213,7 @@ export function PredictDetailsScreen() {
                         )
                     })
                 }
+                </ScrollView>
             </View>
         </View>
     )
@@ -215,26 +228,25 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'row',
         position: 'relative',
+        justifyContent: 'space-between',
         flex: 1.2,
-        alignItems: 'center',
-        justifyContent: 'center'
+    },
+    headerIcon: {
+        padding: 8,
     },
     bodyContainer: {
         flex: 8.8,
         backgroundColor: COLORS.white,
         borderTopLeftRadius: 15,
         borderTopRightRadius: 15,
-        padding: 28, 
+        padding: 16, 
     },
     title: {
+        alignSelf: 'center',
         fontFamily: 'Roboto-Bold',
-        fontSize: 24,
+        fontSize: 20,
         color: COLORS.white,
     },  
-    headerIcon: {
-        top: 0,
-        left: 0,
-    },
     sectionContainer: {
         position: 'relative',
         alignItems: 'center',

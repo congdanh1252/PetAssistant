@@ -20,4 +20,4 @@ export default class Expenditure {
       reminder.update(data);
       return reminder;
     }
-  }
+}

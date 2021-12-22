@@ -33,7 +33,7 @@ const PetProfileScreen = ({route, navigation}) => {
 
     const { pet_id } = route.params;
     
-    const care_section = [
+    var care_section = [
         {
             task: 'Shower',
             activated: true,
@@ -602,7 +602,7 @@ const style = StyleSheet.create({
     care_uppers_chart: {
         width: 98,
         height: 98,
-        left: 8,
+        left: 5,
         top: 12,
         position: 'absolute',
         display: 'flex',

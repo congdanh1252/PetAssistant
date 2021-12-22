@@ -14,15 +14,33 @@ const GuideListScreen = ({route, navigation}) => {
     const [show, setShow] = useState(false);
     const [guides, setGuides] = useState([]);
     const [dataList, setDataList] = useState([]);
-    const [filter, setFilter] = useState('');
+    const [filter, setFilter] = useState(0);
 
-    const snapPoints = useMemo(() => ['19%', '19%'], []);
+    const snapPoints = useMemo(() => ['35%', '35%'], []);
 
     const getGuideListOrderByRating = (filter) => {
         const subscribe =
         firestore()
         .collection('camnang')
         .orderBy('rating', filter)
+        .get()
+        .then(querySnapshot => {
+            var guideList = new Array();
+            querySnapshot.forEach(documentSnapshot => {
+                var guide = new Guide();
+                guide.update(documentSnapshot.data());
+                guide._id = documentSnapshot.id;
+                guideList.push(guide);
+            });
+            setGuides(guideList);
+        });
+    }
+
+    const getGuideListOrderByTime = (filter) => {
+        const subscribe =
+        firestore()
+        .collection('camnang')
+        .orderBy('day_upload', filter)
         .get()
         .then(querySnapshot => {
             var guideList = new Array();
@@ -118,6 +136,9 @@ const GuideListScreen = ({route, navigation}) => {
                 <TouchableOpacity
                     style={style.saved_button}
                     activeOpacity={0.6}
+                    onPress={() => {
+                        navigation.navigate('SavedList');
+                    }}
                 >
                     <Image
                         style={style.saved_button}
@@ -142,7 +163,7 @@ const GuideListScreen = ({route, navigation}) => {
                     }}
                     style={{width: 70}}
                 >
-                    <Text style={style.title}>{strings.filter}</Text>
+                    <Text style={style.title}>{strings.sort}</Text>
                 </TouchableOpacity>
                 
                 <GuideList/>
@@ -162,13 +183,15 @@ const GuideListScreen = ({route, navigation}) => {
                                 style={style.dropdown_bottomsheet}
                                 enableOverDrag={false}
                                 enablePanDownToClose={true}
+                                onClose={() => {setShow(false)}}
                             >
+                                {/* Hữu ích giảm */}
                                 <TouchableHighlight
                                     key={1}
                                     activeOpacity={0.7}
                                     underlayColor='#EEEEEE'
                                     style={
-                                        filter != 'desc'
+                                        filter != 1
                                         ?
                                         style.dropdown_option
                                         :
@@ -177,20 +200,21 @@ const GuideListScreen = ({route, navigation}) => {
                                     onPress={() => {
                                         getGuideListOrderByRating('desc');
                                         setShow(false)
-                                        setFilter('desc')
+                                        setFilter(1)
                                     }}
                                 >
                                     <Text style={style.dropdown_option_text}>
-                                        {strings.rating_desc_filter}
+                                        {strings.rating_desc_sort}
                                     </Text>
                                 </TouchableHighlight>
 
+                                {/* Hữu ích tăng */}
                                 <TouchableHighlight
                                     key={2}
                                     activeOpacity={0.7}
                                     underlayColor='#EEEEEE'
                                     style={
-                                        filter != 'asc'
+                                        filter != 2
                                         ?
                                         style.dropdown_option
                                         :
@@ -199,11 +223,57 @@ const GuideListScreen = ({route, navigation}) => {
                                     onPress={() => {
                                         getGuideListOrderByRating('asc')
                                         setShow(false)
-                                        setFilter('asc')
+                                        setFilter(2)
                                     }}
                                 >
                                     <Text style={style.dropdown_option_text}>
-                                        {strings.rating_asc_filter}
+                                        {strings.rating_asc_sort}
+                                    </Text>
+                                </TouchableHighlight>
+
+                                {/* Ngày cũ nhất */}
+                                <TouchableHighlight
+                                    key={3}
+                                    activeOpacity={0.7}
+                                    underlayColor='#EEEEEE'
+                                    style={
+                                        filter != 3
+                                        ?
+                                        style.dropdown_option
+                                        :
+                                        [style.dropdown_option, {backgroundColor: COLORS.grey}]
+                                    }
+                                    onPress={() => {
+                                        getGuideListOrderByTime('desc');
+                                        setShow(false)
+                                        setFilter(3)
+                                    }}
+                                >
+                                    <Text style={style.dropdown_option_text}>
+                                        {strings.time_desc_sort}
+                                    </Text>
+                                </TouchableHighlight>
+
+                                {/* Ngày mới nhất */}
+                                <TouchableHighlight
+                                    key={4}
+                                    activeOpacity={0.7}
+                                    underlayColor='#EEEEEE'
+                                    style={
+                                        filter != 4
+                                        ?
+                                        style.dropdown_option
+                                        :
+                                        [style.dropdown_option, {backgroundColor: COLORS.grey}]
+                                    }
+                                    onPress={() => {
+                                        getGuideListOrderByTime('asc')
+                                        setShow(false)
+                                        setFilter(4)
+                                    }}
+                                >
+                                    <Text style={style.dropdown_option_text}>
+                                        {strings.time_asc_sort}
                                     </Text>
                                 </TouchableHighlight>
                             </BottomSheet>
