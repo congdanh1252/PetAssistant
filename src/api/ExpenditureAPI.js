@@ -1,5 +1,6 @@
 import firestore from '@react-native-firebase/firestore';
 import Expenditure from '../models/expenditure';
+import auth from '@react-native-firebase/auth';
 
 function onError(error) {
   console.error(error);
@@ -19,11 +20,10 @@ function sort(array) {
 
 export const getExpenditures = (date, handleExpenditures) => {
   var expenditureList = new Array();
-
   var startOfToday =  firestore.Timestamp.fromDate(new Date(date.setHours(0, 0, 0, 0))); 
   var endOfToday = firestore.Timestamp.fromDate(new Date(date.setHours(23, 59, 59, 999))); 
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/expenditures')
+  .collection('users/' + auth().currentUser.uid + '/expenditures')
   .where('date','>=',startOfToday)
   .where('date', '<=', endOfToday)
   .get()
@@ -42,7 +42,7 @@ export const getExpenditures = (date, handleExpenditures) => {
 export const getAllDate = (date, handleDatesCallback) => {
   var datesList = new Array();
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/expenditures')
+  .collection('users/' + auth().currentUser.uid + '/expenditures')
   .where('month', '==', date.getMonth() + 1)
   .where('year', '==', date.getFullYear())
   .get()
@@ -59,7 +59,7 @@ export const getAllDate = (date, handleDatesCallback) => {
 export const getMonthTotal = (date, handleTotalCallback) => {
   var total = 0;
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/expenditures')
+  .collection('users/' + auth().currentUser.uid + '/expenditures')
   .where('month', '==', date.getMonth() + 1)
   .where('year', '==', date.getFullYear())
   .get()
@@ -76,7 +76,7 @@ export const getMonthLimitAndAvg = (handleMonthLimitCallback) => {
   var avg = 0
   firestore()
   .collection('users')
-  .doc('VbNsDN6X1EgC4f0FfXAQvtZJ21q2')
+  .doc(auth().currentUser.uid)
   .get()
   .then(documentSnapshot => {
       limit = documentSnapshot.data().expenditure_limit
@@ -88,7 +88,7 @@ export const getMonthLimitAndAvg = (handleMonthLimitCallback) => {
 export const findDateByKeyword = (keyword, date, handleDatesCallback) => {
   var datesList = new Array();
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/expenditures')
+  .collection('users/' + auth().currentUser.uid + '/expenditures')
   .where('month', '==', date.getMonth() + 1)
   .where('year', '==', date.getFullYear())
   .get()
@@ -106,7 +106,7 @@ export const findDateByKeyword = (keyword, date, handleDatesCallback) => {
 
 export const addExpenditure = (expenditure, handleAddExpenditureCallback) => {
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/expenditures')
+  .collection('users/' + auth().currentUser.uid + '/expenditures')
   .add({
     title: expenditure.title,
     amount: parseInt(expenditure.amount),
@@ -122,7 +122,7 @@ export const addExpenditure = (expenditure, handleAddExpenditureCallback) => {
 
 export const updateExpenditure = (expenditure, handleUpdateExpenditureCallback) => {
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/expenditures')
+  .collection('users/' + auth().currentUser.uid + '/expenditures')
   .doc(expenditure._id)
   .set({
     title: expenditure.title,
@@ -139,7 +139,7 @@ export const updateExpenditure = (expenditure, handleUpdateExpenditureCallback) 
 
 export const deleteExpenditure = (expenditure, handleDeleteExpenditureCallback) => {
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/expenditures')
+  .collection('users/' + auth().currentUser.uid + '/expenditures')
   .doc(expenditure._id)
   .delete()
   .then(() => {
@@ -152,7 +152,7 @@ export const getMonthStatistic = (date, handleStatisticCallback) => {
   var percentage = [0, 0, 0, 0, 0]
   var total = 0
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/expenditures')
+  .collection('users/' + auth().currentUser.uid + '/expenditures')
   .where('month', '==', date.getMonth() + 1)
   .where('year', '==', date.getFullYear())
   .get()

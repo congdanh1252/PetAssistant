@@ -6,6 +6,7 @@ import COLORS from '../../theme/colors';
 
 
 import auth from '@react-native-firebase/auth';
+import strings from '../../data/strings';
 const windowWidth = Dimensions.get('window').width;
 
 
@@ -82,7 +83,7 @@ export const ChangePasswordScreen_3_1 = (props) => {
                     <Text
                         style={{color: COLORS.primaryDark, fontSize: 15, fontStyle: 'italic'}}
                     >
-                        Resend code
+                        {strings.resend}
                     </Text>
                 </TouchableOpacity>
             )
@@ -91,7 +92,7 @@ export const ChangePasswordScreen_3_1 = (props) => {
             <Text
                 style={{color: COLORS.primary}}
             >
-                Resend code? Try again in ({timeLeft}s)
+                {strings.wannaResend} ({timeLeft}s)
             </Text>
         )
     }
@@ -112,7 +113,7 @@ export const ChangePasswordScreen_3_1 = (props) => {
             </Text>
 
             <View style={styles.inputBox}>
-                <Text style={styles.inputTitle}>Enter one time password sent on</Text>
+                <Text style={styles.inputTitle}>{strings.enterOTP}</Text>
                 <Text style={styles.phoneNum}>{phoneNumber}</Text>
                 <TextInput
                     editable={!isCorretCode}

@@ -1,6 +1,8 @@
 import firestore from '@react-native-firebase/firestore';
 import Reminder from '../models/reminder';
 import Pet from '../models/pet';
+import auth from '@react-native-firebase/auth';
+
 
 import {
   getPetName
@@ -26,7 +28,7 @@ function sort(array) {
 export const getReminder = (reminderID, handleReminder) => {
   var reminder = new Reminder(reminderID);
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
+  .collection('users/' + auth().currentUser.uid + '/reminders')
   .doc(reminderID)
   .onSnapshot(documentSnapshot => {
       reminder.update(documentSnapshot.data())
@@ -37,12 +39,12 @@ export const getReminder = (reminderID, handleReminder) => {
 
 export const addReminder = (reminder, handleCallback) => {
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
+  .collection('users/' + auth().currentUser.uid + '/reminders')
   .add(reminder)
   .then(docRef => {
     reminder._id = docRef.id
     firestore()
-    .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
+    .collection('users/' + auth().currentUser.uid + '/reminders')
     .doc(docRef.id)
     .update({
       _id: reminder._id,
@@ -58,7 +60,7 @@ export const addReminder = (reminder, handleCallback) => {
 
 export const updateReminder = (reminder) => {
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
+  .collection('users/' + auth().currentUser.uid + '/reminders')
   .doc(reminder._id)
   .update({
     _id: reminder._id,
@@ -83,7 +85,7 @@ export const getPetsReminder = (petsId, handleCallback) => {
   var existPets = new Array() 
   var addingPets = new Array() 
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/pets')
+  .collection('users/' + auth().currentUser.uid + '/pets')
   .onSnapshot(querySnapshot => {
     querySnapshot.forEach(documentSnapshot => {
       var pet = new Pet()
@@ -103,7 +105,7 @@ export const getDateReminder = (date, handleCallback) => {
   var remindersList = new Array();
   var oldRemindersList = new Array();
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
+  .collection('users/' + auth().currentUser.uid + '/reminders')
   .where('month', '==', date.getMonth() + 1)
   .where('year', '==', date.getFullYear())
   .where('date', '==', date.getDate())
@@ -126,7 +128,7 @@ export const getMonthReminderDate = (date, handleCallback) => {
   console.log(date.getDate() + "/" +(date.getMonth() + 1) + "/" +  date.getFullYear());
   var dates = new Array()
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
+  .collection('users/' + auth().currentUser.uid + '/reminders')
   .where('month', '==', date.getMonth() + 1)
   .where('year', '==', date.getFullYear())
   .get()
