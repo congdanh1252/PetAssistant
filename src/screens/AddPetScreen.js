@@ -301,6 +301,22 @@ const AddPetScreen = ({route, navigation}) => {
                             options = options.concat(options, species_choice_base);
                         }
                         break;
+                    case 'Chim':
+                        if (species_choice_base.length == 0) {
+                            options = options.concat(options, speciesOpt.bird);
+                        }
+                        else {
+                            options = options.concat(options, species_choice_base);
+                        }
+                        break;
+                    case 'Hamster':
+                        if (species_choice_base.length == 0) {
+                            options = options.concat(options, speciesOpt.hamster);
+                        }
+                        else {
+                            options = options.concat(options, species_choice_base);
+                        }
+                        break;
                     default:
                         options.push(strings.else_option);
                 }

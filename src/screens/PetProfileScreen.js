@@ -89,11 +89,7 @@ const PetProfileScreen = ({route, navigation}) => {
     const handlePetDeleted = (result) => {
         showResultToast(result);
 
-        navigation.navigate({
-            name: 'MyPets',
-            params: { deletedPet: pet},
-            merge: true,
-        });
+        navigation.goBack();
     }
 
     const handleDeleteButton = () => {
@@ -341,6 +337,30 @@ const PetProfileScreen = ({route, navigation}) => {
 
                     <CareContent/>
                 </View>
+
+                {/* Health book */}
+                <TouchableOpacity
+                    activeOpacity={0.7}
+                    style={style.health_book_holder}
+                    onPress={() => {
+                        navigation.navigate('HealthBook', {
+                            pet_id: pet._id
+                        })
+                    }}
+                >
+                    <Text
+                        style={
+                            [style.section_title, {marginBottom: 0}]
+                        }
+                    >
+                        {strings.health_book}
+                    </Text>
+
+                    <Image
+                        style={{height: 36, width: 36}}
+                        source={require('../assets/icons/ic_health_book.png')}
+                    />
+                </TouchableOpacity>
             </BottomSheet>
 
             {/* Overlay and Settings dropdown bottomsheet */}
@@ -560,6 +580,13 @@ const style = StyleSheet.create({
     },
     care_information: {
         marginTop: 16,
+    },
+    health_book_holder: {
+        marginTop: 12,
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
     },
     dropdown_bottomsheet: {
         borderRadius: 10,

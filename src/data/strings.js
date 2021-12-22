@@ -81,6 +81,9 @@ export default strings = {
     msg_saved_guide_list_empty: "Có vẻ danh sách đã lưu trống.\nBạn hãy đọc và lưu lại bài viết bạn thấy hữu ích nhé!",
     msg_guide_rated: "Bạn đã đánh giá bài viết rồi!",
     msg_choose_photo_to_search: "Chọn một hình ảnh của thú cưng để tìm thêm thông tin bạn nhé!",
+    health_book: "Sổ sức khỏe",
+    vaccination_label: "Vắc-xin",
+    treatment_label: "Điều trị",
 
     addNewEvent: "Thêm hoạt động mới",
     cancel: "Hủy",
