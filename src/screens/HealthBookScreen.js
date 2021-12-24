@@ -4,8 +4,8 @@ import { Image, StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput,
 } from 'react-native';
 
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { WelcomeScreen } from './WelcomeScreen';
-import { IntroductionScreen } from './IntroductionScreen';
+import VaccinationScreen from './VaccinationScreen';
+import TreatmentScreen from './TreatmentScreen';
 import firestore from '@react-native-firebase/firestore';
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
@@ -32,8 +32,8 @@ const MyTabs = () => {
             }
           }}
         >
-          <Tab.Screen name={strings.vaccination_label} component={WelcomeScreen} />
-          <Tab.Screen name={strings.treatment_label} component={IntroductionScreen} />
+          <Tab.Screen name={strings.vaccination_label} component={VaccinationScreen} />
+          <Tab.Screen name={strings.treatment_label} component={TreatmentScreen} />
         </Tab.Navigator>
     );
 }
@@ -69,10 +69,6 @@ const style = StyleSheet.create({
     },
     container: {
         height: '100%',
-        // paddingTop: 22,
-        // paddingLeft: 22,
-        // paddingRight: 22,
-        // paddingBottom: 22,
         marginTop: -20,
         borderTopLeftRadius: 25,
         borderTopRightRadius: 25,
@@ -81,14 +77,14 @@ const style = StyleSheet.create({
     },
     header: {
         width: '100%',
-        height: 100,
-        paddingTop: 12,
+        height: '12%',
+        paddingTop: 10,
         paddingLeft: 8,
         flexDirection: 'row',
         backgroundColor: COLORS.dark,
     },
     headerTitle: {
-        width: '76%',
+        width: '77%',
         textAlign: 'center',
         fontFamily: 'Roboto-Medium',
         fontSize: 22,

@@ -8,7 +8,7 @@ import {
 import { Input } from 'react-native-elements/dist/input/Input';
 import { Button } from 'react-native-elements/dist/buttons/Button';
 import ProgressBar from '../components/ProgressBar';
-import auth, { firebase } from '@react-native-firebase/auth';
+import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
@@ -81,12 +81,6 @@ export const RegisterScreen_1 = ({navigation}) => {
         if (useName==='' || useEmail==='' || usePassword==='' || useConfirmPassword != usePassword ||
             usePhone==='' || useConfirmPassword==='' || useValidEmail===false || useValidPassword===false) {
                 valid_inputs = false;
-                console.log(useName);
-                console.log(useEmail);
-                console.log(usePassword);
-                console.log(useConfirmPassword);
-                console.log(useValidEmail);
-                console.log(useValidPassword);
         }
         else {
             valid_inputs = true;
@@ -94,67 +88,68 @@ export const RegisterScreen_1 = ({navigation}) => {
     }
 
     const registerNewAccount = () => {
-        checkInput();
-        if (valid_inputs) {console.log("duoc");
-            try {
-                // create user with email, pass
-                const userCredential = auth().createUserWithEmailAndPassword(useEmail, usePassword)
-                .catch((error) => {
-                    console.log(error)
-                });
-                console.log('user created');
+        navigation.navigate('Register2');
+        // checkInput();
+        // if (valid_inputs) {console.log("duoc");
+        //     try {
+        //         // create user with email, pass
+        //         const userCredential = auth().createUserWithEmailAndPassword(useEmail, usePassword)
+        //         .catch((error) => {
+        //             console.log(error)
+        //         });
+        //         console.log('user created');
 
-                const onAuthStateChangedUnsubscribe = 
-                    firebase.auth().onAuthStateChanged(async (user) => {
-                        if (user && !isAuthChanged) {
-                            setAuthChanged(true);
-                            //send mail to user
-                            await user.sendEmailVerification()
-                            .then(() => {
-                                    console.log('mail sent');
-                                    navigation.navigate('Register2');
-                                }
-                            )
-                            .catch((error) => {
-                                console.log(error)
-                            });
+        //         const onAuthStateChangedUnsubscribe = 
+        //             auth().onAuthStateChanged(async (user) => {
+        //                 if (user && !isAuthChanged) {
+        //                     setAuthChanged(true);
+        //                     //send mail to user
+        //                     await user.sendEmailVerification()
+        //                     .then(() => {
+        //                             console.log('mail sent');
+        //                             navigation.navigate('Register2');
+        //                         }
+        //                     )
+        //                     .catch((error) => {
+        //                         console.log(error)
+        //                     });
 
-                            //check verified mail
-                            const onIdTokenChangedUnsubscribe = firebase.auth().onIdTokenChanged((newUser) => {
-                                const unsubscribeSetInterval = setInterval(() => {
-                                    if (firebase.auth().currentUser && !isAddedFirebase) {
-                                        firebase.auth().currentUser.reload();
-                                        console.log('reload user');
-                                        firebase.auth().currentUser.getIdToken(/* forceRefresh */ true)
+        //                     //check verified mail
+        //                     const onIdTokenChangedUnsubscribe = auth().onIdTokenChanged((newUser) => {
+        //                         const unsubscribeSetInterval = setInterval(() => {
+        //                             if (firebase.auth().currentUser && !isAddedFirebase) {
+        //                                 firebase.auth().currentUser.reload();
+        //                                 console.log('reload user');
+        //                                 firebase.auth().currentUser.getIdToken(/* forceRefresh */ true)
 
-                                        if (newUser.emailVerified) {
-                                            console.log('mail clicked');
-                                            clearInterval(unsubscribeSetInterval); //delete timeout
-                                            onAuthStateChangedUnsubscribe(); //unsubscribe onAuthStateChanged
-                                            if ( !isAddedFirebase) {
-                                                isAddedFirebase = true;
-                                                addAccountToFirestoreAndFinish(user.uid);
-                                            }
-                                            return onIdTokenChangedUnsubscribe(); //unsubscribe onIdTokenChanged
-                                        }
-                                    }
-                                    else if (isAddedFirebase) {
-                                        clearInterval(unsubscribeSetInterval);
-                                        onAuthStateChangedUnsubscribe(); 
-                                        return onIdTokenChangedUnsubscribe();
-                                    }
-                                    console.log('mail not clicked');
-                                }, 5000);
-                            })
-                        }
-                    })
-            } catch (error) {
-                throw error;
-            }
-        }
-        else {
-            alertEmptyInput();
-        }
+        //                                 if (newUser.emailVerified) {
+        //                                     console.log('mail clicked');
+        //                                     clearInterval(unsubscribeSetInterval); //delete timeout
+        //                                     onAuthStateChangedUnsubscribe(); //unsubscribe onAuthStateChanged
+        //                                     if ( !isAddedFirebase) {
+        //                                         isAddedFirebase = true;
+        //                                         addAccountToFirestoreAndFinish(user.uid);
+        //                                     }
+        //                                     return onIdTokenChangedUnsubscribe(); //unsubscribe onIdTokenChanged
+        //                                 }
+        //                             }
+        //                             else if (isAddedFirebase) {
+        //                                 clearInterval(unsubscribeSetInterval);
+        //                                 onAuthStateChangedUnsubscribe(); 
+        //                                 return onIdTokenChangedUnsubscribe();
+        //                             }
+        //                             console.log('mail not clicked');
+        //                         }, 5000);
+        //                     })
+        //                 }
+        //             })
+        //     } catch (error) {
+        //         throw error;
+        //     }
+        // }
+        // else {
+        //     alertEmptyInput();
+        // }
     }
 
     return (
@@ -162,7 +157,7 @@ export const RegisterScreen_1 = ({navigation}) => {
             enableAutomaticScroll={true}
             scrollEnabled={true}
             onScroll={() => Keyboard.dismiss()}
-            contentContainerStyle={{height: height}}
+            contentContainerStyle={{height: '100%'}}
         >
             <TouchableWithoutFeedback
                 onPress={() => {
@@ -177,7 +172,7 @@ export const RegisterScreen_1 = ({navigation}) => {
                 <View style={style.container}>
                     <View style={style.icon_title_container}>
                         <Image style={style.bone_icon} source={require('../assets/icons/bone.png')} resizeMode='cover'/>
-                        <Text style={style.register_title}>Register{"\n"}new account</Text>
+                        <Text style={style.register_title}>Đăng ký{"\n"}tài khoản mới</Text>
                     </View>
                     
                     {/* Full name */}
@@ -185,8 +180,8 @@ export const RegisterScreen_1 = ({navigation}) => {
                         placeholderTextColor='#4c4c4c'
                         inputStyle={{color: '#000'}}
                         containerStyle={style.input_container}
-                        label='Full name'
-                        placeholder='Full name'
+                        label='Họ tên'
+                        placeholder='Nhập họ tên'
                         textContentType='name'
                         multiline={false}
                         leftIcon={<Feather style={style.icon} name="user" size={28} color="black" />}
@@ -216,12 +211,12 @@ export const RegisterScreen_1 = ({navigation}) => {
                         inputStyle={{color: '#000'}}
                         containerStyle={style.input_container}
                         label='Email'
-                        placeholder='Email'
+                        placeholder='Nhập email'
                         keyboardType='email-address'
                         textContentType='emailAddress'
                         multiline={false}
                         errorStyle={style.pass_requirement}
-                        errorMessage={useValidEmail ? 'This is a valid email' : 'Make sure you type a valid email'}
+                        errorMessage={useValidEmail ? 'Email đúng định dạng' : 'Hãy nhập đúng định dạng email bạn nhé'}
                         leftIcon={<MaterialCommunityIcons style={style.icon} name="email-outline" size={28} color="black" />}
                         rightIcon={
                             isTypingEmail ? (
@@ -255,8 +250,8 @@ export const RegisterScreen_1 = ({navigation}) => {
                         placeholderTextColor='#4c4c4c'
                         inputStyle={{color: '#000'}}
                         containerStyle={style.input_container}
-                        label='Phone number'
-                        placeholder='Phone number'
+                        label='Số điện thoại'
+                        placeholder='Nhập số điện thoại'
                         keyboardType='numeric'
                         textContentType='telephoneNumber'
                         multiline={false}
@@ -286,13 +281,13 @@ export const RegisterScreen_1 = ({navigation}) => {
                         placeholderTextColor='#4c4c4c'
                         inputStyle={{color: '#000'}}
                         containerStyle={style.input_container}
-                        label='Password'
-                        placeholder='Password'
+                        label='Mật khẩu'
+                        placeholder='Nhập mật khẩu'
                         textContentType='password'
                         secureTextEntry={visiblePassword}
                         multiline={false}
                         errorMessage={
-                            <Text style={style.pass_requirement}>Password must be at least 8 characters</Text>
+                            <Text style={style.pass_requirement}>Mật khẩu phải có hơn 8 ký tự</Text>
                         }
                         leftIcon={
                             <MaterialCommunityIcons style={style.icon} name="key" size={28} color="black" />
@@ -367,8 +362,8 @@ export const RegisterScreen_1 = ({navigation}) => {
                         placeholderTextColor='#4c4c4c'
                         inputStyle={{color: '#000'}}
                         containerStyle={style.input_container}
-                        label='Confirm password'
-                        placeholder='Confirm password'
+                        label='Xác nhận mật khẩu'
+                        placeholder='Nhập lại mật khẩu'
                         textContentType='password'
                         secureTextEntry={visibleConfirmPassword}
                         multiline={false}
@@ -443,13 +438,8 @@ export const RegisterScreen_1 = ({navigation}) => {
                         containerStyle={{marginTop: 40}}
                         titleStyle={{fontSize: 20}}
                         buttonStyle={style.next_button} 
-                        title='Next'
+                        title='Tiếp tục'
                         onPress={() => registerNewAccount()}
-                    />
-
-                    <ProgressBar
-                        num={2}
-                        activeIndex={0}
                     />
                 </View>
             </TouchableWithoutFeedback>
@@ -469,12 +459,12 @@ export const RegisterScreen_2 = ({navigation}) => {
 
                 <View style={style.icon_title_container}>
                     <Image style={style.bone_icon} source={require('../assets/icons/bone.png')} resizeMode='cover'/>
-                    <Text style={style.register_title}>Register{"\n"}new account</Text>
+                    <Text style={style.register_title}>Đăng ký{"\n"}tài khoản mới</Text>
                 </View>
                 
                 <Text style={style.message}>
-                    We have sent you an email with a link to verify your email.{'\n'}
-                    Open it to finish this last step of registeration.
+                    Chúng tôi đã gửi bạn một email để xác nhận tài khoản.{'\n'}
+                    Bạn hãy kiểm tra email để hoàn tất đăng ký tài khoản nhé.
                 </Text>
                 {/* <View style={style.code_container}>
                     
@@ -483,7 +473,7 @@ export const RegisterScreen_2 = ({navigation}) => {
                 </View> */}
 
                 <Text style={style.note}>
-                    *This screen will close right after the email is verified
+                    *Màn hình này sẽ chuyển khi bạn xác nhận email thành công
                 </Text>
 
                 {/* <Button
@@ -494,10 +484,10 @@ export const RegisterScreen_2 = ({navigation}) => {
                     title='Next'
                     onPress={() => clickNextButton()}/> */}
 
-                <ProgressBar
+                {/* <ProgressBar
                     num={2}
                     activeIndex={1}    
-                />
+                /> */}
             </View>
         </TouchableWithoutFeedback>
     );
@@ -505,27 +495,29 @@ export const RegisterScreen_2 = ({navigation}) => {
 
 const style = StyleSheet.create({
     container: {
-        backgroundColor: COLORS.primary,
+        backgroundColor: COLORS.white,
         flex: 1,
         alignItems: 'center',
     },
     icon_title_container: {
         marginTop: 35,
         marginBottom: 30,
+        flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center'
     },
     bone_icon: {
-        width: 80,
-        height: 80,
+        width: 50,
+        height: 50,
     },
     register_title: {
         width: 210,
         marginTop: 15,
-        fontFamily: "RedHatText",
-        fontSize: 35,
+        fontFamily: "Roboto-Medium",
+        fontSize: 24,
         fontWeight: 'bold',
-        textAlign: 'center'
+        textAlign: 'center',
+        color: COLORS.black,
     },
     input_container: {
         width: '85%',
@@ -550,10 +542,12 @@ const style = StyleSheet.create({
         paddingRight: 3,
     },
     next_button: {
-        backgroundColor: COLORS.primaryDark,
+        backgroundColor: COLORS.black,
         color: '#000',
         width: 130,
         height: 55,
+        marginTop: 20,
+        marginBottom: 20,
         borderRadius: 10
     },
     pass_requirement: {
@@ -572,9 +566,10 @@ const style = StyleSheet.create({
     message: {
         width: '90%',
         padding: 10,
-        fontFamily: "RedHatText",
-        fontSize: 20,
+        fontFamily: "Roboto-Light",
+        fontSize: 18,
         fontStyle: 'normal',
-        textAlign: 'center'
+        textAlign: 'center',
+        color: COLORS.black,
     },
 });

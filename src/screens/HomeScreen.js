@@ -11,9 +11,17 @@ const HomeScreen = ({navigation}) => {
     return (
         <View style={style.container}>
             <View style={style.header}>
-                <View>
-
-                </View>
+                <TouchableOpacity
+                    activeOpacity={0.6}
+                    onPress={() => {
+                        
+                    }}
+                >
+                    <Image
+                        style={[style.saved_button, {tintColor: COLORS.black}]}
+                        source={require('../assets/icons/Hamburger.png')}
+                    />
+                </TouchableOpacity>
 
                 <TouchableOpacity
                     onPress={() => {
@@ -177,7 +185,6 @@ const style = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: COLORS.white,
     },
     logo: {
         width: 90,
@@ -185,7 +192,6 @@ const style = StyleSheet.create({
     },
     content: {
         width: '100%',
-        marginTop: 16,
         backgroundColor: COLORS.white,
     },
     activities: {
@@ -255,4 +261,8 @@ const style = StyleSheet.create({
         fontFamily: 'Roboto-Medium',
         fontSize: 16,
     },
+    saved_button: {
+        width: 32,
+        height: 32,
+    }
 });
