@@ -109,6 +109,12 @@ export default strings = {
     health_book: "Sổ sức khỏe",
     vaccination_label: "Vắc-xin",
     treatment_label: "Điều trị",
+    add_vaccine: "Thêm vắc-xin",
+    edit_vaccine: "Sửa thông tin",
+    vaccine_label: "Nhãn vắc-xin",
+    injection_label: "Mũi tiêm",
+    vaccine_taken_date: "Ngày tiêm",
+    vaccine_retake_date: "Ngày tái chủng",
 
     back: "Trở lại",
     enterOTP: "Nhập mã OTP được gửi đến số",

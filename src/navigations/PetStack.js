@@ -4,6 +4,7 @@ import MyPetsScreen from '../screens/MyPetsScreen';
 import AddPetScreen from '../screens/AddPetScreen';
 import PetProfileScreen from '../screens/PetProfileScreen';
 import HealthBookScreen from '../screens/HealthBookScreen';
+import AddVaccineScreen from '../screens/AddVaccineScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,6 +19,7 @@ const PetStack = () => {
         <Stack.Screen name="AddPet" component={AddPetScreen} options={{headerShown: false}}/>
         <Stack.Screen name="PetProfile" component={PetProfileScreen} options={{headerShown: false}}/>
         <Stack.Screen name="HealthBook" component={HealthBookScreen} options={{headerShown: false}}/>
+        <Stack.Screen name="AddVaccine" component={AddVaccineScreen} options={{headerShown: false}}/>
       </Stack.Navigator>
   );
 }

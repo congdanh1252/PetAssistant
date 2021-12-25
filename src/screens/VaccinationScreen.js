@@ -1,35 +1,96 @@
-import React, { useState } from 'react';
-import { Image, StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native'
-import COLORS from '../theme/colors'
+import React, { useEffect, useState } from 'react';
+import { Image, StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
+import COLORS from '../theme/colors';
+import Vaccine from '../models/vaccine';
 
-const VaccinationScreen = () => {
-    //const [vaccine, setVaccine] = useState();
+const VaccinationScreen = ({route, navigation}) => {
+    const { pet_id, pet_kind } = route.params;
+    const [expandList, setExpandList] = useState([]);
+    const [taken, setTaken] = useState([]);
+    const [vaccineList, setVaccineList] = useState([]);
+
+    const convertJsDate = (date) => {
+        return (
+            String(date.getDate()).padStart(2, '0') + "/" +
+            String(date.getMonth() + 1).padStart(2, '0') + "/" +
+            date.getFullYear()
+        );
+    }
+
+    const handleExpand = (order) => {
+        var expand = []
+        for (let i = 0; i < expandList.length; i++) {
+            expand.push(expandList[i]);
+        }
+        expand[order] = !expand[order];
+        setExpandList(expand);
+    }
+
+    useEffect(() => {
+        let isMounted = true;
+        if (isMounted) {
+            var list = [];
+            var expand = [];
+            var taken_check = [0, 0, 0, 0];
+
+            pet_kind == 'Chó'
+            ? list = ['Mũi 1', 'Mũi 2', 'Mũi 3', 'Bệnh Dại']
+            : list = ['Bệnh giảm bạch cầu', 'Bệnh Viêm mũi', 'Bệnh do Herpesvirus', 'Bệnh Dại'];
+
+            for (let i = 0; i < vaccineList.length; i++) {
+                expand.push(false);
+
+                if (list.includes(vaccineList[i].type)) {
+                    switch (vaccineList[i].type) {
+                        case 'Mũi 1' && 'Bệnh giảm bạch cầu':
+                            taken_check[0] = 1;
+                            break;
+                        case 'Mũi 2' && 'Bệnh Viêm mũi':
+                            taken_check[1] = 1;
+                            break;
+                        case 'Mũi 3' && 'Bệnh do Herpesvirus':
+                            taken_check[2] = 1;
+                            break;
+                        default:
+                            taken_check[3] = 1;
+                    }
+                }
+            }
+            setTaken(taken_check);
+            setExpandList(expand);
+        }
+        return () => isMounted = false;
+    }, [vaccineList]);
 
     const VaccineList = () => {
         var list = [];
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < vaccineList.length; i++) {
             list.push(
                 <View
                     key={i}
                     style={
-                        i != 0
+                        !expandList[i]
                         ? 
-                        style.vaccine_item : [style.vaccine_item, {height: 180}]
+                        style.vaccine_item : [style.vaccine_item, {height: 216}]
                     }
                 >
-                    {/* Mục lục + Mũi tên */}
+                    {/* Mũi tên */}
                     <TouchableOpacity
                         activeOpacity={0.7}
                         style={style.item_title_holder}
                         onPress={() => {
-                            
+                            handleExpand(i);
                         }}
                     >
-                        <Text style={style.title}>💉 20/12/2021 - Bệnh Dại</Text>
+                        <Text style={style.title}>
+                            💉  {convertJsDate(vaccineList[i].taken_date)}    •    {vaccineList[i].type}
+                        </Text>
 
                         <Image
                             style={
-                                true
+                                expandList[i]
                                 ?
                                 style.arrow_down : style.arrow_horiz
                             }
@@ -39,10 +100,10 @@ const VaccinationScreen = () => {
 
                     {/* Mục lục chi tiết */}
                     {
-                        i == 0
+                        expandList[i]
                         ?
                         <View style={style.vaccine_detail_holder}>
-                            <Text style={style.label}>Mũi tiêm: Bệnh Dại</Text>
+                            <Text style={style.label}>Mũi tiêm: {vaccineList[i].detail}</Text>
 
                             <View style={style.item_title_holder}>
                                 <Text style={style.label}>Nhãn vắc-xin:</Text>
@@ -52,18 +113,26 @@ const VaccinationScreen = () => {
                                 >
                                     <Image
                                         style={{width: 75, height: 70, borderRadius: 6}}
-                                        source={{uri: 'https://bizweb.dktcdn.net/100/381/237/products/vacxin-5-benh.jpg?v=1596780695787'}}
+                                        source={{uri: vaccineList[i].label_photo}}
                                     />
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
                                     activeOpacity={0.7}
+                                    onPress={() => {
+                                        navigation.navigate('AddVaccine', {
+                                            pet_id: pet_id,
+                                            action: 'edit',
+                                            pet_kind: pet_kind,
+                                            vaccineParam: vaccineList[i]
+                                        });
+                                    }}
                                 >
                                     <Image source={require('../assets/icons/Pen.png')}/>
                                 </TouchableOpacity>
                             </View>
                             
-                            <Text style={style.label}>Ngày tái chủng: 20/01/2022</Text>
+                            <Text style={style.label}>Ngày tái chủng: {convertJsDate(vaccineList[i].retake_date)}</Text>
                         </View>
                         : null
                     }
@@ -78,6 +147,52 @@ const VaccinationScreen = () => {
         )
     }
 
+    const TakenTable = () => {
+        return (
+            <View style={style.taken_list_container}>
+                <View style={style.two_vaccine_row}>
+                    <Text style={style.label}>
+                        1. {pet_kind == 'Chó' ? 'Mũi 1 • 5 bệnh' : 'Bệnh giảm bạch cầu'}  {taken[0] ==  1 ? '✔️' : '❌'}
+                    </Text>
+
+                    <Text style={style.label}>
+                        2. {pet_kind == 'Chó' ? 'Mũi 2 • 7 bệnh' : 'Bệnh Viêm mũi'}  {taken[1] ==  1 ? '✔️' : '❌'}
+                    </Text>
+                </View>
+
+                <View style={style.two_vaccine_row}>
+                    <Text style={style.label}>
+                        3. {pet_kind == 'Chó' ? 'Mũi 3 • 7 bệnh' : 'Bệnh do Herpesvirus'}  {taken[2] ==  1 ? '✔️' : '❌'}
+                    </Text>
+
+                    <Text style={style.label}>
+                        4. {pet_kind == 'Chó' ? 'Mũi 4 • Bệnh Dại' : 'Bệnh Dại'}  {taken[3] ==  1 ? '✔️' : '❌'}
+                    </Text>
+                </View>
+            </View>
+        )
+    }
+
+    //load vaccine list
+    useEffect(() => {
+        const subscriber = firestore()
+        .collection('users/' + auth().currentUser.uid + '/pets/' + pet_id + '/vaccination')
+        .onSnapshot(querySnapshot => {
+            var list = new Array();
+            querySnapshot.forEach(documentSnapshot => {
+                var vaccine = new Vaccine();
+                vaccine.update(documentSnapshot.data());
+                vaccine.taken_date = new Date(documentSnapshot.data().taken_date.toDate());
+                vaccine.retake_date = new Date(documentSnapshot.data().retake_date.toDate());
+                vaccine._id = documentSnapshot.id;
+                list.push(vaccine);
+            })
+            setVaccineList(list);
+        })
+
+        return () => subscriber();
+    }, []);
+
     return (
         <View style={style.container}>
             <ScrollView
@@ -87,23 +202,21 @@ const VaccinationScreen = () => {
                 <VaccineList/>
             </ScrollView>
 
-            <View style={style.taken_list_container}>
-                <View style={style.two_vaccine_row}>
-                    <Text style={style.label}>1. Mũi 1 - 5 bệnh  ✔️</Text>
-                    <Text style={style.label}>2. Mũi 2 - 7 bệnh  ✔️</Text>
-                </View>
-
-                <View style={style.two_vaccine_row}>
-                    <Text style={style.label}>3. Mũi 3 - 7 bệnh  ❌</Text>
-                    <Text style={style.label}>4. Mũi 4 - Bệnh Dại  ✔️</Text>
-                </View>
-            </View>
+            {
+                (pet_kind == 'Chó' || pet_kind == 'Mèo')
+                ? <TakenTable/>
+                : null
+            }
 
             <TouchableOpacity
                 style={style.floating_button}
                 activeOpacity={0.7}
                 onPress={() => {
-
+                    navigation.navigate('AddVaccine', {
+                        pet_id: pet_id,
+                        action: 'add',
+                        pet_kind: pet_kind,
+                    });
                 }}
             >
                 <Image
@@ -191,7 +304,7 @@ const style = StyleSheet.create({
         }]
     },
     vaccine_detail_holder: {
-        height: 128,
+        height: 160,
         marginTop: 10,
         display: 'flex',
         flexDirection: 'column',

@@ -11,6 +11,7 @@ import { deletePetFromFirestore } from '../api/PetAPI';
 import { windowWidth } from '../models/common/Dimensions';
 
 import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
@@ -211,7 +212,7 @@ const PetProfileScreen = ({route, navigation}) => {
     //get pet data
     useEffect(() => {
         const subscriber = firestore()
-        .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/pets')
+        .collection('users/' + auth().currentUser.uid + '/pets')
         .doc(pet_id)
         .onSnapshot(documentSnapshot => {
             var newPet = new Pet();
@@ -344,7 +345,8 @@ const PetProfileScreen = ({route, navigation}) => {
                     style={style.health_book_holder}
                     onPress={() => {
                         navigation.navigate('HealthBook', {
-                            pet_id: pet._id
+                            pet_id: pet._id,
+                            pet_kind: pet.kind
                         })
                     }}
                 >

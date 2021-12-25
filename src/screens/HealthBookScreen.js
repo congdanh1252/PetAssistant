@@ -13,7 +13,7 @@ import BackButton from '../components/BackButton';
 
 const Tab = createMaterialTopTabNavigator();
 
-const MyTabs = () => {
+const MyTabs = (props) => {
     return (
         <Tab.Navigator
           screenOptions={{
@@ -32,14 +32,20 @@ const MyTabs = () => {
             }
           }}
         >
-          <Tab.Screen name={strings.vaccination_label} component={VaccinationScreen} />
+          <Tab.Screen
+            name={strings.vaccination_label}
+            component={VaccinationScreen}
+            initialParams={{
+                pet_id: props.petId,
+                pet_kind: props.petKind
+            }}/>
           <Tab.Screen name={strings.treatment_label} component={TreatmentScreen} />
         </Tab.Navigator>
     );
 }
 
 const HealthBookScreen = ({route, navigation}) => {
-    const { pet_id } = route.params;
+    const { pet_id, pet_kind } = route.params;
 
     return (
         <View style={style.screen}>
@@ -53,7 +59,7 @@ const HealthBookScreen = ({route, navigation}) => {
             </View>
 
             <View style={style.container}>
-                <MyTabs/>
+                <MyTabs petId={pet_id} petKind={pet_kind}/>
             </View>
         </View>
     )
