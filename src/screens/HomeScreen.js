@@ -6,7 +6,6 @@ import COLORS from '../theme/colors';
 import strings from '../data/strings';
 
 const HomeScreen = ({navigation}) => {
-
     //Main 
     return (
         <View style={style.container}>
@@ -17,10 +16,7 @@ const HomeScreen = ({navigation}) => {
 
                 <TouchableOpacity
                     onPress={() => {
-                        auth()
-                        .signOut()
-                        .then(() => console.log('User signed out!'));
-                        navigation.navigate('Login')
+                        navigation.navigate('Profile')
                     }}
                 >
                     <Image

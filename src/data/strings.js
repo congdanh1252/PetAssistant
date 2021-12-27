@@ -1,5 +1,8 @@
 export default strings = {
     username: "Tên người dùng",
+    petAssistant: "Pet Assistant",
+    accountInfo: "Thông tin tài khoản",
+    setting: "Cài đặt",
     enterUsername: "Nhập tên người dùng",
     password: "Mật khẩu",
     enterPassword: "Nhập mật khẩu",
@@ -7,6 +10,9 @@ export default strings = {
     oopsForgetPassword: "Oops, bạn quên mật khẩu?",
     noaccount: "Không có tài khoản?",
     register: "Đăng ký",
+    limit: "Hạn mức",
+
+    authorInfo: "Thông tin tác giả",
     email: "Email",
     phone: "Số điện thoại",
     forgetPassowork: "QUÊN MẬT KHẨU",
@@ -17,6 +23,7 @@ export default strings = {
     choose: "LỰA CHỌN",
     chooseVertificationMethod: "Lựa chọn phương thức xác thực",
     use: "Dùng",
+    logout: "Đăng xuất",
     title: "Tiêu đề",
     date: "Ngày",
     enter: "Nhập",

@@ -4126,6 +4126,11 @@ jimp-compact@0.16.1:
   resolved "https://registry.npmjs.org/jimp-compact/-/jimp-compact-0.16.1.tgz"
   integrity sha512-dZ6Ra7u1G8c4Letq/B5EzAxj4tLFHL+cGtdpR+PVm4yzPDj+lCk+AbivWt1eOM+ikzkowtyV7qSqX6qr3t71Ww==
 
+js-flipper@^0.127.0:
+  version "0.127.0"
+  resolved "https://registry.yarnpkg.com/js-flipper/-/js-flipper-0.127.0.tgz#5eba9410105c7e1d8c44b06d5892969d4697c91d"
+  integrity sha512-sl94muOnU0B2Utgvn7AJzgKWg6pFdZ5nEqEYBX2F2sy2EGoDDCW6hYplvGDL8cGOcgMMOrU5ZdZagpVXrfWHkQ==
+
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz"
