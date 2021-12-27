@@ -1,11 +1,18 @@
-import React from 'react';
-import { Image, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import {
+    Image, StyleSheet, View, Text, TouchableOpacity, TouchableWithoutFeedback,
+    TouchableHighlight
+} from 'react-native';
 import auth from '@react-native-firebase/auth';
+import BottomSheet from '@gorhom/bottom-sheet';
 
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 
 const HomeScreen = ({navigation}) => {
+    const [show, setShow] = useState(false);
+
+    const snapPoints = useMemo(() => ['19%', '19%'], []);
 
     //Main 
     return (
@@ -13,9 +20,7 @@ const HomeScreen = ({navigation}) => {
             <View style={style.header}>
                 <TouchableOpacity
                     activeOpacity={0.6}
-                    onPress={() => {
-                        
-                    }}
+                    onPress={() => setShow(true)}
                 >
                     <Image
                         style={[style.saved_button, {tintColor: COLORS.black}]}
@@ -163,9 +168,76 @@ const HomeScreen = ({navigation}) => {
 
                         <Text style={style.menu_title}>{strings.search_info}</Text>
                     </TouchableOpacity>
-
                 </View>
             </View>
+
+            {/* BottomSheet Filter */}
+            {
+                !show ?
+                    null
+                :
+                    <TouchableWithoutFeedback onPress={() => setShow(false)}>
+                        <View style={style.overlay}>
+                            <BottomSheet
+                                index={1}
+                                snapPoints={snapPoints}
+                                backgroundStyle={{borderWidth: 1}}
+                                style={style.dropdown_bottomsheet}
+                                enableOverDrag={false}
+                                enablePanDownToClose={true}
+                                onClose={() => setShow(false)}
+                            >
+                                {/* Góp ý */}
+                                <TouchableHighlight
+                                    key={1}
+                                    activeOpacity={0.7}
+                                    underlayColor='#EEEEEE'
+                                    style={style.dropdown_option}
+                                    onPress={() => {
+                                        navigation.navigate('Feedback');
+                                        setShow(false);
+                                    }}
+                                >
+                                    <View style={style.dropdown_detail}>
+                                        <Image
+                                            style={style.dropdown_option_icon}
+                                            source={require('../assets/icons/ic_mail.png')}
+                                        />
+
+                                        <Text style={style.dropdown_option_text}>
+                                            {strings.feedback_n_report_label}
+                                        </Text>
+                                    </View>
+                                </TouchableHighlight>
+
+                                {/* Đăng xuất */}
+                                <TouchableHighlight
+                                    key={2}
+                                    activeOpacity={0.7}
+                                    underlayColor='#EEEEEE'
+                                    style={style.dropdown_option}
+                                    onPress={() => {
+                                        auth()
+                                        .signOut()
+                                        .then(() => console.log('User signed out!'));
+                                        navigation.navigate('Login')
+                                    }}
+                                >
+                                    <View style={style.dropdown_detail}>
+                                        <Image
+                                            style={style.dropdown_option_icon}
+                                            source={require('../assets/icons/ic_logout.png')}
+                                        />
+
+                                        <Text style={style.dropdown_option_text}>
+                                            {strings.logout_label}
+                                        </Text>
+                                    </View>
+                                </TouchableHighlight>
+                            </BottomSheet>
+                        </View>
+                    </TouchableWithoutFeedback>
+            }
         </View>
     );
 }
@@ -264,5 +336,41 @@ const style = StyleSheet.create({
     saved_button: {
         width: 32,
         height: 32,
-    }
+    },
+    dropdown_bottomsheet: {
+        borderRadius: 10,
+    },
+    dropdown_detail: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-start'
+    },
+    dropdown_option_icon: {
+        height: 20,
+        width: 20,
+        marginRight: 16
+    },
+    dropdown_option: {
+        width: '99%',
+        height: 60,
+        padding: 24,
+        alignSelf: 'center',
+        justifyContent: 'center',
+        borderBottomWidth: 1.5,
+        borderColor: COLORS.grey,
+    },
+    dropdown_option_text: {
+        color: COLORS.black,
+        fontSize: 16,
+        fontFamily: 'Roboto-Regular',
+    },
+    overlay: {
+        width: '100%',
+        height: '100%',
+        position: 'absolute',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    },
 });

@@ -53,3 +53,52 @@ export const deleteVaccineFromFirestore = (vaccine, handleCallback) => {
         handleCallback(e);
     });
 };
+
+export const addTreatmentToFirestore = (treatment, handleCallback) => {
+    firestore()
+    .collection('users/' + auth().currentUser.uid + '/pets/' + treatment.pet_id + '/treatment')
+    .add({
+        pet_id: treatment.pet_id,
+        detail: treatment.detail,
+        medicine: treatment.medicine,
+        taken_date: firestore.Timestamp.fromDate(treatment.taken_date),
+        note: treatment.note,
+    })
+    .then(() => {
+        handleCallback('Success');
+    })
+    .catch((e) => {
+        handleCallback(e);
+    });
+};
+
+export const updateTreatmentInFirestore = (treatment, handleCallback) => {
+    firestore()
+    .collection('users/' + auth().currentUser.uid + '/pets/' + treatment.pet_id + '/treatment')
+    .doc(treatment._id)
+    .update({
+        detail: treatment.detail,
+        medicine: treatment.medicine,
+        taken_date: firestore.Timestamp.fromDate(treatment.taken_date),
+        note: treatment.note,
+    })
+    .then(() => {
+        handleCallback('Success');
+    })
+    .catch((e) => {
+        handleCallback(e);
+    });
+};
+
+export const deleteTreatmentFromFirestore = (treatment, handleCallback) => {
+    firestore()
+    .collection('users/' + auth().currentUser.uid + '/pets/' + treatment.pet_id + '/treatment')
+    .doc(treatment._id)
+    .delete()
+    .then(() => {
+        handleCallback('Success');
+    })
+    .catch((e) => {
+        handleCallback(e);
+    });
+};

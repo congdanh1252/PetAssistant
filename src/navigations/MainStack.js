@@ -2,6 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from '../screens/HomeScreen';
+import FeedbackScreen from '../screens/FeedbackScreen';
 import PetStack from './PetStack';
 import GuideStack from './GuideStack';
 import SearchingScreen from '../screens/SearchingScreen';
@@ -21,6 +22,7 @@ const MainStack = () => {
         }}
       >
           <Stack.Screen name="Home" component={HomeScreen} options={{headerShown: false}}/>
+          <Stack.Screen name="Feedback" component={FeedbackScreen} options={{headerShown: false}}/>
           <Stack.Screen name="MyPets" component={PetStack} options={{headerShown: false}}/>
           <Stack.Screen name="Guides" component={GuideStack} options={{headerShown: false}}/>
           <Stack.Screen name="Searching" component={SearchingScreen} options={{headerShown: false}}/>

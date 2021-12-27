@@ -553,14 +553,14 @@ const style = StyleSheet.create({
     pass_requirement: {
         fontStyle: 'italic',
         fontSize: 16,
-        color: COLORS.primaryDark,
+        color: COLORS.blue,
     },
     note: {
         width: '80%',
         marginTop: 20,
         fontStyle: 'italic',
         fontSize: 16,
-        color: COLORS.primaryDark,
+        color: COLORS.blue,
         textAlign: 'center'
     },
     message: {

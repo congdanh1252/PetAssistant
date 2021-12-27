@@ -1,34 +1,59 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Image, StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native'
-import COLORS from '../theme/colors'
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
+import COLORS from '../theme/colors';
+import Treatment from '../models/treatment';
+import strings from '../data/strings';
 
-const TreatmentScreen = () => {
+const TreatmentScreen = ({route, navigation}) => {
+    const { pet_id } = route.params;
+    const [msgEmpty, setMsgEmpty] = useState('');
+    const [expandList, setExpandList] = useState([]);
+    const [treatmentList, setTreatmentList] = useState([]);
 
-    const VaccineList = () => {
+    const convertJsDate = (date) => {
+        return (
+            String(date.getDate()).padStart(2, '0') + "/" +
+            String(date.getMonth() + 1).padStart(2, '0') + "/" +
+            date.getFullYear()
+        );
+    }
+
+    const handleExpand = (order) => {
+        var expand = []
+        for (let i = 0; i < expandList.length; i++) {
+            expand.push(expandList[i]);
+        }
+        expand[order] = !expand[order];
+        setExpandList(expand);
+    }
+
+    const TreatmentList = () => {
         var list = [];
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < treatmentList.length; i++) {
             list.push(
                 <View
                     key={i}
                     style={
-                        i != 0
+                        !expandList[i]
                         ? 
                         style.vaccine_item : [style.vaccine_item, {height: 150}]
                     }
                 >
-                    {/* Mục lục + Mũi tên */}
+                    {/* Mũi tên */}
                     <TouchableOpacity
                         activeOpacity={0.7}
                         style={style.item_title_holder}
                         onPress={() => {
-                            
+                            handleExpand(i)
                         }}
                     >
-                        <Text style={style.title}>🏥️ 20/12/2021</Text>
+                        <Text style={style.title}>🏥️  {convertJsDate(treatmentList[i].taken_date)}</Text>
 
                         <Image
                             style={
-                                true
+                                expandList[i]
                                 ?
                                 style.arrow_down : style.arrow_horiz
                             }
@@ -38,22 +63,35 @@ const TreatmentScreen = () => {
 
                     {/* Mục lục chi tiết */}
                     {
-                        i == 0
+                        expandList[i]
                         ?
                         <View style={style.vaccine_detail_holder}>
-                            <Text style={style.label}>Nội dung: Tẩy giun + Diệt ve</Text>
+                            <Text style={style.label}>
+                                {strings.content_label}: {treatmentList[i].detail}
+                            </Text>
 
                             <View style={style.item_title_holder}>
-                                <Text style={style.label}>Thuốc sử dụng: Panadol</Text>
+                                <Text style={style.label}>
+                                    {strings.taken_medicine_label}: {treatmentList[i].medicine}
+                                </Text>
 
                                 <TouchableOpacity
                                     activeOpacity={0.7}
+                                    onPress={() => {
+                                        navigation.navigate('AddTreatment', {
+                                            action: 'edit',
+                                            pet_id: pet_id,
+                                            treatmentParam: treatmentList[i]
+                                        })
+                                    }}
                                 >
                                     <Image source={require('../assets/icons/Pen.png')}/>
                                 </TouchableOpacity>
                             </View>
                             
-                            <Text style={style.label}>Ghi chú: Không ăn thịt 1 tuần</Text>
+                            <Text style={style.label}>
+                                {strings.note_label}: {treatmentList[i].note}
+                            </Text>
                         </View>
                         : null
                     }
@@ -68,20 +106,70 @@ const TreatmentScreen = () => {
         )
     }
 
+    useEffect(() => {
+        let isMounted = true;
+        if (isMounted) {
+            var expand = [];
+
+            for (let i = 0; i < treatmentList.length; i++) {
+                expand.push(false);
+            }
+            setExpandList(expand);
+        }
+        return () => isMounted = false;
+    }, [treatmentList]);
+
+    //load vaccine list
+    useEffect(() => {
+        const subscriber = firestore()
+        .collection('users/' + auth().currentUser.uid + '/pets/' + pet_id + '/treatment')
+        .orderBy('taken_date', 'desc')
+        .onSnapshot(querySnapshot => {
+            var list = new Array();
+            querySnapshot.forEach(documentSnapshot => {
+                var treatment = new Treatment();
+                treatment.update(documentSnapshot.data());
+                treatment.taken_date = new Date(documentSnapshot.data().taken_date.toDate());
+                treatment._id = documentSnapshot.id;
+                list.push(treatment);
+            })
+            if (list.length == 0) {
+                setMsgEmpty('Không có dữ liệu đã lưu')
+            }
+            setTreatmentList(list);
+        })
+
+        return () => subscriber();
+    }, []);
+
     return (
         <View style={style.container}>
             <ScrollView
                 style={style.vaccination_list_container}
                 showsVerticalScrollIndicator={false}
             >
-                <VaccineList/>
+                {
+                    treatmentList.length==0 ?
+                    <Text
+                        style={[style.label, {
+                            marginTop: 40,
+                            textAlign: 'center',
+                        }]}
+                    >
+                        {msgEmpty}
+                    </Text>
+                    : <TreatmentList/>
+                }
             </ScrollView>
 
             <TouchableOpacity
                 style={style.floating_button}
                 activeOpacity={0.7}
                 onPress={() => {
-
+                    navigation.navigate('AddTreatment', {
+                        pet_id: pet_id,
+                        action: 'add'
+                    });
                 }}
             >
                 <Image

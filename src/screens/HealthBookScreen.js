@@ -39,7 +39,7 @@ const MyTabs = (props) => {
                 pet_id: props.petId,
                 pet_kind: props.petKind
             }}/>
-          <Tab.Screen name={strings.treatment_label} component={TreatmentScreen} />
+          <Tab.Screen name={strings.treatment_label} component={TreatmentScreen} initialParams={{pet_id: props.petId}}/>
         </Tab.Navigator>
     );
 }

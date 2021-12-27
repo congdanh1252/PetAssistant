@@ -9,6 +9,7 @@ const VaccinationScreen = ({route, navigation}) => {
     const { pet_id, pet_kind } = route.params;
     const [expandList, setExpandList] = useState([]);
     const [taken, setTaken] = useState([]);
+    const [msgEmpty, setMsgEmpty] = useState('');
     const [vaccineList, setVaccineList] = useState([]);
 
     const convertJsDate = (date) => {
@@ -152,21 +153,21 @@ const VaccinationScreen = ({route, navigation}) => {
             <View style={style.taken_list_container}>
                 <View style={style.two_vaccine_row}>
                     <Text style={style.label}>
-                        1. {pet_kind == 'Chó' ? 'Mũi 1 • 5 bệnh' : 'Bệnh giảm bạch cầu'}  {taken[0] ==  1 ? '✔️' : '❌'}
+                        1. {pet_kind == 'Chó' ? 'Mũi 1 • 5 bệnh' : 'Bệnh giảm bạch cầu'}  {taken[0] ==  1 ? '💉' : '❌'}
                     </Text>
 
                     <Text style={style.label}>
-                        2. {pet_kind == 'Chó' ? 'Mũi 2 • 7 bệnh' : 'Bệnh Viêm mũi'}  {taken[1] ==  1 ? '✔️' : '❌'}
+                        2. {pet_kind == 'Chó' ? 'Mũi 2 • 7 bệnh' : 'Bệnh Viêm mũi'}  {taken[1] ==  1 ? '💉' : '❌'}
                     </Text>
                 </View>
 
                 <View style={style.two_vaccine_row}>
                     <Text style={style.label}>
-                        3. {pet_kind == 'Chó' ? 'Mũi 3 • 7 bệnh' : 'Bệnh do Herpesvirus'}  {taken[2] ==  1 ? '✔️' : '❌'}
+                        3. {pet_kind == 'Chó' ? 'Mũi 3 • 7 bệnh' : 'Bệnh do Herpesvirus'}  {taken[2] ==  1 ? '💉' : '❌'}
                     </Text>
 
                     <Text style={style.label}>
-                        4. {pet_kind == 'Chó' ? 'Mũi 4 • Bệnh Dại' : 'Bệnh Dại'}  {taken[3] ==  1 ? '✔️' : '❌'}
+                        4. {pet_kind == 'Chó' ? 'Mũi 4 • Bệnh Dại' : 'Bệnh Dại'}  {taken[3] ==  1 ? '💉' : '❌'}
                     </Text>
                 </View>
             </View>
@@ -177,6 +178,7 @@ const VaccinationScreen = ({route, navigation}) => {
     useEffect(() => {
         const subscriber = firestore()
         .collection('users/' + auth().currentUser.uid + '/pets/' + pet_id + '/vaccination')
+        .orderBy('taken_date', 'desc')
         .onSnapshot(querySnapshot => {
             var list = new Array();
             querySnapshot.forEach(documentSnapshot => {
@@ -187,6 +189,9 @@ const VaccinationScreen = ({route, navigation}) => {
                 vaccine._id = documentSnapshot.id;
                 list.push(vaccine);
             })
+            if (list.length == 0) {
+                setMsgEmpty('Không có dữ liệu đã lưu')
+            }
             setVaccineList(list);
         })
 
@@ -199,7 +204,18 @@ const VaccinationScreen = ({route, navigation}) => {
                 style={style.vaccination_list_container}
                 showsVerticalScrollIndicator={false}
             >
-                <VaccineList/>
+                {
+                    vaccineList.length==0 ?
+                    <Text
+                        style={[style.label, {
+                            marginTop: 40,
+                            textAlign: 'center',
+                        }]}
+                    >
+                        {msgEmpty}
+                    </Text>
+                    : <VaccineList/>
+                }
             </ScrollView>
 
             {

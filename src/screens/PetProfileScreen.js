@@ -29,8 +29,8 @@ const PetProfileScreen = ({route, navigation}) => {
     const [unmatchInput, setUnmatchInput] = useState(false);
     const [dialogVisible, setDialogVisible] = useState(false);
     const bottomSheetRef = useRef<BottomSheet>(null);
-    const snapPoints = useMemo(() => ['40%', '78%'], []);
-    const snapPointsDropdown = useMemo(() => ['20%', '20%'], []);
+    const snapPoints = useMemo(() => ['39%', '78%'], []);
+    const snapPointsDropdown = useMemo(() => ['19%', '19%'], []);
 
     const { pet_id } = route.params;
     

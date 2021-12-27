@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
     StyleSheet, View, TextInput, Text, TouchableOpacity, Image, TouchableWithoutFeedback,
     Keyboard, TouchableHighlight, Alert,
@@ -34,8 +34,8 @@ const AddVaccineScreen = ({route, navigation}) => {
 
     const [show, setShow] = useState(false);
     const [showRetake, setShowRetake] = useState(false);
-    const [takenDate, setTakenDate] = useState(action == 'add' ? new Date(2017, 12, 12) : vaccineParam.taken_date);
-    const [retakeDate, setRetakeDate] = useState(action == 'add' ? new Date(2017, 12, 12) : vaccineParam.retake_date);
+    const [takenDate, setTakenDate] = useState(action == 'add' ? new Date(2020, 12, 12) : vaccineParam.taken_date);
+    const [retakeDate, setRetakeDate] = useState(action == 'add' ? new Date(2020, 12, 12) : vaccineParam.retake_date);
     const [choseTakenDate, setChoseTakenDate] = useState(action == 'add' ? false : true);
     const [choseRetakeDate, setChoseRetakeDate] = useState(action == 'add' ? false : true);
     const snapPoints = useMemo(() => ['100%', '100%'], []);
@@ -47,6 +47,40 @@ const AddVaccineScreen = ({route, navigation}) => {
         show ? setTakenDate(currentDate) : setRetakeDate(currentDate);
         show ? setChoseTakenDate(true) : setChoseRetakeDate(true);
     };
+
+    const resetAllFields = () => {
+        setType('');
+        setDetail('');
+        setEditDetail(false);
+        setPhotoUri('');
+        setPhotoFileName('');
+        setTakenDate(new Date(2020, 12, 12));
+        setRetakeDate(new Date(2020, 12, 12));
+        setChoseTakenDate(false);
+        setChoseRetakeDate(false);
+    }
+
+    const handleCancelAction = () => {
+        Alert.alert(
+            'Cảnh báo',
+            (action == 'add'
+            ? 'Bạn có chắc muốn hủy việc thêm thông tin vắc-xin?'
+            : 'Bạn có chắc muốn hủy việc chỉnh sửa thông tin vắc-xin?'),
+            [
+                {
+                    text: strings.cancel,
+                },
+                {
+                    text: strings.sure,
+                    onPress: () => {
+                        action == 'add'
+                        ? resetAllFields()
+                        : navigation.goBack();
+                    }
+                }
+            ]
+        );
+    }
 
     const handleDeleteVaccine = () => {
         Alert.alert(
@@ -71,7 +105,7 @@ const AddVaccineScreen = ({route, navigation}) => {
             Toast.show({
                 type: 'success',
                 text1: strings.success,
-                text2: action==='add' ? strings.msg_add_pet_success : strings.msg_update_pet_success,
+                text2: action==='add' ? strings.msg_add_vaccine_success : strings.msg_update_vaccine_success,
                 position: 'top',
                 autoHide: true,
             });
@@ -94,7 +128,28 @@ const AddVaccineScreen = ({route, navigation}) => {
     }
 
     const handleDeleteCallback = (result) => {
-        console.log('Đã xóa vaccine');
+        if (result == 'Success') {
+            Toast.show({
+                type: 'success',
+                text1: strings.success,
+                text2: strings.msg_delete_vaccine_success,
+                position: 'top',
+                autoHide: true,
+            });
+
+            console.log('Đã xóa vaccine');
+        }
+        else {
+            Toast.show({
+                type: 'error',
+                text1: strings.fail,
+                text2: strings.msg_add_pet_fail,
+                position: 'top',
+                autoHide: true,
+            });
+            console.log('Delete vaccine error => ' + result);
+        }
+
         navigation.goBack();
     }
 
@@ -491,7 +546,7 @@ const AddVaccineScreen = ({route, navigation}) => {
                                 title={strings.cancel}
                                 titleStyle={styles.button_title}
                                 buttonStyle={styles.button}
-                                onPress={() => {}}
+                                onPress={() => handleCancelAction()}
                             >
                             </Button>
 

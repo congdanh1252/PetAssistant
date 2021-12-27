@@ -1,19 +1,191 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
     StyleSheet, View, TextInput, Text, TouchableOpacity, Image, TouchableWithoutFeedback,
-    Keyboard, TouchableHighlight, Alert,
+    Keyboard, Alert,
 } from 'react-native'
-import { launchImageLibrary, launchCamera } from "react-native-image-picker";
-import BottomSheet from '@gorhom/bottom-sheet';
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { Button } from "react-native-elements/dist/buttons/Button";
+import Treatment from "../models/treatment";
 import COLORS from '../theme/colors';
 import strings from "../data/strings";
 import BackButton from "../components/BackButton";
 import Toast from "react-native-toast-message";
+import { 
+    addTreatmentToFirestore,
+    updateTreatmentInFirestore,
+    deleteTreatmentFromFirestore
+} from "../api/HealthCareAPI";
 
 const AddTreatmentScreen = ({route, navigation}) => {
+    const { pet_id, action, treatmentParam } = route.params;
+
+    var treatment = new Treatment();
+    const [detail, setDetail] = useState(action == 'add' ? '' : treatmentParam.detail);
+    const [medicine, setMedicine] = useState(action == 'add' ? '' : treatmentParam.medicine);
+    const [note, setNote] = useState(action == 'add' ? '' : treatmentParam.note);
+
+    const [show, setShow] = useState(false);
+    const [choseDate, setChoseDate] = useState(action == 'add' ? false : true);
+    const [date, setDate] = useState(action == 'add' ? new Date(2020, 12, 12) : treatmentParam.taken_date);
+    const [isUploading, setUploading] = useState(false);
+
+    const onChangeDate = (event, selectedDate) => {
+        const currentDate = selectedDate || date;
+        setShow(false);
+
+        var today = new Date();
+
+        if (selectedDate!=null && currentDate < today) {
+            setDate(currentDate);
+            setChoseDate(true);
+            console.log(selectedDate);
+        }
+        else {
+            console.log("INVALID DATE");
+        }
+    };
+
+    const resetAllFields = () => {
+        setDetail('');
+        setMedicine('');
+        setNote('');
+        setDate(new Date(2020, 12, 12));
+        setChoseDate(false);
+    }
+
+    const handleCancelAction = () => {
+        Alert.alert(
+            'Cảnh báo',
+            (action == 'add'
+            ? 'Bạn có chắc muốn hủy việc thêm thông tin điều trị?'
+            : 'Bạn có chắc muốn hủy việc chỉnh sửa thông tin điều trị?'),
+            [
+                {
+                    text: strings.cancel,
+                },
+                {
+                    text: strings.sure,
+                    onPress: () => {
+                        action == 'add'
+                        ? resetAllFields()
+                        : navigation.goBack();
+                    }
+                }
+            ]
+        );
+    }
+
+    const showResultToast = (result) => {
+        if (result == 'Success') {
+            Toast.show({
+                type: 'success',
+                text1: strings.success,
+                text2: action==='add' ? strings.msg_add_treatment_success : strings.msg_update_treatment_success,
+                position: 'top',
+                autoHide: true,
+            });
+
+            action==='add' ? console.log('Treatment added!') : console.log('Treatment updated!');
+        }
+        else {
+            Toast.show({
+                type: 'error',
+                text1: strings.fail,
+                text2: strings.msg_add_pet_fail,
+                position: 'top',
+                autoHide: true,
+            });
+
+            action==='add' ?
+            console.log('Add to firestore error => ' + result) :
+            console.log('Update to firestore error => ' + result);
+        }
+    }
+
+    const handleDeleteTreatment = () => {
+        Alert.alert(
+            'Cảnh báo',
+            'Bạn có chắc muốn xóa điều trị này?',
+            [
+                {
+                    text: strings.cancel,
+                },
+                {
+                    text: strings.sure,
+                    onPress: () => {
+                        initTreatmentData();
+                        deleteTreatmentFromFirestore(treatment, handleDeleteCallback);
+                    }
+                }
+            ]
+        );
+    }
+
+    const handleDeleteCallback = (result) => {
+        if (result == 'Success') {
+            Toast.show({
+                type: 'success',
+                text1: strings.success,
+                text2: strings.msg_delete_treatment_success,
+                position: 'top',
+                autoHide: true,
+            });
+
+            console.log('Đã xóa điều trị');
+        }
+        else {
+            Toast.show({
+                type: 'error',
+                text1: strings.fail,
+                text2: strings.msg_add_pet_fail,
+                position: 'top',
+                autoHide: true,
+            });
+            console.log('Delete treatment error => ' + result);
+        }
+        
+        navigation.goBack();
+    }
+
+    const initTreatmentData = () => {
+        treatment.detail = detail;
+        treatment.note = note;
+        treatment.taken_date = date;
+        treatment.medicine = medicine;
+        treatment.pet_id = pet_id;
+        action === 'edit' ? treatment._id = treatmentParam._id : null;
+    }
+
+    const handleCallback = (result) => {
+        setUploading(false);
+        showResultToast(result);
+
+        navigation.goBack();
+    }
+
+    const checkSubmitFields = () => {
+        if (medicine=='' || detail=='' || !choseDate) {
+            Alert.alert(
+                strings.fail,
+                strings.err_check_inputs,
+                [
+                    {
+                        text: 'OK',
+                    }
+                ]
+            );
+        }
+        else {
+            console.log('check input ok');
+            setUploading(true);
+            initTreatmentData();
+            
+            action == 'add'
+            ? addTreatmentToFirestore(treatment, handleCallback)
+            : updateTreatmentInFirestore(treatment, handleCallback);
+        }
+    }
 
     return (
         <View style={styles.screen}>
@@ -25,30 +197,57 @@ const AddTreatmentScreen = ({route, navigation}) => {
                 />
 
                 <Text style={styles.header_title}>
-                    Thêm điều trị
+                    {action=='add' ? strings.add_treatment : strings.edit_vaccine}
                 </Text>
+
+                {
+                    action == 'edit' ?
+                    <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={() => {
+                            handleDeleteTreatment()
+                        }}
+                    >
+                        <Image
+                            style={{
+                                width: 30,
+                                height: 30,
+                                marginTop: 16,
+                                marginLeft: 8,
+                                tintColor: COLORS.white
+                            }}
+                            source={require('../assets/icons/ic_bin.png')}
+                        />
+                    </TouchableOpacity>
+                    : null
+                }
             </View>
 
             <TouchableWithoutFeedback
-                onPress={() => {
-                    Keyboard.dismiss()
-                    // setDropdown('');
-                }}
+                onPress={() => { Keyboard.dismiss() }}
             >
                 <View style={styles.container}>
                     {/* Content */}
                     <View style={styles.content}>
-                        {/* Ngày tiêm */}
+                        {/* Ngày điều trị */}
                         <View style={styles.two_on_row}>
                             <View style={styles.input_holder_small}>
-                                <Text style={styles.label}>Ngày tiêm</Text>
+                                <Text style={styles.label}>{strings.treatment_taken_date}</Text>
 
                                 <TextInput
                                     editable={false}
                                     style={styles.input}
                                     placeholderTextColor={'#898989'}
-                                    placeholder={'Ngày tiêm'}
-                                    
+                                    placeholder={strings.treatment_taken_date}
+                                    value={
+                                        choseDate
+                                        ?
+                                        (
+                                            String(date.getDate()).padStart(2, '0') + "-" +
+                                            String(date.getMonth() + 1).padStart(2, '0') + "-" +
+                                            date.getFullYear()
+                                        ) : (null)
+                                    }
                                 />
                             </View>
 
@@ -57,7 +256,7 @@ const AddTreatmentScreen = ({route, navigation}) => {
                                 <TouchableOpacity
                                     style={{width: '36%', alignItems: 'center', marginTop: 40,}}
                                     activeOpacity={0.6}
-                                    onPress={() => {}}
+                                    onPress={() => setShow(true)}
                                 >
                                     <Image
                                         source={require('../assets/icons/ic_calendar.png')}
@@ -69,42 +268,46 @@ const AddTreatmentScreen = ({route, navigation}) => {
 
                         {/* Nội dung */}
                         <View style={styles.input_holder}>
-                            <Text style={styles.label}>Nội dung</Text>
+                            <Text style={styles.label}>{strings.content_label}</Text>
 
                             <TextInput
                                 style={styles.input}
                                 placeholderTextColor={'#898989'}
-                                placeholder={'Nội dung'}
+                                placeholder={strings.content_label}
+                                value={detail}
                                 onChangeText={value => {
-                                    
+                                    setDetail(value);
                                 }}
                             />
                         </View>
 
                         {/* Thuốc sử dụng */}
                         <View style={styles.input_holder}>
-                            <Text style={styles.label}>Thuốc sử dụng</Text>
+                            <Text style={styles.label}>{strings.taken_medicine_label}</Text>
 
                             <TextInput
                                 style={styles.input}
                                 placeholderTextColor={'#898989'}
-                                placeholder={'Thuốc sử dụng'}
+                                placeholder={strings.taken_medicine_label}
+                                value={medicine}
                                 onChangeText={value => {
-                                    
+                                    setMedicine(value)
                                 }}
                             />
                         </View>
 
                         {/* Ghi chú */}
                         <View style={styles.input_holder}>
-                            <Text style={styles.label}>Ghi chú</Text>
+                            <Text style={styles.label}>{strings.note_label}</Text>
 
                             <TextInput
                                 style={[styles.input, {height: 90}]}
+                                multiline={true}
                                 placeholderTextColor={'#898989'}
-                                placeholder={'Ghi chú'}
+                                placeholder={strings.note_label}
+                                value={note}
                                 onChangeText={value => {
-                                    
+                                    setNote(value)
                                 }}
                             />
                         </View>
@@ -115,7 +318,7 @@ const AddTreatmentScreen = ({route, navigation}) => {
                                 title={strings.cancel}
                                 titleStyle={styles.button_title}
                                 buttonStyle={styles.button}
-                                onPress={() => {}}
+                                onPress={() => handleCancelAction()}
                             >
                             </Button>
 
@@ -123,13 +326,41 @@ const AddTreatmentScreen = ({route, navigation}) => {
                                 title={strings.save}
                                 titleStyle={styles.button_title}
                                 buttonStyle={styles.button}
-                                onPress={() => {}}
+                                onPress={() => checkSubmitFields()}
                             >
                             </Button>
                         </View>
                     </View>
                 </View>
             </TouchableWithoutFeedback>
+
+            {/* Date Picker */}
+            {show && (
+                <DateTimePicker
+                    testID="dateTimePicker"
+                    value={date}
+                    mode={'date'}
+                    is24Hour={true}
+                    display="spinner"
+                    dateFormat="day month year"
+                    onChange={onChangeDate}
+                />
+            )}
+
+            {/* Overlay */}
+            {isUploading ?
+                (
+                    <View style={styles.overlay}>
+                        <Text style={[styles.header_title, {fontSize: 24}]}>
+                            {strings.processing}
+                        </Text>
+
+                        <Text style={[styles.header_title, {fontSize: 18}]}>
+                            {strings.msg_please_wait}
+                        </Text>
+                    </View>
+                ) : (null)
+            }
         </View>
     )
 }
@@ -166,7 +397,6 @@ const styles = StyleSheet.create({
     content: {
         height: '100%',
         width: '100%',
-        paddingTop: 12,
         paddingLeft: 22,
         paddingRight: 22,
         borderTopLeftRadius: 25,
@@ -183,7 +413,7 @@ const styles = StyleSheet.create({
     },
     input_holder: {
         width: '100%',
-        marginTop: 22,
+        marginTop: 20,
     },
     input_holder_small: {
         width: '45%',
@@ -234,7 +464,7 @@ const styles = StyleSheet.create({
     footer_buttons: {
         width: '100%',
         height: 40,
-        marginTop: 160,
+        marginTop: 200,
         marginBottom: 20,
         flexDirection: 'row',
         alignItems: 'center',
