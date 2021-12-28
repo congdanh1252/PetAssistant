@@ -114,7 +114,8 @@ export function Schedules ({navigation}) {
         getDateReminder(selectedDate, (reminderList, oldReminderList) => {
             try {
                 if (!isCancelled) {
-                    console.log(reminderList);
+                    // console.log(reminderList);
+                    // console.log(oldReminderList);
                     setReminderList(reminderList)
                     setOldReminderList(oldReminderList)
                 }
@@ -133,31 +134,25 @@ export function Schedules ({navigation}) {
         getMonthReminderDate(selectedDate, dates => {
             try {
                 if (!isCancelled) {
-                    console.log(dates);
+                    // console.log(dates);
                     var today = new Date()
+                    var dates_s = ''
                     let data = "{"
                     for (var i = 0; i < dates.length; i++) {
-                        if (dates[i] < today.getDate()) {
-                            data += '"' + selectedDate.getFullYear() + '-' + (selectedDate.getMonth() + 1) + '-' + dates[i] + '"'
-                            + ': {"marked": true}'
-                        } else {
-                            data += '"' + selectedDate.getFullYear() + '-' + (selectedDate.getMonth() + 1) + '-' + dates[i] + '"'
-                            + ': {"marked": true}'
+                        if (dates[i] < 9) {
+                            dates_s = "0" + dates[i].toString()
+                            // console.log(dates_s)
                         }
-                        
+                        else dates_s = dates[i]
+                        data += '"' + moment(selectedDate).format('YYYY-MM') + '-' + dates_s + '"'
+                        + ': {"marked": true}'
                         if (i != dates.length - 1) {
                             data += ","
                         } 
                     }
-                    // dates.forEach(date => {
-                    //     data += '"' + selectedDate.getFullYear() + '-' + (selectedDate.getMonth() + 1) + '-' + date + '"'
-                    //     + ': {"marked": true}'
-                    //     if (date.) 
-                    // });
                     data += '}'
-                    console.log(data);
+                    // console.log(data);
                     setMonthData(JSON.parse(data))
-                    //console.log(data);
                 }
             } catch (error) {
                 if (!isCancelled)
@@ -190,7 +185,6 @@ export function Schedules ({navigation}) {
         return (
             <TouchableOpacity
                 onPress={() => {
-                    //console.log(props.reminder._id);
                     navigation.navigate('ScheduleEvent', {
                         reminder_id: props.reminder._id
                     })
@@ -299,6 +293,9 @@ export function Schedules ({navigation}) {
                 state == 0
                 ?
                 <CalendarList
+                    onVisibleMonthsChange={(months) => {
+                        setSelectedDate(new Date(months[0].dateString))
+                    }}
                     horizontal={true}
                     pagingEnabled={true}
                     markedDates={monthData}
@@ -313,7 +310,6 @@ export function Schedules ({navigation}) {
                         monthTextColor: '#E5E5E5'
                     }}
                     onDayPress={date => {
-                        console.log(date);
                         setSelectedDate(new Date(date.dateString))
                     }}
                 />

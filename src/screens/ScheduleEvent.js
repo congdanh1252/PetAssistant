@@ -223,6 +223,17 @@ export function ScheduleEvent ({route, navigation}) {
     const save = () => {
         console.log(reminder);
         updateReminder(reminder);
+        // var repeat_s = ''
+        // switch (reminder.frequency) {
+        //     case 'monthly':
+        //         repeat_s = 'month'
+        //         break;
+        //     case 'yearly':
+        //         repeat_s = 'year'
+        //         break;
+        //     default:
+        //         break;
+        // }
         PushNotification.localNotificationSchedule({
             id: reminder.notificationId,
             channelId: "test-channel",
@@ -247,6 +258,7 @@ export function ScheduleEvent ({route, navigation}) {
                 if (!isCancelled) {
                     console.log(reminder);
                     setReminder(reminder);
+                    setSelectedFrequency(reminder.frequency)
                     setTitle(reminder.title)
                     getPetsReminder(reminder.pets, handleCallback)
                     switch (reminder.type) {
