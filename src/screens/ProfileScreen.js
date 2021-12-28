@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { StyleSheet, View, Text, Image } from 'react-native'
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+
 
 import {
     PenIcon
@@ -50,20 +52,29 @@ const ProfileScreen = ({navigation}) =>  {
     }
 
     useEffect(() => {
+        console.log("Listen");
         let isCancelled = false;
-        getUserInfo(user => {
-            try {
-                if (!isCancelled) {
-                    console.log(user);
-                    setUser(user) 
-                }
-            } catch (error) {
-                if (!isCancelled)
-                    throw error;
-            }
-        })
+        const subscriber = firestore()
+                .collection('users')
+                .doc(auth().currentUser.uid)
+                .onSnapshot(documentSnapshot => {
+                    var user = new User()
+                    user.update(documentSnapshot.data())
+                    setUser(user)
+                })
+        // getUserInfo(user => {
+        //     try {
+        //         if (!isCancelled) {
+        //             setUser(user) 
+        //         }
+        //     } catch (error) {
+        //         if (!isCancelled)
+        //             throw error;
+        //     }
+        // })
         return () => {
-            isCancelled = true
+            subscriber()
+            //isCancelled = true
         }
     }, [])
 
@@ -103,6 +114,32 @@ const ProfileScreen = ({navigation}) =>  {
                             {strings.accountInfo}
                         </Text>
 
+                        {/* Name */}
+                        <View style={styles.accountInfoContainer}>
+                            <Text
+                                style={styles.sectionDetailTitle}
+                            >
+                                {strings.name}
+                            </Text>
+
+                            <View style={styles.rowContainer}>
+                                <Text style={styles.accountInfo}>
+                                    {user.name}
+                                </Text>
+
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        navigation.navigate('Setting', {
+                                            type: 'name',
+                                            value: user.name,
+                                        })
+                                    }}
+                                >
+                                    <Image source={PenIcon} />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                        {/* Email */}
                         <View style={styles.accountInfoContainer}>
                             <Text
                                 style={styles.sectionDetailTitle}
@@ -110,33 +147,40 @@ const ProfileScreen = ({navigation}) =>  {
                                 {strings.email}
                             </Text>
 
-                            <View style={styles.rowContainer}>
-                                <Text style={styles.accountInfo}>
+                            <Text style={styles.accountInfo}>
                                     {user.email}
-                                </Text>
-
-                                <TouchableOpacity>
-                                    <Image source={PenIcon} />
-                                </TouchableOpacity>
-                            </View>
+                            </Text>
                         </View>
-
+                        {/* Phone */}
                         <View style={styles.accountInfoContainer}>
                             <Text
                                 style={styles.sectionDetailTitle}
                             >
                                 {strings.phone}
                             </Text>
-
-                            <View style={styles.rowContainer}>
-                                <Text style={styles.accountInfo}>
+                            <Text style={styles.accountInfo}>
                                     {user.phoneNumber}
+                            </Text>
+                        </View>
+                        {/* Password */}
+                        <View style={styles.accountInfoContainer}>
+                            <Text
+                                style={styles.sectionDetailTitle}
+                            >
+                                {strings.password}
+                            </Text>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    navigation.navigate('Setting', {
+                                        type: 'password',
+                                        value: '',
+                                    })
+                                }}
+                            >
+                                <Text style={styles.accountInfo}>
+                                        {strings.changePassword}
                                 </Text>
-
-                                <TouchableOpacity>
-                                    <Image source={PenIcon} />
-                                </TouchableOpacity>
-                            </View>
+                            </TouchableOpacity>
                         </View>
                         
                     </View>
@@ -243,7 +287,7 @@ const styles = StyleSheet.create({
         padding: 8,
     },
     bodyContainer: {
-        flex: 8.8,
+        flex: 9,
         backgroundColor: COLORS.white,
         borderTopLeftRadius: 15,
         borderTopRightRadius: 15,

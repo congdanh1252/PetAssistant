@@ -9,7 +9,8 @@ import strings from '../data/strings';
 import User from '../models/user'
 import { windowHeight, windowWidth } from '../models/common/Dimensions'
 import {
-    getUserInfo
+    getUserInfo,
+    updateUserName
 } from '../api/UserAPI'
 import {
     updateMonthLimit
@@ -23,7 +24,6 @@ const SettingScreen = ({route, navigation}) =>  {
     const [value, setValue] = useState(route.params.value.toString())
 
     const update = () => {
-        console.log(type + "/" + value);
         switch (type) {
             case 'expenditure_limit':
                 updateMonthLimit(value, () => {
@@ -34,7 +34,18 @@ const SettingScreen = ({route, navigation}) =>  {
                     });
                 })
                 break;
-        
+            case 'name':
+                updateUserName(value, () => {
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Thành công!',
+                        text2: 'Tên của bạn đã được cập nhật!'
+                    });
+                })
+                break;
+            case 'password': 
+                checkPassword()
+                break;
             default:
                 break;
         }
@@ -54,11 +65,242 @@ const SettingScreen = ({route, navigation}) =>  {
                             setValue(value)
                         }}
                         style={styles.input}
+                        placeholderTextColor = 'rgba(0, 0, 0, 0.5)'
+                    >
+                    </TextInput>
+                </View>
+            </View>
+        )
+    }
+
+    const UserName = () => {
+        return (
+            <View>
+                <Text style={styles.sectionTitle}>
+                    {strings.name}
+                </Text>
+                <View style={styles.inputBox}>
+                    <TextInput
+                        keyboardType='default'
+                        value={value}
+                        onChangeText={value => {
+                            setValue(value)
+                        }}
+                        style={styles.input}
                         placeholder={value}
                         placeholderTextColor = 'rgba(0, 0, 0, 0.5)'
                     >
                     </TextInput>
                 </View>
+            </View>
+        )
+    }
+
+    const Password = () => {
+        const [password, setPassword] = useState('')
+        const passwordState = ''
+        const newPaswordState = ''
+        const [isValidPassword, setIsValidPassowrd] = useState(false)
+        const [newPassword, setNewPassword] = useState('')
+        const [isValidNewPassword, setIsValidNewPassword] = useState(false)
+        const [confirmPassword, setConfirmPassword] = useState('')
+        const [isValidConfirmPassword, setIsValidConfirmPassword] = useState(false)
+        
+        const checkPassword = () => {
+            auth()
+            .signInWithEmailAndPassword(auth().currentUser.email, password)
+            .then(() => {
+                console.log("Correct!");
+                setIsValidPassowrd(true)
+                changePassword()
+            })
+            .catch(error => {
+                console.log(error)
+                Toast.show({
+                    type: 'error',
+                    text1: 'Thất bại!',
+                    text2: 'Mật khẩu bạn đã nhập không chính xác!'
+                })
+            });  
+        }
+    
+        const checkNewPassword = () => {
+            if (newPassword.length < 6) {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Thất bại!',
+                    text2: 'Mật khẩu phải có ít nhất 6 ký tự!'
+                });
+            } else {
+                // const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/
+                // if (regex.test(newPassword))
+                //     Toast.show({
+                //         type: 'error',
+                //         text1: 'Thất bại!',
+                //         text2: 'Mật khẩu phải chứa ít nhất 1 ký tự và 1 số!'
+                //     });
+                // else {
+                    setIsValidNewPassword(true)
+                // }
+            }
+        }
+    
+        const checkConfirmPassword = () => {
+            if (confirmPassword == newPassword)
+                setIsValidConfirmPassword(true)
+        }
+
+        const changePassword = () => {
+            if (!isValidNewPassword) {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Thất bại!',
+                    text2: 'Mật khẩu mới phải có ít nhất 6 ký tự\nchứa ít nhất một chữ cái và một số!'
+                })
+                return
+            }
+            if (!isValidConfirmPassword) {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Thất bại!',
+                    text2: 'Mật khẩu xác nhận không trùng khớp!'
+                })
+                return
+            }
+            console.log("Updating...");
+            auth()
+            .currentUser
+            .updatePassword(newPassword)
+            .then(() => {
+                auth()
+                .signOut()
+                .then(() => {
+                    navigation.navigate('Login')
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Thành công!',
+                        text2: 'Mật khẩu đã được thay đổi, vui lòng đăng nhập lại!'
+                    })
+                })
+            })
+            .catch(error => {
+                console.log(error)
+                Toast.show({
+                    type: 'error',
+                    text1: 'Thất bại!',
+                    text2: 'Đã có lỗi xảy ra!'
+                })
+                navigation.goBack()
+            });
+        }
+
+        return (
+            <View>
+                {/* Old password */}
+                <Text style={styles.sectionTitle}>
+                    {strings.password}
+                </Text>
+                <View style={styles.inputBox}>
+                    <TextInput
+                        secureTextEntry={true}
+                        keyboardType='default'
+                        value={password}
+                        onChangeText={value => {
+                            setPassword(value)
+                        }}
+                        style={styles.input}
+                        placeholder={value}
+                        placeholderTextColor = 'rgba(0, 0, 0, 0.5)'
+                    >
+                    </TextInput>
+                    {
+                        isValidPassword == true
+                        ? 
+                        <Image
+                            style={{
+                                position: 'absolute',
+                                right: 12,
+                                bottom: 12,    
+                            }}
+                            source={require('../assets/icons/Ok.png')}
+                        /> 
+                        : null
+                    }
+                </View>
+                {/* Enter new password */}
+                <Text style={styles.sectionTitle}>
+                    {strings.enterNewPassword}
+                </Text>
+                <View style={styles.inputBox}>
+                    <TextInput
+                        onEndEditing={checkNewPassword}
+                        secureTextEntry={true}
+                        keyboardType='default'
+                        value={newPassword}
+                        onChangeText={value => {
+                            setNewPassword(value)
+                        }}
+                        style={styles.input}
+                        placeholderTextColor = 'rgba(0, 0, 0, 0.5)'
+                    >
+                    </TextInput>
+                    {
+                        isValidNewPassword == true
+                        ? 
+                        <Image
+                            style={{
+                                position: 'absolute',
+                                right: 12,
+                                bottom: 12,    
+                            }}
+                            source={require('../assets/icons/Ok.png')}
+                        /> 
+                        : null
+                    }
+                </View>
+                {/* Confirm new password */}
+                <Text style={styles.sectionTitle}>
+                    {strings.confirmPassword}
+                </Text>
+                <View style={styles.inputBox}>
+                    <TextInput
+                        onEndEditing={checkConfirmPassword}
+                        secureTextEntry={true}
+                        keyboardType='default'
+                        value={confirmPassword}
+                        onChangeText={value => {
+                            setConfirmPassword(value)
+                        }}
+                        style={styles.input}
+                        placeholderTextColor = 'rgba(0, 0, 0, 0.5)'
+                    >
+                    </TextInput>
+                    {
+                        isValidConfirmPassword == true
+                        ? 
+                        <Image
+                            style={{
+                                position: 'absolute',
+                                right: 12,
+                                bottom: 12,    
+                            }}
+                            source={require('../assets/icons/Ok.png')}
+                        /> 
+                        : null
+                    }
+                </View>
+
+                <TouchableOpacity
+                    onPress={checkPassword}
+                >
+                    <View style={styles.logoutButton}>
+                        <Text style={{
+                            color: COLORS.white
+                        }}>
+                            {strings.save}
+                        </Text>
+                    </View>
+                </TouchableOpacity>
             </View>
         )
     }
@@ -75,6 +317,12 @@ const SettingScreen = ({route, navigation}) =>  {
         switch (type) {
             case 'expenditure_limit':
                 return <MonthLimit />
+                break;
+            case 'name':
+                return <UserName />
+                break;
+            case 'password':
+                return <Password />
                 break;
             default:
                 return null
@@ -106,17 +354,7 @@ const SettingScreen = ({route, navigation}) =>  {
             <View style={styles.bodyContainer}>
                 {renderView()}
 
-                <TouchableOpacity
-                    onPress={update}
-                >
-                    <View style={styles.logoutButton}>
-                        <Text style={{
-                            color: COLORS.white
-                        }}>
-                            {strings.save}
-                        </Text>
-                    </View>
-                </TouchableOpacity>
+                
             </View>
         </View>
     )
@@ -161,8 +399,8 @@ const styles = StyleSheet.create({
         alignSelf: 'center'
     },
     sectionTitle: {
-        fontFamily: 'Roboto-Bold',
-        fontSize: 20,
+        fontFamily: 'Roboto-Regular',
+        fontSize: 16,
     },
     input: {
         position: 'relative',
