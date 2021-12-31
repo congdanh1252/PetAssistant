@@ -9,6 +9,10 @@ import SearchingScreen from '../screens/SearchingScreen';
 import ScheduleStack from '../navigations/ScheduleStack';
 import ExpenditureStack from '../navigations/ExpenditureStack';
 import PredictStack from '../navigations/PredictStack';
+import ProfileScreen from '../screens/ProfileScreen';
+import SettingScreen from '../screens/SettingScreen';
+
+
 import Toast from 'react-native-toast-message';
 
 const Stack = createNativeStackNavigator();
@@ -29,6 +33,9 @@ const MainStack = () => {
           <Stack.Screen name="ScheduleStack" component={ScheduleStack} options={{headerShown: false}}/>
           <Stack.Screen name="ExpenditureStack" component={ExpenditureStack} options={{headerShown: false}}/>
           <Stack.Screen name="PredictStack" component={PredictStack} options={{headerShown: false}}/>
+          <Stack.Screen name="Profile" component={ProfileScreen} options={{headerShown: false}}/>
+          <Stack.Screen name="Setting" component={SettingScreen} options={{headerShown: false}}/>
+      
       </Stack.Navigator>
       <Toast/>
     </>

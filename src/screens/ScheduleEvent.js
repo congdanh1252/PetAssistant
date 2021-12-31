@@ -23,7 +23,12 @@ import {
     DoctorIcon,
     FoodIcon,
     StuffIcon, 
-    ShowerIcon
+    ShowerIcon,
+    QuestionIcon,
+    VaccineIcon,
+    WalkIcon,
+    HairBrushIcon,
+    SandIcon
 } from '../assets/icons/index'  
 
 export function ScheduleEvent ({route, navigation}) {
@@ -223,6 +228,17 @@ export function ScheduleEvent ({route, navigation}) {
     const save = () => {
         console.log(reminder);
         updateReminder(reminder);
+        // var repeat_s = ''
+        // switch (reminder.frequency) {
+        //     case 'monthly':
+        //         repeat_s = 'month'
+        //         break;
+        //     case 'yearly':
+        //         repeat_s = 'year'
+        //         break;
+        //     default:
+        //         break;
+        // }
         PushNotification.localNotificationSchedule({
             id: reminder.notificationId,
             channelId: "test-channel",
@@ -247,6 +263,7 @@ export function ScheduleEvent ({route, navigation}) {
                 if (!isCancelled) {
                     console.log(reminder);
                     setReminder(reminder);
+                    setSelectedFrequency(reminder.frequency)
                     setTitle(reminder.title)
                     getPetsReminder(reminder.pets, handleCallback)
                     switch (reminder.type) {
@@ -256,14 +273,26 @@ export function ScheduleEvent ({route, navigation}) {
                         case 'Stuff':
                             setImgSource(StuffIcon) 
                             break;
+                        case 'HairBrush':
+                            setImgSource(HairBrushIcon) 
+                            break;
+                        case 'Walk':
+                            setImgSource(WalkIcon) 
+                            break;
                         case 'Doctor': 
                             setImgSource(DoctorIcon) 
+                            break
+                        case 'Vaccine':
+                            setImgSource(VaccineIcon)
                             break
                         case 'Shower': 
                             setImgSource(ShowerIcon) 
                             break
+                        case 'Sand': 
+                            setImgSource(SandIcon) 
+                            break
                         default:
-                            setImgSource(WaitIcon) 
+                            setImgSource(QuestionIcon) 
                             break;
                     }
                 }
@@ -722,28 +751,43 @@ export function ScheduleEvent ({route, navigation}) {
                                 selectedValue={reminder.type}
                                 onValueChange={(itemValue, itemIndex) => {
                                     reminder.type = itemValue
-                                    switch (reminder.type) {
+                                    switch (itemValue) {
                                         case 'Food':
                                             setImgSource(FoodIcon) 
                                             break;
                                         case 'Stuff':
                                             setImgSource(StuffIcon) 
                                             break;
+                                        case 'HairBrush':
+                                            setImgSource(HairBrushIcon) 
+                                            break;
+                                        case 'Walk':
+                                            setImgSource(WalkIcon) 
+                                            break;
                                         case 'Doctor': 
                                             setImgSource(DoctorIcon) 
+                                            break
+                                        case 'Vaccine':
+                                            setImgSource(VaccineIcon)
                                             break
                                         case 'Shower': 
                                             setImgSource(ShowerIcon) 
                                             break
+                                        case 'Sand': 
+                                            setImgSource(SandIcon) 
+                                            break
                                         default:
-                                            setImgSource(WaitIcon) 
+                                            setImgSource(QuestionIcon) 
                                             break;
                                     }
                                 }}>
                                 <Picker.Item label="Tiêm ngừa" value="Vaccine" />
                                 <Picker.Item label="Khám bệnh" value="Doctor" />
+                                <Picker.Item label="Mua sắm" value="Stuff" />
                                 <Picker.Item label="Tắm" value="Shower" />
-                                <Picker.Item label="Dọn cát" value="Poop" />
+                                <Picker.Item label="Đi dạo" value="Walk" />
+                                <Picker.Item label="Chải lông" value="HairBrush" />
+                                <Picker.Item label="Vệ sinh" value="Sand" />
                                 <Picker.Item label="Cho ăn" value="Food" />
                                 <Picker.Item label="Khác" value="Other" />
                             </Picker>

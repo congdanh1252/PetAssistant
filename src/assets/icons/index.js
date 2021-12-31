@@ -14,6 +14,9 @@ import SandIcon from '../icons/Sand.png'
 import SMSIcon from '../icons/Android.png'
 import SendMailIcon from '../icons/EmailSend.png'
 import AskQuestionIcon from '../icons/AskQuestion.png'
+import ServiceIcon from '../icons/Service.png'
+import SettingIcon from '../icons/Settings.png'
+
 
 
 
@@ -34,5 +37,7 @@ export {
     SandIcon,
     SendMailIcon,
     SMSIcon,
-    AskQuestionIcon
+    AskQuestionIcon,
+    ServiceIcon,
+    SettingIcon,
 };

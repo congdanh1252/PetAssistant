@@ -71,17 +71,43 @@ export const getMonthTotal = (date, handleTotalCallback) => {
   }, onError);
 }
 
-export const getMonthLimitAndAvg = (handleMonthLimitCallback) => {
+export const getMonthLimit = (handleMonthLimitCallback) => {
   var limit = 0
-  var avg = 0
   firestore()
   .collection('users')
   .doc(auth().currentUser.uid)
   .get()
   .then(documentSnapshot => {
       limit = documentSnapshot.data().expenditure_limit
-      avg = documentSnapshot.data().expenditure_avg
-      handleMonthLimitCallback(limit, avg);
+      handleMonthLimitCallback(limit);
+  }, onError);
+}
+
+export const updateMonthLimit = (monthLimit, handleCallback) => {
+  firestore()
+  .collection('users')
+  .doc(auth().currentUser.uid)
+  .update({
+    expenditure_limit: monthLimit
+  })
+  .then(() => {
+    handleCallback()
+    console.log("Updated!");
+  }, onError);
+}
+
+export const getMonthAverage = (date, handleMonthAvgCallback) => {
+  var avg = 0
+  var count = 0
+  firestore()
+  .collection('users/' + auth().currentUser.uid + '/expenditures')
+  .get()
+  .then(querySnapshot => {
+    querySnapshot.forEach(documentSnapshot => {
+      avg += documentSnapshot.data().amount
+      count++
+    });
+    handleMonthAvgCallback(avg);
   }, onError);
 }
 

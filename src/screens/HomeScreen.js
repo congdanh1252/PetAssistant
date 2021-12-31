@@ -11,7 +11,6 @@ import strings from '../data/strings';
 
 const HomeScreen = ({navigation}) => {
     const [show, setShow] = useState(false);
-
     const snapPoints = useMemo(() => ['19%', '19%'], []);
 
     //Main 
@@ -30,10 +29,7 @@ const HomeScreen = ({navigation}) => {
 
                 <TouchableOpacity
                     onPress={() => {
-                        auth()
-                        .signOut()
-                        .then(() => console.log('User signed out!'));
-                        navigation.navigate('Login')
+                        navigation.navigate('Profile')
                     }}
                 >
                     <Image

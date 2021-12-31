@@ -21,6 +21,7 @@
     "expo-splash-screen": "~0.11.2",
     "expo-status-bar": "~1.0.4",
     "expo-updates": "~0.8.1",
+    "js-flipper": "^0.127.0",
     "moment": "^2.29.1",
     "react": "16.13.1",
     "react-dom": "16.13.1",
