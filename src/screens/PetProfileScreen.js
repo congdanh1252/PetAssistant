@@ -4,7 +4,7 @@ import Toast from "react-native-toast-message";
 import Dialog from "react-native-dialog";
 import { ProgressCircle } from 'react-native-svg-charts';
 import {
-    Image, StyleSheet, View, Text, ScrollView, TouchableOpacity, LogBox,
+    Image, StyleSheet, View, Text, TouchableOpacity, LogBox,
     TouchableHighlight, TouchableWithoutFeedback, Switch
 } from 'react-native';
 import { deletePetFromFirestore } from '../api/PetAPI';
@@ -360,7 +360,7 @@ const PetProfileScreen = ({route, navigation}) => {
 
                     <Image
                         style={{height: 36, width: 36}}
-                        source={require('../assets/icons/ic_health_book.png')}
+                        source={require('../assets/icons/ic_guide_fl.png')}
                     />
                 </TouchableOpacity>
             </BottomSheet>

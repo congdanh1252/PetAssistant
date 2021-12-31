@@ -171,7 +171,7 @@ const HomeScreen = ({navigation}) => {
                 </View>
             </View>
 
-            {/* BottomSheet Filter */}
+            {/* BottomSheet góp ý */}
             {
                 !show ?
                     null

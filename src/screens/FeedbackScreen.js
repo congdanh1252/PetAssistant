@@ -204,7 +204,7 @@ const FeedbackScreen = ({route, navigation}) => {
                                         editable={false}
                                         style={styles.input}
                                         placeholderTextColor={'#898989'}
-                                        placeholder={strings.injection_label}
+                                        placeholder={strings.feedback_label}
                                         value={type}
                                     />
 

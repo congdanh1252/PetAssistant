@@ -4,6 +4,7 @@ import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import COLORS from '../theme/colors';
 import Vaccine from '../models/vaccine';
+import strings from '../data/strings';
 
 const VaccinationScreen = ({route, navigation}) => {
     const { pet_id, pet_kind } = route.params;
@@ -11,6 +12,7 @@ const VaccinationScreen = ({route, navigation}) => {
     const [taken, setTaken] = useState([]);
     const [msgEmpty, setMsgEmpty] = useState('');
     const [vaccineList, setVaccineList] = useState([]);
+    const [photoShow, setPhotoShow] = useState('');
 
     const convertJsDate = (date) => {
         return (
@@ -104,13 +106,14 @@ const VaccinationScreen = ({route, navigation}) => {
                         expandList[i]
                         ?
                         <View style={style.vaccine_detail_holder}>
-                            <Text style={style.label}>Mũi tiêm: {vaccineList[i].detail}</Text>
+                            <Text style={style.label}>{strings.injection_label}: {vaccineList[i].detail}</Text>
 
                             <View style={style.item_title_holder}>
-                                <Text style={style.label}>Nhãn vắc-xin:</Text>
+                                <Text style={style.label}>{strings.vaccine_label}:</Text>
 
                                 <TouchableOpacity
                                     activeOpacity={0.7}
+                                    onPress={() => setPhotoShow(vaccineList[i].label_photo)}
                                 >
                                     <Image
                                         style={{width: 75, height: 70, borderRadius: 6}}
@@ -133,7 +136,7 @@ const VaccinationScreen = ({route, navigation}) => {
                                 </TouchableOpacity>
                             </View>
                             
-                            <Text style={style.label}>Ngày tái chủng: {convertJsDate(vaccineList[i].retake_date)}</Text>
+                            <Text style={style.label}>{strings.vaccine_retake_date}: {convertJsDate(vaccineList[i].retake_date)}</Text>
                         </View>
                         : null
                     }
@@ -199,48 +202,72 @@ const VaccinationScreen = ({route, navigation}) => {
     }, []);
 
     return (
-        <View style={style.container}>
-            <ScrollView
-                style={style.vaccination_list_container}
-                showsVerticalScrollIndicator={false}
-            >
+        <>
+            <View style={style.container}>
+                <ScrollView
+                    style={style.vaccination_list_container}
+                    showsVerticalScrollIndicator={false}
+                >
+                    {
+                        vaccineList.length==0 ?
+                        <Text
+                            style={[style.label, {
+                                marginTop: 40,
+                                textAlign: 'center',
+                            }]}
+                        >
+                            {msgEmpty}
+                        </Text>
+                        : <VaccineList/>
+                    }
+                </ScrollView>
+
+                {/* Vắc-xin đã tiêm */}
                 {
-                    vaccineList.length==0 ?
-                    <Text
-                        style={[style.label, {
-                            marginTop: 40,
-                            textAlign: 'center',
-                        }]}
-                    >
-                        {msgEmpty}
-                    </Text>
-                    : <VaccineList/>
+                    (pet_kind == 'Chó' || pet_kind == 'Mèo')
+                    ? <TakenTable/>
+                    : null
                 }
-            </ScrollView>
 
+                <TouchableOpacity
+                    style={style.floating_button}
+                    activeOpacity={0.7}
+                    onPress={() => {
+                        navigation.navigate('AddVaccine', {
+                            pet_id: pet_id,
+                            action: 'add',
+                            pet_kind: pet_kind,
+                        });
+                    }}
+                >
+                    <Image
+                        source={require('../assets/icons/Add.png')}
+                        style={style.add_btn}
+                    />
+                </TouchableOpacity>
+            </View>
+
+            {/* Xem ảnh */}
             {
-                (pet_kind == 'Chó' || pet_kind == 'Mèo')
-                ? <TakenTable/>
-                : null
-            }
+                photoShow == '' ?
+                null
+                :
+                <View style={style.overlay}>
+                    <Image resizeMode='contain' style={style.full_width_photo} source={{uri: photoShow=='' ? null : photoShow}}/>
 
-            <TouchableOpacity
-                style={style.floating_button}
-                activeOpacity={0.7}
-                onPress={() => {
-                    navigation.navigate('AddVaccine', {
-                        pet_id: pet_id,
-                        action: 'add',
-                        pet_kind: pet_kind,
-                    });
-                }}
-            >
-                <Image
-                    source={require('../assets/icons/Add.png')}
-                    style={style.add_btn}
-                />
-            </TouchableOpacity>
-        </View>
+                    <TouchableOpacity
+                        activeOpacity={0.6}
+                        style={style.close_btn}
+                        onPress={() => setPhotoShow('')}
+                    >
+                        <Image
+                            style={{width: 24, tintColor: '#fff'}}
+                            source={require('../assets/icons/ic_x.png')}
+                        />
+                    </TouchableOpacity>
+                </View>
+            }
+        </>
     );
 }
 
@@ -337,5 +364,27 @@ const style = StyleSheet.create({
     },
     add_btn: {
         width: 56,
-    }
+    },
+    close_btn: {
+        width: 48,
+        height: 48,
+        marginTop: 20,
+        borderRadius: 24,
+        borderWidth: 1,
+        borderColor: '#fff',
+        alignItems: 'center'
+    },
+    overlay: {
+        width: '100%',
+        height: '100%',
+        position: 'absolute',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    },
+    full_width_photo: {
+        width: '100%',
+        height: '70%',
+        marginTop: '-20%',
+    },
 });
