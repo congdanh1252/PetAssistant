@@ -20,7 +20,12 @@ import {
     DoctorIcon,
     FoodIcon,
     StuffIcon, 
-    ShowerIcon
+    ShowerIcon,
+    QuestionIcon,
+    VaccineIcon,
+    WalkIcon,
+    HairBrushIcon,
+    SandIcon
 } from '../assets/icons/index'
 
 LocaleConfig.locales['vi'] = {
@@ -172,14 +177,26 @@ export function Schedules ({navigation}) {
             case 'Stuff':
                 imgSource = StuffIcon
                 break;
+            case 'HairBrush':
+                imgSource = HairBrushIcon
+                break;
+            case 'Walk':
+                imgSource = WalkIcon
+                break;
             case 'Doctor': 
                 imgSource = DoctorIcon
+                break
+            case 'Vaccine':
+                imgSource = VaccineIco
                 break
             case 'Shower': 
                 imgSource = ShowerIcon
                 break
+            case 'Sand': 
+                imgSource = SandIcon
+                break
             default:
-                imgSource = WaitIcon;
+                imgSource = QuestionIcon
                 break;
         }
         return (

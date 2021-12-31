@@ -11,6 +11,7 @@ import { deletePetFromFirestore } from '../api/PetAPI';
 import { windowWidth } from '../models/common/Dimensions';
 
 import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
@@ -33,33 +34,38 @@ const PetProfileScreen = ({route, navigation}) => {
 
     const { pet_id } = route.params;
     
-    var care_section = [
+    const [care_section, setCareSection] = useState([
         {
             task: 'Shower',
-            activated: true,
+            activated: false,
+            id: "",
             due_date: new Date()
         },
         {
             task: 'Shopping',
             activated: false,
+            id: "",
             due_date: new Date()
         },
         {
             task: 'Vaccination',
-            activated: true,
+            activated: false,
+            id: "",
             due_date: new Date()
         },
         {
             task: 'Walking',
             activated: false,
+            id: "",
             due_date: new Date()
         },
         {
             task: 'Cleaning',
-            activated: true,
+            activated: false,
+            id: "",
             due_date: new Date()
         }
-    ];
+    ]);
 
     const showResultToast = (result) => {
         if (result === 'Success') {
@@ -137,6 +143,7 @@ const PetProfileScreen = ({route, navigation}) => {
     const CareContent = () => {
         var boxes = [];
         var icon;
+
         for (let i = 0; i < care_section.length; i++) {
             switch (care_section[i].task) {
                 case 'Shower':
@@ -167,6 +174,7 @@ const PetProfileScreen = ({route, navigation}) => {
 
                     <View style={style.care_uppers_chart}>
                         <TouchableOpacity
+                            disabled={!care_section[i].activated}
                             activeOpacity={0.7}
                         >
                             <Image
@@ -215,7 +223,7 @@ const PetProfileScreen = ({route, navigation}) => {
     //get pet data
     useEffect(() => {
         const subscriber = firestore()
-        .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/pets')
+        .collection('users/' + auth().currentUser.uid + '/pets')
         .doc(pet_id)
         .onSnapshot(documentSnapshot => {
             var newPet = new Pet();
@@ -226,6 +234,42 @@ const PetProfileScreen = ({route, navigation}) => {
             setPet(newPet);
         })
 
+        return () => subscriber();
+    }, [])
+
+    //get care data
+    useEffect(() => {
+        const subscriber = firestore()
+        .collection('users/' + auth().currentUser.uid + '/reminders')
+        .where('reminderType', '==', 'core')
+        .onSnapshot(querySnapshot => {
+            querySnapshot.forEach(documentSnapshot => {
+                if (documentSnapshot.data().enable) {
+                    let index = 0
+                    switch (documentSnapshot.data().type) {
+                        case "Shower":
+                            index = 0;
+                            break;
+                        case "":
+                            index = 1;
+                            break;
+                        case "Vaccination":
+                            index = 2;
+                            break;
+                        case "Shower":
+                            index = 3;
+                            break;
+                        case "Sand":
+                            index = 4;
+                            break;
+                        default:
+                            break;
+                    }
+                    care_section[index].activated = true
+                    console.log(index);
+                }
+            });
+        })
         return () => subscriber();
     }, [])
     
@@ -317,7 +361,6 @@ const PetProfileScreen = ({route, navigation}) => {
                                 {strings.height}
                             </Text>
                         </View>
-
                         {/* Weight box */}
                         <View
                             style={[style.box_information, {backgroundColor: COLORS.pet_pink}]}
@@ -338,14 +381,13 @@ const PetProfileScreen = ({route, navigation}) => {
                     <Text style={style.section_title}>
                         {strings.care_title}
                     </Text>
-
                     <CareContent/>
                 </View>
             </BottomSheet>
 
             {/* Overlay and Settings dropdown bottomsheet */}
             {
-                setting=='' ?
+                setting == '' ?
                     (null)
                 :
                     (

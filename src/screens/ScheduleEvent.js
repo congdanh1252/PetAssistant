@@ -23,7 +23,12 @@ import {
     DoctorIcon,
     FoodIcon,
     StuffIcon, 
-    ShowerIcon
+    ShowerIcon,
+    QuestionIcon,
+    VaccineIcon,
+    WalkIcon,
+    HairBrushIcon,
+    SandIcon
 } from '../assets/icons/index'  
 
 export function ScheduleEvent ({route, navigation}) {
@@ -268,14 +273,26 @@ export function ScheduleEvent ({route, navigation}) {
                         case 'Stuff':
                             setImgSource(StuffIcon) 
                             break;
+                        case 'HairBrush':
+                            setImgSource(HairBrushIcon) 
+                            break;
+                        case 'Walk':
+                            setImgSource(WalkIcon) 
+                            break;
                         case 'Doctor': 
                             setImgSource(DoctorIcon) 
+                            break
+                        case 'Vaccine':
+                            setImgSource(VaccineIcon)
                             break
                         case 'Shower': 
                             setImgSource(ShowerIcon) 
                             break
+                        case 'Sand': 
+                            setImgSource(SandIcon) 
+                            break
                         default:
-                            setImgSource(WaitIcon) 
+                            setImgSource(QuestionIcon) 
                             break;
                     }
                 }
@@ -734,28 +751,43 @@ export function ScheduleEvent ({route, navigation}) {
                                 selectedValue={reminder.type}
                                 onValueChange={(itemValue, itemIndex) => {
                                     reminder.type = itemValue
-                                    switch (reminder.type) {
+                                    switch (itemValue) {
                                         case 'Food':
                                             setImgSource(FoodIcon) 
                                             break;
                                         case 'Stuff':
                                             setImgSource(StuffIcon) 
                                             break;
+                                        case 'HairBrush':
+                                            setImgSource(HairBrushIcon) 
+                                            break;
+                                        case 'Walk':
+                                            setImgSource(WalkIcon) 
+                                            break;
                                         case 'Doctor': 
                                             setImgSource(DoctorIcon) 
+                                            break
+                                        case 'Vaccine':
+                                            setImgSource(VaccineIcon)
                                             break
                                         case 'Shower': 
                                             setImgSource(ShowerIcon) 
                                             break
+                                        case 'Sand': 
+                                            setImgSource(SandIcon) 
+                                            break
                                         default:
-                                            setImgSource(WaitIcon) 
+                                            setImgSource(QuestionIcon) 
                                             break;
                                     }
                                 }}>
                                 <Picker.Item label="Tiêm ngừa" value="Vaccine" />
                                 <Picker.Item label="Khám bệnh" value="Doctor" />
+                                <Picker.Item label="Mua sắm" value="Stuff" />
                                 <Picker.Item label="Tắm" value="Shower" />
-                                <Picker.Item label="Dọn cát" value="Poop" />
+                                <Picker.Item label="Đi dạo" value="Walk" />
+                                <Picker.Item label="Chải lông" value="HairBrush" />
+                                <Picker.Item label="Vệ sinh" value="Sand" />
                                 <Picker.Item label="Cho ăn" value="Food" />
                                 <Picker.Item label="Khác" value="Other" />
                             </Picker>

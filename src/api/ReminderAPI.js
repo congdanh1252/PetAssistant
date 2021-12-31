@@ -38,10 +38,12 @@ export const getReminder = (reminderID, handleReminder) => {
 }
 
 export const addReminder = (reminder, handleCallback) => {
+  console.log(reminder);
   firestore()
   .collection('users/' + auth().currentUser.uid + '/reminders')
   .add(reminder)
   .then(docRef => {
+    console.log("Added")
     reminder._id = docRef.id
     firestore()
     .collection('users/' + auth().currentUser.uid + '/reminders')
@@ -197,6 +199,7 @@ export const getMonthReminderDate = (date, handleCallback) => {
         }
       });
 
+      // Get yearly
       firestore()
       .collection('users/' + auth().currentUser.uid + '/reminders')
       .where('month', '==', date.getMonth() + 1)
@@ -212,13 +215,6 @@ export const getMonthReminderDate = (date, handleCallback) => {
       }, onError);
     }, onError);
   }, onError);
-
-  // Get monthly
-  
-
-  // Get yearly
-  
-
 }
 
 export const getCoreReminder = (handleCallback) => {
