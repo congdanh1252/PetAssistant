@@ -137,29 +137,10 @@ const PetProfileScreen = ({route, navigation}) => {
 
     //Care boxes
     const CareContent = () => {
-        var boxes = [];
-        var icon;
-
-        for (let i = 0; i < care_section.length; i++) {
-            switch (care_section[i].task) {
-                case 'Shower':
-                    icon = require('../assets/icons/ic_shampoo.png')
-                    break;
-                case 'Shopping':
-                    icon = require('../assets/icons/ic_shop.png')
-                    break;
-                case 'Vaccination':
-                    icon = require('../assets/icons/ic_vaccination.png')
-                    break;
-                case 'Walking':
-                    icon = require('../assets/icons/ic_leash.png')
-                    break;
-                default:
-                    icon = require('../assets/icons/ic_scoop.png')
-            }
-
-            boxes.push(
-                <View style={style.care_box} key={i}>
+        return (
+            <View style={style.care_content}>
+                {/* Shower */}
+                <View style={style.care_box} key={0}>
                     <ProgressCircle
                         style={{height: 115}}
                         progress={0.5}
@@ -170,7 +151,7 @@ const PetProfileScreen = ({route, navigation}) => {
 
                     <View style={style.care_uppers_chart}>
                         <TouchableOpacity
-                            disabled={!care_section[i].activated}
+                            disabled={!care_section[0].activated}
                             activeOpacity={0.7}
                         >
                             <Image
@@ -183,7 +164,7 @@ const PetProfileScreen = ({route, navigation}) => {
                                         height: 50,
                                     }
                                 ]}
-                                source={icon}
+                                source={require('../assets/icons/ic_shampoo.png')}
                             />
                         </TouchableOpacity>
 
@@ -191,16 +172,162 @@ const PetProfileScreen = ({route, navigation}) => {
                             thumbColor={"#f4f3f4"}
                             trackColor={{ false: "#767577", true: "#81b0ff" }}
                             ios_backgroundColor="#3e3e3e"
-                            value={care_section[i].activated}
+                            value={care_section[0].activated}
                         />
                     </View>
                 </View>
-            )
-        }
 
-        return (
-            <View style={style.care_content}>
-                {boxes}
+                {/* Shopping */}
+                <View style={style.care_box} key={1}>
+                    <ProgressCircle
+                        style={{height: 115}}
+                        progress={0.5}
+                        startAngle={-Math.PI * 0.8}
+                        endAngle={Math.PI * 0.8}
+                        progressColor={COLORS.pet_green}
+                    />
+
+                    <View style={style.care_uppers_chart}>
+                        <TouchableOpacity
+                            disabled={!care_section[1].activated}
+                            activeOpacity={0.7}
+                        >
+                            <Image
+                                style={[
+                                    style.pet_gender,
+                                    {
+                                        marginLeft: 0,
+                                        marginBottom: 4,
+                                        width: 50,
+                                        height: 50,
+                                    }
+                                ]}
+                                source={require('../assets/icons/ic_shop.png')}
+                            />
+                        </TouchableOpacity>
+
+                        <Switch
+                            thumbColor={"#f4f3f4"}
+                            trackColor={{ false: "#767577", true: "#81b0ff" }}
+                            ios_backgroundColor="#3e3e3e"
+                            value={care_section[1].activated}
+                        />
+                    </View>
+                </View>
+
+                {/* Vaccination */}
+                <View style={style.care_box} key={2}>
+                    <ProgressCircle
+                        style={{height: 115}}
+                        progress={0.5}
+                        startAngle={-Math.PI * 0.8}
+                        endAngle={Math.PI * 0.8}
+                        progressColor={COLORS.pet_green}
+                    />
+
+                    <View style={style.care_uppers_chart}>
+                        <TouchableOpacity
+                            disabled={!care_section[2].activated}
+                            activeOpacity={0.7}
+                        >
+                            <Image
+                                style={[
+                                    style.pet_gender,
+                                    {
+                                        marginLeft: 0,
+                                        marginBottom: 4,
+                                        width: 50,
+                                        height: 50,
+                                    }
+                                ]}
+                                source={require('../assets/icons/ic_vaccination.png')}
+                            />
+                        </TouchableOpacity>
+
+                        <Switch
+                            thumbColor={"#f4f3f4"}
+                            trackColor={{ false: "#767577", true: "#81b0ff" }}
+                            ios_backgroundColor="#3e3e3e"
+                            value={care_section[2].activated}
+                        />
+                    </View>
+                </View>
+
+                {/* Walking */}
+                <View style={style.care_box} key={3}>
+                    <ProgressCircle
+                        style={{height: 115}}
+                        progress={0.5}
+                        startAngle={-Math.PI * 0.8}
+                        endAngle={Math.PI * 0.8}
+                        progressColor={COLORS.pet_green}
+                    />
+
+                    <View style={style.care_uppers_chart}>
+                        <TouchableOpacity
+                            disabled={!care_section[3].activated}
+                            activeOpacity={0.7}
+                        >
+                            <Image
+                                style={[
+                                    style.pet_gender,
+                                    {
+                                        marginLeft: 0,
+                                        marginBottom: 4,
+                                        width: 50,
+                                        height: 50,
+                                    }
+                                ]}
+                                source={require('../assets/icons/ic_leash.png')}
+                            />
+                        </TouchableOpacity>
+
+                        <Switch
+                            thumbColor={"#f4f3f4"}
+                            trackColor={{ false: "#767577", true: "#81b0ff" }}
+                            ios_backgroundColor="#3e3e3e"
+                            value={care_section[3].activated}
+                        />
+                    </View>
+                </View>
+
+                {/* Cleaning */}
+                <View style={style.care_box} key={4}>
+                    <ProgressCircle
+                        style={{height: 115}}
+                        progress={0.5}
+                        startAngle={-Math.PI * 0.8}
+                        endAngle={Math.PI * 0.8}
+                        progressColor={COLORS.pet_green}
+                    />
+
+                    <View style={style.care_uppers_chart}>
+                        <TouchableOpacity
+                            disabled={!care_section[4].activated}
+                            activeOpacity={0.7}
+                        >
+                            <Image
+                                style={[
+                                    style.pet_gender,
+                                    {
+                                        marginLeft: 0,
+                                        marginBottom: 4,
+                                        width: 50,
+                                        height: 50,
+                                    }
+                                ]}
+                                source={require('../assets/icons/ic_scoop.png')}
+                            />
+                        </TouchableOpacity>
+
+                        <Switch
+                            thumbColor={"#f4f3f4"}
+                            trackColor={{ false: "#767577", true: "#81b0ff" }}
+                            ios_backgroundColor="#3e3e3e"
+                            value={care_section[4].activated}
+                        />
+                    </View>
+                </View>
             </View>
         )
     }

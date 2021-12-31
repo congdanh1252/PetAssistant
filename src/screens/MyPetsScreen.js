@@ -35,7 +35,6 @@ const MyPetsScreen = ({route, navigation}) => {
         .onSnapshot(querySnapshot => {
             var petList = new Array();
             querySnapshot.forEach(documentSnapshot => {
-                console.log(documentSnapshot.data());
                 var pet = new Pet();
                 pet.update(documentSnapshot.data());
                 pet.birthday = new Date(documentSnapshot.data().dob.toDate());

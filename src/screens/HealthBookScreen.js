@@ -1,12 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Image, StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput,
-    TouchableWithoutFeedback, TouchableHighlight,
-} from 'react-native';
+import React from 'react';
+import { StyleSheet, View, Text } from 'react-native';
 
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import VaccinationScreen from './VaccinationScreen';
 import TreatmentScreen from './TreatmentScreen';
-import firestore from '@react-native-firebase/firestore';
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
