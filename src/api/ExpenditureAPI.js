@@ -131,15 +131,16 @@ export const findDateByKeyword = (keyword, date, handleDatesCallback) => {
 }
 
 export const addExpenditure = (expenditure, handleAddExpenditureCallback) => {
+  console.log(expenditure.date);
   firestore()
   .collection('users/' + auth().currentUser.uid + '/expenditures')
   .add({
     title: expenditure.title,
     amount: parseInt(expenditure.amount),
     month: expenditure.date.getMonth() + 1,
-    date: firestore.Timestamp.fromDate(new Date(expenditure.date)),
     year: expenditure.date.getFullYear(),
     type: expenditure.type,
+    date: firestore.Timestamp.fromDate(expenditure.date),
   })
   .then(() => {
     handleAddExpenditureCallback()

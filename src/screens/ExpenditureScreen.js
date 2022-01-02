@@ -635,7 +635,6 @@ export function ExpenditureScreen({navigation}) {
         }
         const handelAdd = () => {
             expenditure.amount = expenditureAmount
-            setIsShowDialog(false)
             addExpenditure(expenditure, () => {
                 setSelectedMonth(expenditure.date)
             })

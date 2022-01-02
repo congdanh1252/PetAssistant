@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     Image, StyleSheet, View, Text, TouchableOpacity, TouchableWithoutFeedback,
     TouchableHighlight
@@ -8,12 +8,69 @@ import BottomSheet from '@gorhom/bottom-sheet';
 
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
+import User from '../models/user';
+import {
+    getUserName
+} from '../api/UserAPI'
+import {
+    getDateReminder
+} from '../api/ReminderAPI'
+import {
+    getMonthTotal
+} from '../api/ExpenditureAPI'
 
 const HomeScreen = ({navigation}) => {
     const [show, setShow] = useState(false);
     const snapPoints = useMemo(() => ['19%', '19%'], []);
+    const [amountReminder, setAmountReminder] = useState(0);
+    const [total, setTotal] = useState(0);
+
+    const [user, setUser] = useState(new User())
+
+    useEffect(() => {
+        let isCancelled = false;
+        getUserName(user => {
+            console.log(user);
+            setUser(user)
+        })
+        return () => {
+            isCancelled = true
+        }
+    }, [])
+
+    useEffect(() => {
+        let isCancelled = false
+        getDateReminder(new Date(), (reminders, oldReminder) => {
+            console.log(reminders);
+            setAmountReminder(reminders.length)
+        })
+        return () => {
+            isCancelled = true
+        }
+    }, [])
+
+    useEffect(() => {
+        let isCancelled = false
+        getMonthTotal(new Date(), total => {
+            setTotal(total)
+        })
+        return () => {
+            isCancelled = true
+        }
+    }, [])
+
+    // useEffect(() => {
+    //     let isCancelled = false
+    //     getMonthTotal(new Date(), total => {
+    //         setTotal(total)
+    //     })
+    //     return () => {
+    //         isCancelled = true
+    //     }
+    // }, [])
 
     //Main 
+    
     return (
         <View style={style.container}>
             <View style={style.header}>
@@ -26,6 +83,31 @@ const HomeScreen = ({navigation}) => {
                         source={require('../assets/icons/Hamburger.png')}
                     />
                 </TouchableOpacity>
+
+                <View style={{
+                    marginLeft: -50,
+                }}>
+                    <Text style={{
+                        fontFamily: 'Roboto-Regular',
+                        color: COLORS.black,
+                    }}>
+                        {
+                            new Date().getHours() > 17  
+                            ? "Chào buổi tối,"
+                            : new Date().getHours() > 12  
+                            ? "Chào buổi chiều,"
+                            : "Chào buỏi sáng,"
+                        }
+                    </Text>
+
+                    <Text style={{
+                        fontFamily: 'Roboto-Bold',
+                        fontSize: 20,
+                        color: COLORS.black
+                    }}>
+                        {user.name}
+                    </Text>
+                </View>
 
                 <TouchableOpacity
                     onPress={() => {
@@ -42,23 +124,29 @@ const HomeScreen = ({navigation}) => {
             <View style={style.content}>
                 <View style={style.activities}>
                     <View style={style.activity_box}>
-                        <Text style={style.activity_heading}>3</Text>
+                        <Text style={style.activity_heading}>
+                            {amountReminder}
+                        </Text>
                         <Text style={style.activity_label}>
                             {strings.activity.toLowerCase()}
                         </Text>
                     </View>
 
                     <View style={style.activity_box}>
-                        <Text style={style.activity_heading}>3</Text>
+                        <Text style={style.activity_heading}>
+                            {"10"}
+                        </Text>
                         <Text style={style.activity_label}>
                             {strings.activity.toLowerCase()}
                         </Text>
                     </View>
 
                     <View style={style.activity_box}>
-                        <Text style={style.activity_heading}>3</Text>
+                        <Text style={style.amount_title}>
+                            {total}
+                        </Text>
                         <Text style={style.activity_label}>
-                            {strings.activity.toLowerCase()}
+                            {strings.expenditure.toLowerCase()}
                         </Text>
                     </View>
                 </View>
@@ -278,17 +366,23 @@ const style = StyleSheet.create({
         height: 90,
         borderRadius: 20,
         alignItems: 'center',
-        backgroundColor: COLORS.dark
+        backgroundColor: COLORS.dark,
+        justifyContent: 'space-around',
     },
     activity_heading: {
-        fontSize: 44,
+        fontSize: 20,
+        fontFamily: 'Roboto-Bold',
+        color: COLORS.white
+    },
+    amount_title: {
+        fontSize: 20,
         fontFamily: 'Roboto-Bold',
         color: COLORS.white
     },
     activity_label: {
-        fontSize: 16,
+        fontSize: 12,
         fontFamily: 'Roboto-Medium',
-        color: COLORS.white
+        color: COLORS.white,
     },
     menu: {
         height: '80%',
@@ -303,7 +397,7 @@ const style = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: COLORS.white
+        backgroundColor: COLORS.white,
     },
     menu_box: {
         width: '47%',

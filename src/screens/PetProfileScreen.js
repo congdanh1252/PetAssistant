@@ -2,13 +2,15 @@ import React, { useMemo, useRef, useState, useEffect } from 'react';
 import BottomSheet from '@gorhom/bottom-sheet';
 import Toast from "react-native-toast-message";
 import Dialog from "react-native-dialog";
+import moment from 'moment';
 import { ProgressCircle } from 'react-native-svg-charts';
 import {
     Image, StyleSheet, View, Text, TouchableOpacity, LogBox,
-    TouchableHighlight, TouchableWithoutFeedback, Switch
+    TouchableHighlight, TouchableWithoutFeedback, Switch, ActivityIndicator
 } from 'react-native';
 import { deletePetFromFirestore } from '../api/PetAPI';
 import { windowWidth } from '../models/common/Dimensions';
+import { updateCorePets } from '../api/ReminderAPI';
 
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
@@ -16,6 +18,8 @@ import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
 import Pet from '../models/pet';
+import Reminder from '../models/reminder';
+
 
 LogBox.ignoreLogs([
     'Non-serializable values were found in the navigation state',
@@ -29,43 +33,22 @@ const PetProfileScreen = ({route, navigation}) => {
     const [unmatchInput, setUnmatchInput] = useState(false);
     const [dialogVisible, setDialogVisible] = useState(false);
     const bottomSheetRef = useRef<BottomSheet>(null);
-    const snapPoints = useMemo(() => ['39%', '78%'], []);
+    const snapPoints = useMemo(() => ['39%', '90%'], []);
     const snapPointsDropdown = useMemo(() => ['19%', '19%'], []);
-
     const { pet_id } = route.params;
-    
-    const [care_section, setCareSection] = useState([
-        {
-            task: 'Shower',
-            activated: false,
-            id: "",
-            due_date: new Date()
-        },
-        {
-            task: 'Shopping',
-            activated: false,
-            id: "",
-            due_date: new Date()
-        },
-        {
-            task: 'Vaccination',
-            activated: false,
-            id: "",
-            due_date: new Date()
-        },
-        {
-            task: 'Walking',
-            activated: false,
-            id: "",
-            due_date: new Date()
-        },
-        {
-            task: 'Cleaning',
-            activated: false,
-            id: "",
-            due_date: new Date()
-        }
-    ]);
+    const [careSection, setCareSection] = useState([
+        new Reminder(),
+        new Reminder(),
+        new Reminder(),
+        new Reminder(),
+        new Reminder(),
+    ])
+    const [switchValue0, setSwitchValue0] = useState(false)
+    const [switchValue1, setSwitchValue1] = useState(false)
+    const [switchValue2, setSwitchValue2] = useState(false)
+    const [switchValue3, setSwitchValue3] = useState(false)
+    const [switchValue4, setSwitchValue4] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
 
     const showResultToast = (result) => {
         if (result === 'Success') {
@@ -137,6 +120,65 @@ const PetProfileScreen = ({route, navigation}) => {
 
     //Care boxes
     const CareContent = () => {
+        
+        const sectionClicked = (index) => {
+            navigation.navigate('ScheduleEvent', {
+                reminder_id: careSection[index]._id,
+            })
+        }
+
+        const switchChange = (index) => {
+            let toogle = true
+            switch (index) {
+                case 0:
+                    toogle = !switchValue0
+                    setSwitchValue0(toogle)
+                    break;
+                case 1:
+                    toogle = !switchValue1
+                    setSwitchValue1(toogle)
+                    break;
+                case 2:
+                    toogle = !switchValue2
+                    setSwitchValue2(toogle)
+                    break;
+                case 3:
+                    toogle = !switchValue3
+                    setSwitchValue3(toogle)
+                    break;
+                case 4:
+                    toogle = !switchValue4
+                    setSwitchValue4(toogle)
+                    break;
+                default:
+                    break;
+            }
+            if (toogle) {
+                careSection[index].pets.push(pet_id)
+            }
+            else {
+                let p_index = careSection[index].pets.indexOf(pet_id)
+                if (p_index > -1) 
+                    careSection[index].pets.splice(p_index, 1)
+            }
+            updateCorePets(careSection[index], () => {
+                if (toogle) {
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Thành công!',
+                        text2: 'Đã bật hoạt động!'
+                    });
+                } 
+                else {
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Thành công!',
+                        text2: 'Đã tắt hoạt động!'
+                    });
+                }
+            })
+        }
+
         return (
             <View style={style.care_content}>
                 {/* Shower */}
@@ -151,7 +193,10 @@ const PetProfileScreen = ({route, navigation}) => {
 
                     <View style={style.care_uppers_chart}>
                         <TouchableOpacity
-                            disabled={!care_section[0].activated}
+                            onPress={() => {
+                                sectionClicked(0)}
+                            }
+                            disabled={!switchValue0}
                             activeOpacity={0.7}
                         >
                             <Image
@@ -169,11 +214,30 @@ const PetProfileScreen = ({route, navigation}) => {
                         </TouchableOpacity>
 
                         <Switch
+                            onChange={() => {
+                                switchChange(0)
+                            }}
                             thumbColor={"#f4f3f4"}
                             trackColor={{ false: "#767577", true: "#81b0ff" }}
                             ios_backgroundColor="#3e3e3e"
-                            value={care_section[0].activated}
+                            value={switchValue0}
                         />
+
+                        <Text 
+                            style={{
+                                fontFamily: 'Roboto-Regular',
+                                fontSize: 12,
+                                marginTop: 10,
+                            }}
+                        >
+                            {
+                                !switchValue0
+                                ?
+                                "Không có dữ liệu"
+                                :
+                                moment(careSection[0].datetime).toNow()
+                            }
+                        </Text>
                     </View>
                 </View>
 
@@ -189,7 +253,10 @@ const PetProfileScreen = ({route, navigation}) => {
 
                     <View style={style.care_uppers_chart}>
                         <TouchableOpacity
-                            disabled={!care_section[1].activated}
+                            onPress={() => {
+                                sectionClicked(1)}
+                            }
+                            disabled={!switchValue1}
                             activeOpacity={0.7}
                         >
                             <Image
@@ -206,12 +273,31 @@ const PetProfileScreen = ({route, navigation}) => {
                             />
                         </TouchableOpacity>
 
-                        <Switch
+                        <Switch                        
+                            onChange={() => {
+                                switchChange(1)
+                            }}
                             thumbColor={"#f4f3f4"}
                             trackColor={{ false: "#767577", true: "#81b0ff" }}
                             ios_backgroundColor="#3e3e3e"
-                            value={care_section[1].activated}
+                            value={switchValue1}
                         />
+
+                        <Text 
+                            style={{
+                                fontFamily: 'Roboto-Regular',
+                                fontSize: 12,
+                                marginTop: 10,
+                            }}
+                        >
+                            {
+                                !switchValue1
+                                ?
+                                "Không có dữ liệu"
+                                :
+                                moment(careSection[1].datetime).toNow()
+                            }
+                        </Text>
                     </View>
                 </View>
 
@@ -227,7 +313,10 @@ const PetProfileScreen = ({route, navigation}) => {
 
                     <View style={style.care_uppers_chart}>
                         <TouchableOpacity
-                            disabled={!care_section[2].activated}
+                            onPress={() => {
+                                sectionClicked(2)}
+                            }
+                            disabled={!switchValue2}
                             activeOpacity={0.7}
                         >
                             <Image
@@ -245,11 +334,30 @@ const PetProfileScreen = ({route, navigation}) => {
                         </TouchableOpacity>
 
                         <Switch
+                            onChange={() => {
+                                switchChange(2)
+                            }}
                             thumbColor={"#f4f3f4"}
                             trackColor={{ false: "#767577", true: "#81b0ff" }}
                             ios_backgroundColor="#3e3e3e"
-                            value={care_section[2].activated}
+                            value={switchValue2}
                         />
+
+                        <Text 
+                            style={{
+                                fontFamily: 'Roboto-Regular',
+                                fontSize: 12,
+                                marginTop: 10,
+                            }}
+                        >
+                            {
+                                !switchValue2
+                                ?
+                                "Không có dữ liệu"
+                                :
+                                moment(careSection[2].datetime).toNow()
+                            }
+                        </Text>
                     </View>
                 </View>
 
@@ -265,7 +373,10 @@ const PetProfileScreen = ({route, navigation}) => {
 
                     <View style={style.care_uppers_chart}>
                         <TouchableOpacity
-                            disabled={!care_section[3].activated}
+                            onPress={() => {
+                                sectionClicked(3)}
+                            }
+                            disabled={!switchValue3}
                             activeOpacity={0.7}
                         >
                             <Image
@@ -283,11 +394,30 @@ const PetProfileScreen = ({route, navigation}) => {
                         </TouchableOpacity>
 
                         <Switch
+                            onChange={() => {
+                                switchChange(3)}
+                            }
                             thumbColor={"#f4f3f4"}
                             trackColor={{ false: "#767577", true: "#81b0ff" }}
                             ios_backgroundColor="#3e3e3e"
-                            value={care_section[3].activated}
+                            value={switchValue3}
                         />
+
+                        <Text 
+                            style={{
+                                fontFamily: 'Roboto-Regular',
+                                fontSize: 12,
+                                marginTop: 10,
+                            }}
+                        >
+                            {
+                                !switchValue3
+                                ?
+                                "Không có dữ liệu"
+                                :
+                                moment(careSection[3].datetime).toNow()
+                            }
+                        </Text>
                     </View>
                 </View>
 
@@ -303,7 +433,10 @@ const PetProfileScreen = ({route, navigation}) => {
 
                     <View style={style.care_uppers_chart}>
                         <TouchableOpacity
-                            disabled={!care_section[4].activated}
+                            onPress={() => {
+                                sectionClicked(4)}
+                            }
+                            disabled={!switchValue4}
                             activeOpacity={0.7}
                         >
                             <Image
@@ -321,11 +454,30 @@ const PetProfileScreen = ({route, navigation}) => {
                         </TouchableOpacity>
 
                         <Switch
+                            onChange={() => {
+                                switchChange(4)}
+                            }
                             thumbColor={"#f4f3f4"}
                             trackColor={{ false: "#767577", true: "#81b0ff" }}
                             ios_backgroundColor="#3e3e3e"
-                            value={care_section[4].activated}
+                            value={switchValue4}
                         />
+
+                        <Text 
+                            style={{
+                                fontFamily: 'Roboto-Regular',
+                                fontSize: 12,
+                                marginTop: 10,
+                            }}
+                        >
+                            {
+                                !switchValue4
+                                ?
+                                "Không có dữ liệu"
+                                :
+                                moment(careSection[4].datetime).toNow()
+                            }
+                        </Text>
                     </View>
                 </View>
             </View>
@@ -366,32 +518,51 @@ const PetProfileScreen = ({route, navigation}) => {
         .collection('users/' + auth().currentUser.uid + '/reminders')
         .where('reminderType', '==', 'core')
         .onSnapshot(querySnapshot => {
+            let reminder0 = new Reminder()
+            let reminder1 = new Reminder()
+            let reminder2 = new Reminder()
+            let reminder3 = new Reminder()
+            let reminder4 = new Reminder()
+            let reminders = new Array()
+            console.log("===========");
             querySnapshot.forEach(documentSnapshot => {
-                if (documentSnapshot.data().enable) {
-                    let index = 0
-                    switch (documentSnapshot.data().type) {
-                        case "Shower":
-                            index = 0;
-                            break;
-                        case "":
-                            index = 1;
-                            break;
-                        case "Vaccination":
-                            index = 2;
-                            break;
-                        case "Shower":
-                            index = 3;
-                            break;
-                        case "Sand":
-                            index = 4;
-                            break;
-                        default:
-                            break;
-                    }
-                    care_section[index].activated = true
-                    console.log(index);
+                console.log("get:" + documentSnapshot.data()._id);
+                switch (documentSnapshot.data().type) {
+                    case "Shower":
+                        reminder0.update(documentSnapshot.data())
+                        if (documentSnapshot.data().pets.includes(pet_id))
+                            setSwitchValue0(true)
+                        break;
+                    case "Stuff":
+                        reminder1.update(documentSnapshot.data())
+                        if (documentSnapshot.data().pets.includes(pet_id))
+                            setSwitchValue1(true)
+                        break;
+                    case "Vaccination":
+                        reminder2.update(documentSnapshot.data())
+                        if (documentSnapshot.data().pets.includes(pet_id))
+                            setSwitchValue2(true)
+                        break;
+                    case "Walk":
+                        reminder3.update(documentSnapshot.data())
+                        if (documentSnapshot.data().pets.includes(pet_id))
+                            setSwitchValue3(true)
+                        break;
+                    case "Sand":
+                        reminder4.update(documentSnapshot.data())
+                        if (documentSnapshot.data().pets.includes(pet_id))
+                            setSwitchValue4(true)
+                        break;
+                    default:
+                        break;
                 }
             });
+            reminders.push(reminder0)
+            reminders.push(reminder1)
+            reminders.push(reminder2)
+            reminders.push(reminder3)
+            reminders.push(reminder4)
+            setCareSection(reminders)
         })
         return () => subscriber();
     }, [])
@@ -498,6 +669,8 @@ const PetProfileScreen = ({route, navigation}) => {
                         </View>
                     </View>
                 </View>
+
+
 
                 {/* Care */}
                 <View style={style.care_information}>
@@ -795,10 +968,11 @@ const style = StyleSheet.create({
     care_box: {
         width: windowWidth / 4,
         margin: 4,
+        marginBottom: 8,
     },
     care_uppers_chart: {
         width: 98,
-        height: 98,
+        height: 120,
         left: 5,
         top: 12,
         position: 'absolute',
@@ -825,4 +999,14 @@ const style = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.6)',
     },
+    loading: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        elevation: 3,
+        alignItems: 'center',
+        justifyContent: 'center',
+    }
 });

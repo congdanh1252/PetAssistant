@@ -10,6 +10,7 @@ export default class Reminder {
       this.pets = new Array();
       this.type = '';
       this.reminderType = '';
+      this.enable = false;
       this.frequency = '';
       this.notificationId = Math.floor(Math.random() * 1000000) + 1;
     }
@@ -23,6 +24,7 @@ export default class Reminder {
       this.pets = data.pets || new Array();
       this.type = data.type || '';
       this.reminderType = data.reminderType || '';
+      this.enable = data.enable || false;
       this.frequency = data.frequency || '';
       this.notificationId = data.notificationId || Math.floor(Math.random() * 1000000) + 1;
     }

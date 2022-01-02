@@ -233,3 +233,15 @@ export const getCoreReminder = (handleCallback) => {
     handleCallback(reminders);
   }, onError);
 }
+
+export const updateCorePets = (reminder, handleCallback) => {
+  firestore()
+  .collection('users/' + auth().currentUser.uid + '/reminders')
+  .doc(reminder._id)
+  .update({
+    pets: reminder.pets
+  })
+  .then(() => {
+    handleCallback()
+  });
+}

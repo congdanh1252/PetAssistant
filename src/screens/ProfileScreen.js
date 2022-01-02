@@ -62,16 +62,6 @@ const ProfileScreen = ({navigation}) =>  {
                     user.update(documentSnapshot.data())
                     setUser(user)
                 })
-        // getUserInfo(user => {
-        //     try {
-        //         if (!isCancelled) {
-        //             setUser(user) 
-        //         }
-        //     } catch (error) {
-        //         if (!isCancelled)
-        //             throw error;
-        //     }
-        // })
         return () => {
             subscriber()
             //isCancelled = true

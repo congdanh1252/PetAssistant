@@ -7,6 +7,7 @@ import PetStack from './PetStack';
 import GuideStack from './GuideStack';
 import SearchingScreen from '../screens/SearchingScreen';
 import ScheduleStack from '../navigations/ScheduleStack';
+import { ScheduleEvent } from '../screens/ScheduleEvent';
 import ExpenditureStack from '../navigations/ExpenditureStack';
 import PredictStack from '../navigations/PredictStack';
 import ProfileScreen from '../screens/ProfileScreen';
@@ -35,6 +36,7 @@ const MainStack = () => {
           <Stack.Screen name="PredictStack" component={PredictStack} options={{headerShown: false}}/>
           <Stack.Screen name="Profile" component={ProfileScreen} options={{headerShown: false}}/>
           <Stack.Screen name="Setting" component={SettingScreen} options={{headerShown: false}}/>
+          <Stack.Screen name="ScheduleEvent" component={ScheduleEvent} options={{headerShown: false}}/> 
       
       </Stack.Navigator>
       <Toast/>
