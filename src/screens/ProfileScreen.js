@@ -103,7 +103,6 @@ const ProfileScreen = ({navigation}) =>  {
                         <Text style={styles.sectionTitle}>
                             {strings.accountInfo}
                         </Text>
-
                         {/* Name */}
                         <View style={styles.accountInfoContainer}>
                             <Text
@@ -172,7 +171,6 @@ const ProfileScreen = ({navigation}) =>  {
                                 </Text>
                             </TouchableOpacity>
                         </View>
-                        
                     </View>
                     <Line />
                     {/* Setting */}
@@ -232,18 +230,6 @@ const ProfileScreen = ({navigation}) =>  {
                         </ScrollView>
                         
                     </View>
-                    {/* Logout button */}
-                    <TouchableOpacity
-                        onPress={logout}
-                    >
-                        <View style={styles.logoutButton}>
-                            <Text style={{
-                                color: COLORS.white
-                            }}>
-                                {strings.logout}
-                            </Text>
-                        </View>
-                    </TouchableOpacity>
                 </ScrollView>
             </View>
         </View>

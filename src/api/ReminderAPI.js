@@ -163,7 +163,27 @@ export const getDateReminder = (date, handleCallback) => {
                       oldRemindersList.push(reminder)
                   }
               });
-              handleCallback(sort(remindersList), sort(oldRemindersList));
+
+              // Daily
+              firestore()
+              .collection('users/' + auth().currentUser.uid + '/reminders')
+              .where('frequency', '==', 'daily')
+              .get()
+              .then(querySnapshot => {
+                  querySnapshot.forEach(documentSnapshot => {
+                      var reminder = new Reminder();
+                      reminder.update(documentSnapshot.data())
+                      reminder.datetime.setDate(date.getDate()) 
+                      reminder.datetime.setMonth(date.getMonth()) 
+                      reminder.datetime.setFullYear(date.getFullYear()) 
+                      if (reminder.datetime > new Date()) {
+                          remindersList.push(reminder)
+                      } else {
+                          oldRemindersList.push(reminder)
+                      }
+                  });
+                  handleCallback(sort(remindersList), sort(oldRemindersList));
+              }, onError);
           }, onError);
       }, onError);
   }, onError);

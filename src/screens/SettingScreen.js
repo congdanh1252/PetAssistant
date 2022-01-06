@@ -104,6 +104,18 @@ const SettingScreen = ({route, navigation}) =>  {
                     >
                     </TextInput>
                 </View>
+
+                <TouchableOpacity
+                    onPress={update}
+                >
+                    <View style={styles.logoutButton}>
+                        <Text style={{
+                            color: COLORS.white
+                        }}>
+                            {strings.save}
+                        </Text>
+                    </View>
+                </TouchableOpacity>
             </View>
         )
     }
