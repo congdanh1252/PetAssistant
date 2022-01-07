@@ -574,10 +574,10 @@ const PetProfileScreen = ({route, navigation}) => {
                 if (reminder.frequency == 'weekly') {
                     dt.setDate(dt.getDate() - 7)
                     reminder.datetime = dt
-                    console.log(reminder.datetime.getDate())
                 }
                 if (reminder.frequency == 'daily') {
-                    reminder.datetime.setDate(reminder.datetime.getDate() - 1)
+                    dt.setDate(dt.getDate() - 1)
+                    reminder.datetime = dt 
                 }
                 if (reminder.frequency != 'custom') {
                 }
