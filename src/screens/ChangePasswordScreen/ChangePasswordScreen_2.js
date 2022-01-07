@@ -59,6 +59,7 @@ const VertificationMethod = (props) => {
           style={{
             fontWeight: '200',
             marginBottom: 10,
+            color: COLORS.black,
           }}
         >
           {props.methodName}
@@ -66,6 +67,7 @@ const VertificationMethod = (props) => {
         <Text
           style={{
             fontWeight: '700',
+            color: COLORS.black,
           }}
         >
           {props.userCredential}
@@ -127,6 +129,7 @@ export const ChangePasswordScreen_2 = (props) => {
           style={{
             marginLeft: 20,
             fontWeight: '700',
+            color: COLORS.black,
           }}
         >
           {strings.chooseVertificationMethod}
@@ -199,6 +202,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: 20,
     marginLeft: 20,
+    color: COLORS.black,
   },
   button: {
     marginTop: 50,  

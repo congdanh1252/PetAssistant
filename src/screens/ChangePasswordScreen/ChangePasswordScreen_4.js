@@ -201,7 +201,8 @@ const style = StyleSheet.create({
         fontFamily: "RedHatText",
         fontSize: 30,
         fontWeight: 'bold',
-        textAlign: 'center'
+        textAlign: 'center',
+        color: COLORS.black,
     },
     message: {
         width: '80%',
@@ -210,7 +211,8 @@ const style = StyleSheet.create({
         fontFamily: "RedHatText",
         fontSize: 16,
         fontStyle: 'normal',
-        textAlign: 'center'
+        textAlign: 'center',
+        color: COLORS.black,
     },
     input_container: {
         width: '80%',

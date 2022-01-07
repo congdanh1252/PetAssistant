@@ -5,6 +5,7 @@ import { LoginScreen } from '../screens/LoginScreen';
 import { 
     ChangePasswordScreen,
 } from '../screens/ChangePasswordScreen/ChangePasswordScreen';
+import { RegisterStack } from '../components/RegisterStack';
 
 import MainStack from '../navigations/MainStack'
 
@@ -22,6 +23,7 @@ const ExpenditureStack = () => {
               <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}}/>
               <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} options={{headerShown: false}}/>
               <Stack.Screen name="MainStack" component={MainStack} options={{headerShown: false}}/>
+              <Stack.Screen name="RegisterStack" component={RegisterStack} options={{headerShown: false}}/>
           </Stack.Navigator>
       </NavigationContainer>
     </>

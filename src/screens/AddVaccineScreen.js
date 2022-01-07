@@ -1,18 +1,23 @@
 import React, { useMemo, useState } from "react";
 import {
     StyleSheet, View, TextInput, Text, TouchableOpacity, Image, TouchableWithoutFeedback,
-    Keyboard, TouchableHighlight, Alert,
+    Keyboard, TouchableHighlight, Alert, ScrollView
 } from 'react-native'
 import { launchImageLibrary, launchCamera } from "react-native-image-picker";
 import BottomSheet from '@gorhom/bottom-sheet';
+import Toast from "react-native-toast-message";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { CheckBox } from 'react-native-elements';
+import firestore from '@react-native-firebase/firestore';
 
 import { Button } from "react-native-elements/dist/buttons/Button";
 import COLORS from '../theme/colors';
 import strings from "../data/strings";
 import BackButton from "../components/BackButton";
-import Toast from "react-native-toast-message";
 import Vaccine from "../models/vaccine";
+import Reminder from "../models/reminder";
+
+import { addReminder } from "../api/ReminderAPI";
 import { uploadImageToStorage, deleteImageFromStorage } from '../api/PetAPI';
 import {
     addVaccineToFirestore,
@@ -24,12 +29,14 @@ const AddVaccineScreen = ({route, navigation}) => {
     const { action, pet_id, pet_kind, vaccineParam } = route.params;
     var elseOption = '';
     var vaccine = new Vaccine();
+    var reminder = new Reminder();
     const [type, setType] = useState(action == 'add' ? '' : vaccineParam.type);
     const [editDetail, setEditDetail] = useState(false);
     const [detail, setDetail] = useState(action == 'add' ? '' : vaccineParam.detail);
     const [photoUri, setPhotoUri] = useState(action == 'add' ? '' : vaccineParam.label_photo);
     const [photoFileName, setPhotoFileName] = useState('');
     const [dropdown, setDropdown] = useState('');
+    const [autoAdd, setAutoAdd] = useState(false);
     const [isUploading, setUploading] = useState(false);
 
     const [show, setShow] = useState(false);
@@ -200,10 +207,31 @@ const AddVaccineScreen = ({route, navigation}) => {
         }
     }
 
+    const initReminderData = () => {
+        reminder.datetime = retakeDate;
+        reminder.frequency = 'custom';
+        reminder.title = 'Tái chủng ' + type;
+        reminder.type = 'Doctor';
+        reminder.reminderType = 'custom';
+        reminder.pets.push(pet_id);
+    }
+
     const handleImageUrl = (url) => {
         initVaccineData(url);
-        action==='add' ?
-        addVaccineToFirestore(vaccine, handleCallback) : updateVaccineInFirestore(vaccine, handleCallback)
+
+        if (action==='add') {
+            if (autoAdd) {
+                initReminderData();
+                addReminder(reminder, (rm) => {
+                    console.log("Đã tự động thêm reminder tái chủng: " + rm._id);
+                    addVaccineToFirestore(vaccine, handleCallback);
+                })
+            } else {
+                addVaccineToFirestore(vaccine, handleCallback);
+            }
+        } else {
+            updateVaccineInFirestore(vaccine, handleCallback);
+        }
     }
 
     const handleTypeChose = (value) => {
@@ -392,174 +420,203 @@ const AddVaccineScreen = ({route, navigation}) => {
                     setDropdown('');
                 }}
             >
-                <View style={styles.container}>
-                    {/* Content */}
-                    <View style={styles.content}>
-                        {/* Photo */}
-                        <View style={styles.pet_photo_holder}>
-                            <Text style={styles.label}>
-                                {strings.vaccine_label}
-                            </Text>
+                {/* Content */}
+                <ScrollView
+                    style={styles.container}
+                    showsVerticalScrollIndicator={false}
+                >
+                    {/* Photo */}
+                    <View style={styles.pet_photo_holder}>
+                        <Text style={styles.label}>
+                            {strings.vaccine_label}
+                        </Text>
 
-                            <TouchableOpacity
-                                style={styles.photo_picker}
-                                activeOpacity={0.7}
-                                onPress={() => {
-                                    setDropdown('AddPhoto')
-                                }}
-                            >
-                                {(photoUri=='' ? 
-                                    <View style={styles.plus_icon}>
-                                        <Image
-                                            source={require('../assets/icons/Add.png')}
-                                            style={styles.plus_icon}
-                                        />
-                                    </View>
-                                    : 
-                                    <View style={styles.pet_photo}>
-                                        <Image
-                                            source={{uri: photoUri}}
-                                            style={styles.pet_photo}
-                                        />
-                                    </View>
-                                )}
-                            </TouchableOpacity>
-                        </View>
+                        <TouchableOpacity
+                            style={styles.photo_picker}
+                            activeOpacity={0.7}
+                            onPress={() => {
+                                setDropdown('AddPhoto')
+                            }}
+                        >
+                            {(photoUri=='' ? 
+                                <View style={styles.plus_icon}>
+                                    <Image
+                                        source={require('../assets/icons/Add.png')}
+                                        style={styles.plus_icon}
+                                    />
+                                </View>
+                                : 
+                                <View style={styles.pet_photo}>
+                                    <Image
+                                        source={{uri: photoUri}}
+                                        style={styles.pet_photo}
+                                    />
+                                </View>
+                            )}
+                        </TouchableOpacity>
+                    </View>
 
-                        {/* Mũi tiêm */}
-                        <View style={styles.input_holder}>
-                            <Text style={styles.label}>{strings.injection_label}</Text>
+                    {/* Mũi tiêm */}
+                    <View style={styles.input_holder}>
+                        <Text style={styles.label}>{strings.injection_label}</Text>
 
-                            <TouchableOpacity
-                                activeOpacity={0.7}
-                                onPress={() => { setDropdown('Type') }}
-                            >
-                                <TextInput
-                                    editable={false}
-                                    style={styles.input}
-                                    placeholderTextColor={'#898989'}
-                                    placeholder={strings.injection_label}
-                                    value={type}
-                                />
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={() => { setDropdown('Type') }}
+                        >
+                            <TextInput
+                                editable={false}
+                                style={styles.input}
+                                placeholderTextColor={'#898989'}
+                                placeholder={strings.injection_label}
+                                value={type}
+                            />
 
-                                <Image
-                                    source={require('../assets/icons/ic_down.png')}
-                                    style={styles.down_icon}
-                                />
-                            </TouchableOpacity>
-                        </View>
+                            <Image
+                                source={require('../assets/icons/ic_down.png')}
+                                style={styles.down_icon}
+                            />
+                        </TouchableOpacity>
+                    </View>
 
-                        {/* Chi tiết */}
-                        <View style={styles.input_holder}>
-                            <Text style={styles.label}>{strings.detail}</Text>
+                    {/* Chi tiết */}
+                    <View style={styles.input_holder}>
+                        <Text style={styles.label}>{strings.detail}</Text>
+
+                        <TextInput
+                            editable={editDetail}
+                            style={[styles.input, {height: 66}]}
+                            multiline={true}
+                            placeholderTextColor={'#898989'}
+                            placeholder={strings.detail + ' ' + strings.injection_label.toLowerCase()}
+                            value={detail}
+                            onChangeText={value => {
+                                setDetail(value)
+                            }}
+                        />
+                    </View>
+
+                    {/* Ngày tiêm */}
+                    <View style={styles.two_on_row}>
+                        <View style={styles.input_holder_small}>
+                            <Text style={styles.label}>{strings.vaccine_taken_date}</Text>
 
                             <TextInput
-                                editable={editDetail}
-                                style={[styles.input, {height: 66}]}
-                                multiline={true}
+                                editable={false}
+                                style={styles.input}
                                 placeholderTextColor={'#898989'}
-                                placeholder={strings.detail + ' ' + strings.injection_label.toLowerCase()}
-                                value={detail}
-                                onChangeText={value => {
-                                    setDetail(value)
-                                }}
+                                placeholder={strings.vaccine_taken_date}
+                                value={
+                                    choseTakenDate
+                                    ?
+                                    (
+                                        String(takenDate.getDate()).padStart(2, '0') + "-" +
+                                        String(takenDate.getMonth() + 1).padStart(2, '0') + "-" +
+                                        takenDate.getFullYear()
+                                    ) : (null)
+                                }
                             />
                         </View>
 
-                        {/* Ngày tiêm */}
-                        <View style={styles.two_on_row}>
-                            <View style={styles.input_holder_small}>
-                                <Text style={styles.label}>{strings.vaccine_taken_date}</Text>
-
-                                <TextInput
-                                    editable={false}
-                                    style={styles.input}
-                                    placeholderTextColor={'#898989'}
-                                    placeholder={strings.vaccine_taken_date}
-                                    value={
-                                        choseTakenDate
-                                        ?
-                                        (
-                                            String(takenDate.getDate()).padStart(2, '0') + "-" +
-                                            String(takenDate.getMonth() + 1).padStart(2, '0') + "-" +
-                                            takenDate.getFullYear()
-                                        ) : (null)
-                                    }
-                                />
-                            </View>
-
-                            {/* Calendar icon */}
-                            <View style={[styles.input_holder_small, {alignItems: 'center'}]}>
-                                <TouchableOpacity
-                                    style={{width: '36%', alignItems: 'center', marginTop: 40,}}
-                                    activeOpacity={0.6}
-                                    onPress={() => setShow(true)}
-                                >
-                                    <Image
-                                        source={require('../assets/icons/ic_calendar.png')}
-                                        style={styles.plus_icon}
-                                    />
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-
-                        {/* Ngày tái chủng */}
-                        <View style={styles.two_on_row}>
-                            <View style={styles.input_holder_small}>
-                                <Text style={styles.label}>{strings.vaccine_retake_date}</Text>
-
-                                <TextInput
-                                    editable={false}
-                                    style={styles.input}
-                                    placeholderTextColor={'#898989'}
-                                    placeholder={strings.vaccine_retake_date}
-                                    value={
-                                        choseRetakeDate
-                                        ?
-                                        (
-                                            String(retakeDate.getDate()).padStart(2, '0') + "-" +
-                                            String(retakeDate.getMonth() + 1).padStart(2, '0') + "-" +
-                                            retakeDate.getFullYear()
-                                        ) : (null)
-                                    }
-                                />
-                            </View>
-
-                            {/* Calendar icon */}
-                            <View style={[styles.input_holder_small, {alignItems: 'center'}]}>
-                                <TouchableOpacity
-                                    style={{width: '36%', alignItems: 'center', marginTop: 40,}}
-                                    activeOpacity={0.6}
-                                    onPress={() => setShowRetake(true)}
-                                >
-                                    <Image
-                                        source={require('../assets/icons/ic_calendar.png')}
-                                        style={styles.plus_icon}
-                                    />
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-
-                        {/* Save + Cancel buttons */}
-                        <View style={styles.footer_buttons}>
-                            <Button
-                                title={strings.cancel}
-                                titleStyle={styles.button_title}
-                                buttonStyle={styles.button}
-                                onPress={() => handleCancelAction()}
+                        {/* Calendar icon */}
+                        <View style={[styles.input_holder_small, {alignItems: 'center'}]}>
+                            <TouchableOpacity
+                                style={{width: '36%', alignItems: 'center', marginTop: 40,}}
+                                activeOpacity={0.6}
+                                onPress={() => setShow(true)}
                             >
-                            </Button>
-
-                            <Button
-                                title={strings.save}
-                                titleStyle={styles.button_title}
-                                buttonStyle={styles.button}
-                                onPress={() => checkSubmitFields()}
-                            >
-                            </Button>
+                                <Image
+                                    source={require('../assets/icons/ic_calendar.png')}
+                                    style={styles.plus_icon}
+                                />
+                            </TouchableOpacity>
                         </View>
                     </View>
-                </View>
+
+                    {/* Ngày tái chủng */}
+                    <View style={styles.two_on_row}>
+                        <View style={styles.input_holder_small}>
+                            <Text style={styles.label}>{strings.vaccine_retake_date}</Text>
+
+                            <TextInput
+                                editable={false}
+                                style={styles.input}
+                                placeholderTextColor={'#898989'}
+                                placeholder={strings.vaccine_retake_date}
+                                value={
+                                    choseRetakeDate
+                                    ?
+                                    (
+                                        String(retakeDate.getDate()).padStart(2, '0') + "-" +
+                                        String(retakeDate.getMonth() + 1).padStart(2, '0') + "-" +
+                                        retakeDate.getFullYear()
+                                    ) : (null)
+                                }
+                            />
+                        </View>
+
+                        {/* Calendar icon */}
+                        <View style={[styles.input_holder_small, {alignItems: 'center'}]}>
+                            <TouchableOpacity
+                                style={{width: '36%', alignItems: 'center', marginTop: 40,}}
+                                activeOpacity={0.6}
+                                onPress={() => setShowRetake(true)}
+                            >
+                                <Image
+                                    source={require('../assets/icons/ic_calendar.png')}
+                                    style={styles.plus_icon}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    {/* CheckBox tự động thêm */}
+                    {action=='add' ?
+                        <View style={[styles.two_on_row, {justifyContent: 'flex-start', marginTop: 8}]}>
+                            <CheckBox
+                                center
+                                checkedColor="#000"
+                                size={28}
+                                containerStyle={{
+                                    backgroundColor: COLORS.white,
+                                    width: 0,
+                                }}
+                                checkedIcon="dot-circle-o"
+                                uncheckedIcon="circle-o"
+                                checked={autoAdd}
+                                onPress={() => setAutoAdd(!autoAdd)}
+                            />
+
+                            <Text
+                                style={{
+                                    color: COLORS.black,
+                                    fontSize: 16,
+                                    fontFamily: 'Roboto-Light'
+                                }}
+                            >Tự động thêm hoạt động tái chủng</Text>
+                        </View>
+                        : null
+                    }
+
+                    {/* Save + Cancel buttons */}
+                    <View style={styles.footer_buttons}>
+                        <Button
+                            title={strings.cancel}
+                            titleStyle={styles.button_title}
+                            buttonStyle={styles.button}
+                            onPress={() => handleCancelAction()}
+                        >
+                        </Button>
+
+                        <Button
+                            title={strings.save}
+                            titleStyle={styles.button_title}
+                            buttonStyle={styles.button}
+                            onPress={() => checkSubmitFields()}
+                        >
+                        </Button>
+                    </View>
+                </ScrollView>
             </TouchableWithoutFeedback>
 
             {/* Dropdown bottomsheet */}
@@ -618,11 +675,15 @@ const styles = StyleSheet.create({
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
+        backgroundColor: COLORS.dark
     },
     container: {
-        marginTop: 0,
-        backgroundColor: COLORS.dark,
-        alignItems: 'center',
+        paddingTop: 8,
+        paddingLeft: 22,
+        paddingRight: 22,
+        borderTopLeftRadius: 25,
+        borderTopRightRadius: 25,
+        backgroundColor: COLORS.white,
     },
     header: {
         width: '100%',
@@ -640,16 +701,6 @@ const styles = StyleSheet.create({
         color: COLORS.white,
         textAlign: 'center',
     },
-    content: {
-        height: '100%',
-        width: '100%',
-        paddingLeft: 22,
-        paddingRight: 22,
-        borderTopLeftRadius: 25,
-        borderTopRightRadius: 25,
-        alignItems: 'center',
-        backgroundColor: COLORS.white,
-    },
     label: {
         fontSize: 16,
         fontFamily: 'Roboto-Bold',
@@ -662,6 +713,7 @@ const styles = StyleSheet.create({
         height: 160,
         marginTop: 12,
         alignItems: 'center',
+        alignSelf: 'center',
         justifyContent: 'center',
     },
     photo_picker: {
@@ -730,8 +782,8 @@ const styles = StyleSheet.create({
     footer_buttons: {
         width: '100%',
         height: 40,
-        marginTop: 60,
-        marginBottom: 20,
+        marginTop: 50,
+        marginBottom: 30,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',

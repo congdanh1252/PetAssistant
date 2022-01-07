@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Image, StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 
 import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
+
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
@@ -26,7 +28,7 @@ const SavedGuideListScreen = ({route, navigation}) => {
     //get list guides saved
     useEffect(() => {
         const subscribe = firestore()
-        .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/guides')
+        .collection('users/' + auth().currentUser.uid + '/guides')
         .onSnapshot(querySnapshot => {
             var guide_list = new Array();
             querySnapshot.forEach(documentSnapshot => {

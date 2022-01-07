@@ -6,7 +6,7 @@ import moment from 'moment';
 import { ProgressCircle } from 'react-native-svg-charts';
 import {
     Image, StyleSheet, View, Text, TouchableOpacity, LogBox,
-    TouchableHighlight, TouchableWithoutFeedback, Switch, ActivityIndicator
+    TouchableHighlight, TouchableWithoutFeedback, Switch
 } from 'react-native';
 import { deletePetFromFirestore } from '../api/PetAPI';
 import { windowWidth } from '../models/common/Dimensions';
@@ -33,7 +33,7 @@ const PetProfileScreen = ({route, navigation}) => {
     const [unmatchInput, setUnmatchInput] = useState(false);
     const [dialogVisible, setDialogVisible] = useState(false);
     const bottomSheetRef = useRef<BottomSheet>(null);
-    const snapPoints = useMemo(() => ['39%', '90%'], []);
+    const snapPoints = useMemo(() => ['39%', '83%'], []);
     const snapPointsDropdown = useMemo(() => ['19%', '19%'], []);
     const { pet_id } = route.params;
     const [careSection, setCareSection] = useState([
@@ -48,7 +48,6 @@ const PetProfileScreen = ({route, navigation}) => {
     const [switchValue2, setSwitchValue2] = useState(false)
     const [switchValue3, setSwitchValue3] = useState(false)
     const [switchValue4, setSwitchValue4] = useState(false)
-    const [isLoading, setIsLoading] = useState(true)
 
     const showResultToast = (result) => {
         if (result === 'Success') {
@@ -94,6 +93,96 @@ const PetProfileScreen = ({route, navigation}) => {
             action: 'edit',
             petObj: pet,
         })
+    }
+
+    const selectNextSchedulesDay = (index) => {
+        // var overdue = careSection[index].datetime < new Date() ? true : false;
+        // var date = new Date();
+        // if (careSection[index].frequency!='custom' && overdue) {
+        //     if (careSection[index].frequency=='daily') {
+        //         return new Date(date.getDay() + 1, date.getMonth(), date.getFullYear())
+        //     }
+        //     if (careSection[index].frequency=='weekly') {
+        //         return new Date(
+        //             careSection[index].datetime.getDay() + 7,
+        //             careSection[index].datetime.getMonth(),
+        //             careSection[index].datetime.getFullYear()
+        //         )
+        //     }
+        // }
+
+        // return careSection[index].datetime;
+    }
+
+    const calculateProgress = (index) => {
+        var time = moment(careSection[index].datetime).toNow()
+                    .substring(0, moment(careSection[0].datetime).toNow().indexOf(" "));
+
+        const calculateByDay = () => {
+            return Math.round(Math.abs((parseInt(time) - 24) / 24) * 10) / 10;
+        }
+        
+        const calculateByWeek = () => {
+            return Math.round(Math.abs((parseInt(time) - 7) / 7) * 10) / 10;
+        }
+
+        const calculateByMonth = () => {
+            return Math.round(Math.abs((parseInt(time) - 30) / 30) * 10) / 10;
+        }
+
+        const calculateByYear = () => {
+            return Math.round(Math.abs((parseInt(time) - 365) / 365) * 10) / 10;
+        }
+
+        const calculateCustomFrequency = () => {
+            if (parseInt(time) <= 3) {
+                return 0.9;
+            }
+            if (3 < parseInt(time) && parseInt(time) <= 7) {
+                return 0.8;
+            }
+            if (7 < parseInt(time) && parseInt(time) <= 14) {
+                return 0.6;
+            }
+            if (14 < parseInt(time) && parseInt(time) <= 21) {
+                return 0.4;
+            }
+            if (21 < parseInt(time) && parseInt(time) <= 28) {
+                return 0.3;
+            }
+            return 0.1;
+        }
+
+        if (!isOverdue(index)) { 
+            switch (careSection[index].frequency) {
+                case 'daily':
+                    return calculateByDay();
+                case 'weekly':
+                    return calculateByWeek();
+                case 'monthly':
+                    return calculateByMonth();
+                case 'yearly':
+                    return calculateByYear();
+                default:
+                    return calculateCustomFrequency();
+            }
+        }
+        return 1;
+    }
+
+    const selectMomentFunction = (index) => {
+        return careSection[index].frequency=='custom' ? moment(careSection[index].datetime).fromNow() : moment(careSection[index].datetime).toNow();
+    }
+
+    const selectProgressColor = (index) => {
+        return isOverdue(index) ? COLORS.error : COLORS.pet_green;
+    }
+
+    const isOverdue = (index) => {
+        if (careSection[index].frequency=='custom') {
+            return careSection[index].datetime < new Date() ? true : false;
+        }
+        return false;
     }
 
     //Find correct animal kind icon
@@ -185,10 +274,10 @@ const PetProfileScreen = ({route, navigation}) => {
                 <View style={style.care_box} key={0}>
                     <ProgressCircle
                         style={{height: 115}}
-                        progress={0.5}
+                        progress={switchValue0 ? calculateProgress(0) : 0}
                         startAngle={-Math.PI * 0.8}
                         endAngle={Math.PI * 0.8}
-                        progressColor={COLORS.pet_green}
+                        progressColor={selectProgressColor(0)}
                     />
 
                     <View style={style.care_uppers_chart}>
@@ -235,7 +324,7 @@ const PetProfileScreen = ({route, navigation}) => {
                                 ?
                                 "Không có dữ liệu"
                                 :
-                                moment(careSection[0].datetime).toNow()
+                                selectMomentFunction(0)
                             }
                         </Text>
                     </View>
@@ -245,10 +334,10 @@ const PetProfileScreen = ({route, navigation}) => {
                 <View style={style.care_box} key={1}>
                     <ProgressCircle
                         style={{height: 115}}
-                        progress={0.5}
+                        progress={switchValue1 ? calculateProgress(1) : 0}
                         startAngle={-Math.PI * 0.8}
                         endAngle={Math.PI * 0.8}
-                        progressColor={COLORS.pet_green}
+                        progressColor={selectProgressColor(1)}
                     />
 
                     <View style={style.care_uppers_chart}>
@@ -295,7 +384,7 @@ const PetProfileScreen = ({route, navigation}) => {
                                 ?
                                 "Không có dữ liệu"
                                 :
-                                moment(careSection[1].datetime).toNow()
+                                selectMomentFunction(1)
                             }
                         </Text>
                     </View>
@@ -305,10 +394,10 @@ const PetProfileScreen = ({route, navigation}) => {
                 <View style={style.care_box} key={2}>
                     <ProgressCircle
                         style={{height: 115}}
-                        progress={0.5}
+                        progress={switchValue2 ? calculateProgress(2) : 0}
                         startAngle={-Math.PI * 0.8}
                         endAngle={Math.PI * 0.8}
-                        progressColor={COLORS.pet_green}
+                        progressColor={selectProgressColor(2)}
                     />
 
                     <View style={style.care_uppers_chart}>
@@ -355,7 +444,7 @@ const PetProfileScreen = ({route, navigation}) => {
                                 ?
                                 "Không có dữ liệu"
                                 :
-                                moment(careSection[2].datetime).toNow()
+                                selectMomentFunction(2)
                             }
                         </Text>
                     </View>
@@ -365,10 +454,10 @@ const PetProfileScreen = ({route, navigation}) => {
                 <View style={style.care_box} key={3}>
                     <ProgressCircle
                         style={{height: 115}}
-                        progress={0.5}
+                        progress={switchValue3 ? calculateProgress(3) : 0}
                         startAngle={-Math.PI * 0.8}
                         endAngle={Math.PI * 0.8}
-                        progressColor={COLORS.pet_green}
+                        progressColor={selectProgressColor(3)}
                     />
 
                     <View style={style.care_uppers_chart}>
@@ -415,7 +504,7 @@ const PetProfileScreen = ({route, navigation}) => {
                                 ?
                                 "Không có dữ liệu"
                                 :
-                                moment(careSection[3].datetime).toNow()
+                                selectMomentFunction(3)
                             }
                         </Text>
                     </View>
@@ -425,10 +514,10 @@ const PetProfileScreen = ({route, navigation}) => {
                 <View style={style.care_box} key={4}>
                     <ProgressCircle
                         style={{height: 115}}
-                        progress={0.5}
+                        progress={switchValue4 ? calculateProgress(4) : 0}
                         startAngle={-Math.PI * 0.8}
                         endAngle={Math.PI * 0.8}
-                        progressColor={COLORS.pet_green}
+                        progressColor={selectProgressColor(4)}
                     />
 
                     <View style={style.care_uppers_chart}>
@@ -475,7 +564,7 @@ const PetProfileScreen = ({route, navigation}) => {
                                 ?
                                 "Không có dữ liệu"
                                 :
-                                moment(careSection[4].datetime).toNow()
+                                selectMomentFunction(4)
                             }
                         </Text>
                     </View>
@@ -488,7 +577,7 @@ const PetProfileScreen = ({route, navigation}) => {
         var bornDays = Math.abs(new Date() - num) / 86400000;
         var age = Math.round(bornDays / 365);
         var ageWithoutRound = (bornDays / 365) - age;
-        if (ageWithoutRound === 0) {
+        if (ageWithoutRound === 0 || age === 0) {
             setPetAge(age);
         } else {
             setPetAge('<' + age);
@@ -675,6 +764,7 @@ const PetProfileScreen = ({route, navigation}) => {
                                 {strings.height}
                             </Text>
                         </View>
+
                         {/* Weight box */}
                         <View
                             style={[style.box_information, {backgroundColor: COLORS.pet_pink}]}
@@ -689,8 +779,6 @@ const PetProfileScreen = ({route, navigation}) => {
                         </View>
                     </View>
                 </View>
-
-
 
                 {/* Care */}
                 <View style={style.care_information}>
@@ -945,7 +1033,7 @@ const style = StyleSheet.create({
         marginTop: 16,
     },
     health_book_holder: {
-        marginTop: 12,
+        marginTop: 32,
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
@@ -988,7 +1076,9 @@ const style = StyleSheet.create({
     care_box: {
         width: windowWidth / 4,
         margin: 4,
-        marginBottom: 8,
+        marginBottom: 12,
+        textAlign: 'center',
+        justifyContent: 'center',
     },
     care_uppers_chart: {
         width: 98,

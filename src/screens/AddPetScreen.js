@@ -338,7 +338,7 @@ const AddPetScreen = ({route, navigation}) => {
                     activeOpacity={0.7}
                     underlayColor='#EEEEEE'
                     style={
-                        (options[i]==kind || options[i]==breed || options[i]==gender || options[i]==status)
+                        (options[i]==kind || options[i]==breed || options[i]==gender || options[i]==status || options[i]==species)
                         ?
                         [styles.dropdown_option, {backgroundColor: COLORS.grey}] : styles.dropdown_option
                     }

@@ -20,8 +20,6 @@ export const RegisterScreen_1 = ({navigation}) => {
     const ref_input_pass = useRef();
     const ref_input_cfpass = useRef();
 
-    var isAddedFirebase = false;
-    var valid_inputs = false;
     const [useName, setName] = useState('');
     const [useEmail, setEmail] = useState('');
     const [useValidEmail, setValidEmail] = useState(false);
@@ -65,14 +63,14 @@ export const RegisterScreen_1 = ({navigation}) => {
             .doc(uid)
             .set({
                 name: useName,
-                phone: usePhone,
+                phone_number: usePhone,
                 email: useEmail,
             })
             .then(() => {
                 console.log('firestore added');
                 navigation.reset({
                     index: 0,
-                    routes: [{ name: 'Register1' }],
+                    routes: [{ name: 'Login' }],
                 });
             });
     }
@@ -88,68 +86,101 @@ export const RegisterScreen_1 = ({navigation}) => {
     }
 
     const registerNewAccount = () => {
-        navigation.navigate('Register2');
-        // checkInput();
-        // if (valid_inputs) {console.log("duoc");
-        //     try {
-        //         // create user with email, pass
-        //         const userCredential = auth().createUserWithEmailAndPassword(useEmail, usePassword)
-        //         .catch((error) => {
-        //             console.log(error)
-        //         });
-        //         console.log('user created');
+        checkInput();
+        if (valid_inputs) {
+            try {
+                // create user with email, pass
+                const userCredential = auth().createUserWithEmailAndPassword(useEmail, usePassword)
+                .catch((error) => {
+                    console.log(error)
+                });
+                console.log('user created');
 
-        //         const onAuthStateChangedUnsubscribe = 
-        //             auth().onAuthStateChanged(async (user) => {
-        //                 if (user && !isAuthChanged) {
-        //                     setAuthChanged(true);
-        //                     //send mail to user
-        //                     await user.sendEmailVerification()
-        //                     .then(() => {
-        //                             console.log('mail sent');
-        //                             navigation.navigate('Register2');
-        //                         }
-        //                     )
-        //                     .catch((error) => {
-        //                         console.log(error)
-        //                     });
+                const onAuthStateChangedUnsubscribe = 
+                    auth().onAuthStateChanged(async (user) => {
+                        if (user && !isAuthChanged) {
+                            setAuthChanged(true);
+                            addAccountToFirestoreAndFinish(auth().currentUser.uid);
 
-        //                     //check verified mail
-        //                     const onIdTokenChangedUnsubscribe = auth().onIdTokenChanged((newUser) => {
-        //                         const unsubscribeSetInterval = setInterval(() => {
-        //                             if (firebase.auth().currentUser && !isAddedFirebase) {
-        //                                 firebase.auth().currentUser.reload();
-        //                                 console.log('reload user');
-        //                                 firebase.auth().currentUser.getIdToken(/* forceRefresh */ true)
+                            return onAuthStateChangedUnsubscribe();
+                        }
+                        // if (user && !isAuthChanged) {
+                        //     setAuthChanged(true);
+                        //     //send mail to user
+                        //     await user.sendEmailVerification()
+                        //     .then(() => {
+                        //             console.log('mail sent');
+                        //             navigation.navigate('Register2');
+                                    
+                        //             //check verified mail
+                        //     const onIdTokenChangedUnsubscribe = auth().onIdTokenChanged((newUser) => {
+                        //         const unsubscribeSetInterval = setInterval(() => {
+                        //             if (auth().currentUser && !isAddedFirebase) {
+                        //                 auth().currentUser.reload();
+                        //                 console.log('reload user');
+                        //                 auth().currentUser.getIdToken(/* forceRefresh */ true)
 
-        //                                 if (newUser.emailVerified) {
-        //                                     console.log('mail clicked');
-        //                                     clearInterval(unsubscribeSetInterval); //delete timeout
-        //                                     onAuthStateChangedUnsubscribe(); //unsubscribe onAuthStateChanged
-        //                                     if ( !isAddedFirebase) {
-        //                                         isAddedFirebase = true;
-        //                                         addAccountToFirestoreAndFinish(user.uid);
-        //                                     }
-        //                                     return onIdTokenChangedUnsubscribe(); //unsubscribe onIdTokenChanged
-        //                                 }
-        //                             }
-        //                             else if (isAddedFirebase) {
-        //                                 clearInterval(unsubscribeSetInterval);
-        //                                 onAuthStateChangedUnsubscribe(); 
-        //                                 return onIdTokenChangedUnsubscribe();
-        //                             }
-        //                             console.log('mail not clicked');
-        //                         }, 5000);
-        //                     })
-        //                 }
-        //             })
-        //     } catch (error) {
-        //         throw error;
-        //     }
-        // }
-        // else {
-        //     alertEmptyInput();
-        // }
+                        //                 if (newUser.emailVerified) {
+                        //                     console.log('mail clicked');
+                        //                     clearInterval(unsubscribeSetInterval); //delete timeout
+                        //                     onAuthStateChangedUnsubscribe(); //unsubscribe onAuthStateChanged
+                        //                     if ( !isAddedFirebase) {
+                        //                         isAddedFirebase = true;
+                        //                         addAccountToFirestoreAndFinish(user.uid);
+                        //                     }
+                        //                     return onIdTokenChangedUnsubscribe(); //unsubscribe onIdTokenChanged
+                        //                 }
+                        //             }
+                        //             else if (isAddedFirebase) {
+                        //                 clearInterval(unsubscribeSetInterval);
+                        //                 onAuthStateChangedUnsubscribe(); 
+                        //                 return onIdTokenChangedUnsubscribe();
+                        //             }
+                        //             console.log('mail not clicked');
+                        //         }, 5000);
+                        //     })
+                        //         }
+                        //     )
+                        //     .catch((error) => {
+                        //         console.log(error)
+                        //     });
+
+                        //     // //check verified mail
+                        //     // const onIdTokenChangedUnsubscribe = auth().onIdTokenChanged((newUser) => {
+                        //     //     const unsubscribeSetInterval = setInterval(() => {
+                        //     //         if (firebase.auth().currentUser && !isAddedFirebase) {
+                        //     //             firebase.auth().currentUser.reload();
+                        //     //             console.log('reload user');
+                        //     //             firebase.auth().currentUser.getIdToken(/* forceRefresh */ true)
+
+                        //     //             if (newUser.emailVerified) {
+                        //     //                 console.log('mail clicked');
+                        //     //                 clearInterval(unsubscribeSetInterval); //delete timeout
+                        //     //                 onAuthStateChangedUnsubscribe(); //unsubscribe onAuthStateChanged
+                        //     //                 if ( !isAddedFirebase) {
+                        //     //                     isAddedFirebase = true;
+                        //     //                     addAccountToFirestoreAndFinish(user.uid);
+                        //     //                 }
+                        //     //                 return onIdTokenChangedUnsubscribe(); //unsubscribe onIdTokenChanged
+                        //     //             }
+                        //     //         }
+                        //     //         else if (isAddedFirebase) {
+                        //     //             clearInterval(unsubscribeSetInterval);
+                        //     //             onAuthStateChangedUnsubscribe(); 
+                        //     //             return onIdTokenChangedUnsubscribe();
+                        //     //         }
+                        //     //         console.log('mail not clicked');
+                        //     //     }, 5000);
+                        //     // })
+                        // }
+                    })
+            } catch (error) {
+                throw error;
+            }
+        }
+        else {
+            alertEmptyInput();
+        }
     }
 
     return (

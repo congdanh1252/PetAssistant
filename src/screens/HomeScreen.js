@@ -154,7 +154,7 @@ const HomeScreen = ({navigation}) => {
                 <View style={style.menu}>
                     {/* Quản lý thú cưng */}
                     <TouchableOpacity
-                        style={style.menu_box}
+                        style={[style.menu_box, {marginRight: 8}]}
                         activeOpacity={0.7}
                         onPress={() => {
                             navigation.navigate('MyPets')
@@ -170,7 +170,7 @@ const HomeScreen = ({navigation}) => {
 
                     {/* Thời gian biểu */}
                     <TouchableOpacity
-                        style={style.menu_box}
+                        style={[style.menu_box, {marginLeft: 8}]}
                         activeOpacity={0.7}
                         onPress={() => {
                             navigation.navigate('ScheduleStack')
@@ -187,7 +187,7 @@ const HomeScreen = ({navigation}) => {
                     {/* Quản lý chi tiêu */}
                     <TouchableOpacity
                         activeOpacity={0.7}
-                        style={style.menu_box}
+                        style={[style.menu_box, {marginRight: 8}]}
                         onPress={() => {
                             navigation.navigate('ExpenditureStack')
                         }}
@@ -203,7 +203,7 @@ const HomeScreen = ({navigation}) => {
                     {/* Cẩm nang chăm sóc */}
                     <TouchableOpacity
                         activeOpacity={0.7}
-                        style={style.menu_box}
+                        style={[style.menu_box, {marginLeft: 8}]}
                         onPress={() => {
                             navigation.navigate('Guides');
                         }}
@@ -238,7 +238,7 @@ const HomeScreen = ({navigation}) => {
                     </TouchableOpacity>
 
                     {/* Tìm kiếm thông tin */}
-                    <TouchableOpacity
+                    {/* <TouchableOpacity
                         activeOpacity={0.7}
                         style={style.menu_box}
                         onPress={() => {
@@ -251,7 +251,7 @@ const HomeScreen = ({navigation}) => {
                         />
 
                         <Text style={style.menu_title}>{strings.search_info}</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                 </View>
             </View>
 
@@ -395,7 +395,7 @@ const style = StyleSheet.create({
         borderTopRightRadius: 26,
         flexDirection: 'row',
         flexWrap: 'wrap',
-        justifyContent: 'space-between',
+        justifyContent: 'space-around',
         alignItems: 'center',
         backgroundColor: COLORS.white,
     },

@@ -213,7 +213,22 @@ const MyPetsScreen = ({route, navigation}) => {
                 <View style={style.my_pets}>
                     <Text style={style.title}>{strings.my_pet}</Text>
 
-                    <MyPets/>
+                    {
+                        myPet.length > 0 ?
+                        <MyPets/>
+                        :
+                        <Text
+                            style={{
+                                color: COLORS.black,
+                                fontFamily: 'Roboto-Light',
+                                fontSize: 16,
+                                textAlign: 'center',
+                                marginTop: 12,
+                            }}
+                        >
+                            {myPet.length > 0 ? 'Hãy bắt đầu thêm thú cưng mới để theo dõi bạn nhé!' : ''}
+                        </Text>
+                    }
                 </View>
             </View>
 

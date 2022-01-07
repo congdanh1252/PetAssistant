@@ -111,6 +111,7 @@ export const ChangePasswordScreen_1 = (props) => {
             textAlign: 'center',
             fontFamily: 'RedHatText-Italic',
             fontSize: 14, 
+            color: COLORS.black,
           }}
         >
           {strings.accountNotFound}
@@ -218,10 +219,10 @@ export const ChangePasswordScreen_1 = (props) => {
             }}
             style={{
               fontWeight: '200',
-              fontSize: 12,
+              fontSize: 14,
               alignSelf: 'flex-end',
               marginRight: 20,
-              color: COLORS.primaryDark,
+              color: COLORS.blue,
             }}
           >
             {strings.use + " " + anotherCredentialType}
@@ -274,11 +275,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 22,
     marginBottom: 10,
+    color: COLORS.black,
   },
   sub_title: {
     textAlign: 'center',
     fontWeight: '600',
     fontSize: 14,
+    color: COLORS.black,
   },
   inputContainer: {
     marginTop: 20,
@@ -317,7 +320,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: '50%',
     marginTop: 20,  
-    backgroundColor: COLORS.primaryDark,
+    backgroundColor: COLORS.black,
     paddingVertical: 4,
     borderRadius: 15,
     elevation: 3,
