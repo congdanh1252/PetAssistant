@@ -226,8 +226,9 @@ export function ScheduleEvent ({route, navigation}) {
     }
 
     const save = () => {
-        console.log(reminder);
+        PushNotification.cancelLocalNotification(reminder.notificationId);
         updateReminder(reminder);
+        console.log(reminder.datetime);
         // var repeat_s = ''
         // switch (reminder.frequency) {
         //     case 'monthly':
@@ -244,7 +245,7 @@ export function ScheduleEvent ({route, navigation}) {
             channelId: "test-channel",
             title: strings.incomingSchedule, 
             message: reminder.title,
-            date: new Date(reminder.datetime), 
+            date: reminder.datetime, 
         });
         Toast.show({
             type: 'success',

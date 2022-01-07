@@ -170,6 +170,7 @@ export function Schedules ({navigation}) {
     }, [selectedDate])
 
     const CalendarEvent = (props) => {
+        console.log(props.reminder.type)
         switch (props.reminder.type) {
             case 'Food':
                 imgSource = FoodIcon

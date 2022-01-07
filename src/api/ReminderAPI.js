@@ -134,6 +134,7 @@ export const getDateReminder = (date, handleCallback) => {
           querySnapshot.forEach(documentSnapshot => {
               var reminder = new Reminder();
               reminder.update(documentSnapshot.data())
+              reminder.datetime.setDate(date.getDate())
               reminder.datetime.setMonth(date.getMonth()) 
               reminder.datetime.setFullYear(date.getFullYear()) 
               console.log(reminder);
@@ -155,6 +156,7 @@ export const getDateReminder = (date, handleCallback) => {
               querySnapshot.forEach(documentSnapshot => {
                   var reminder = new Reminder();
                   reminder.update(documentSnapshot.data())
+                  reminder.datetime.setDate(date.getDate())
                   reminder.datetime.setMonth(date.getMonth()) 
                   reminder.datetime.setFullYear(date.getFullYear()) 
                   if (reminder.datetime > new Date()) {

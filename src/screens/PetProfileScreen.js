@@ -524,9 +524,8 @@ const PetProfileScreen = ({route, navigation}) => {
             let reminder3 = new Reminder()
             let reminder4 = new Reminder()
             let reminders = new Array()
-            console.log("===========");
             querySnapshot.forEach(documentSnapshot => {
-                console.log("get:" + documentSnapshot.data()._id);
+                // console.log("get:" + documentSnapshot.data()._id);
                 switch (documentSnapshot.data().type) {
                     case "Shower":
                         reminder0.update(documentSnapshot.data())
@@ -556,12 +555,33 @@ const PetProfileScreen = ({route, navigation}) => {
                     default:
                         break;
                 }
+                
             });
             reminders.push(reminder0)
             reminders.push(reminder1)
             reminders.push(reminder2)
             reminders.push(reminder3)
             reminders.push(reminder4)
+            reminders.forEach(reminder => {
+                var dt = new Date()
+                if (reminder.frequency == 'yearly') {
+                    reminder.datetime.setFullYear(new Date().getFullYear() + 1)
+                }
+                if (reminder.frequency == 'monthly') {
+                    dt.setMonth(dt.getMonth() - 1)
+                    reminder.datetime = dt
+                }
+                if (reminder.frequency == 'weekly') {
+                    dt.setDate(dt.getDate() - 7)
+                    reminder.datetime = dt
+                    console.log(reminder.datetime.getDate())
+                }
+                if (reminder.frequency == 'daily') {
+                    reminder.datetime.setDate(reminder.datetime.getDate() - 1)
+                }
+                if (reminder.frequency != 'custom') {
+                }
+            });
             setCareSection(reminders)
         })
         return () => subscriber();
