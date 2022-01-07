@@ -216,7 +216,7 @@ export function LoginScreen({navigation}) {
               style={{
                 fontSize: 18,
                 color: COLORS.white,
-                fontFamily: 'RedHatText',
+                fontFamily: 'Roboto-Light',
                 fontWeight: '700',
               }}
              >
@@ -231,7 +231,7 @@ export function LoginScreen({navigation}) {
           </Text>
   
           {/* SOCIAL ICONS */}
-          <View
+          {/* <View
             style={styles.socialContainer}
           >
             <Image
@@ -249,23 +249,31 @@ export function LoginScreen({navigation}) {
               style={styles.socialIcon}
             >
             </Image>
-          </View>
+          </View> */}
   
-          <Text
+          <View
             style={{
               marginTop: 20,
+              alignItems: 'center',
+              flexDirection: 'row'
             }}
           >       
-            <Text>
+            <Text style={{color: COLORS.black, fontSize: 16}}>
               {strings.noaccount} {" "}
             </Text>
   
-            <Text
-              style={styles.registerText}
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate('RegisterStack')
+              }}
             >
-               {strings.register}
-            </Text>
-          </Text>
+              <Text
+                style={styles.registerText}
+              >
+                {strings.register}
+              </Text>
+            </TouchableOpacity>
+          </View>
   
       </View>
     )
@@ -294,21 +302,23 @@ const styles = StyleSheet.create({
     //marginRight: 10,
   },
   forgetText: {
-    color: COLORS.primaryDark,
+    fontSize: 16,
+    color: COLORS.blue,
     alignSelf: 'flex-end',
   },
   button: {
     marginTop: 20,  
-    backgroundColor: COLORS.primaryDark,
+    backgroundColor: COLORS.black,
     paddingVertical: 8,
     paddingHorizontal: 100,
     borderRadius: 8,
     elevation: 3,
   },
   orText: {
-    fontSize: 15,
+    fontSize: 16,
     alignSelf: 'center',
     marginTop: 20,
+    color: COLORS.black
   },
   socialContainer: {
     flexDirection: 'row',
@@ -320,6 +330,7 @@ const styles = StyleSheet.create({
     marginRight: 20,
   },
   registerText: {
-    color: COLORS.primaryDark,
+    fontSize: 16,
+    color: COLORS.blue,
   },
 });

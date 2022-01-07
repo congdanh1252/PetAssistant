@@ -227,7 +227,7 @@ const style = StyleSheet.create({
         marginBottom: 12,
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: COLORS.white,
+        backgroundColor: COLORS.grey,
     },
     item_title_holder: {
         width: '100%',

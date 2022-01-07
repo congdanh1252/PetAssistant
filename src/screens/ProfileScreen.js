@@ -21,16 +21,17 @@ import {
 const ProfileScreen = ({navigation}) =>  {
     const [user, setUser] = useState(new User())
 
-    const Author = () => {
+    const Author = (props) => {
         return (
             <View style={styles.author}>
 
                 <Image source={require('../assets/icons/Logo.png')} />
                 <Text style={{
                     margin: 20,
-                    fontFamily: 'Roboto-Bold'
+                    fontFamily: 'Roboto-Bold',
+                    color: COLORS.black
                 }}>
-                    dungtd
+                    {props.name}
                 </Text>
 
                 <View style={styles.rowContainer}>
@@ -224,9 +225,10 @@ const ProfileScreen = ({navigation}) =>  {
 
                         <ScrollView
                             horizontal={true}
+                            showsHorizontalScrollIndicator={false}
                         >
-                            <Author />
-                            <Author />
+                            <Author name='dungtd'/>
+                            <Author name='danhmc'/>
                         </ScrollView>
                         
                     </View>
@@ -261,6 +263,7 @@ const styles = StyleSheet.create({
     },
     headerIcon: {
         padding: 8,
+        marginTop: 12
     },
     bodyContainer: {
         flex: 9,
@@ -272,6 +275,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontFamily: 'Roboto-Bold',
         fontSize: 20,
+        color: COLORS.black
     },
     accountInfoContainer: {
         display: 'flex',
@@ -284,10 +288,12 @@ const styles = StyleSheet.create({
     sectionDetailTitle: {
         fontFamily: 'Roboto-Medium',
         fontSize: 16,
+        color: COLORS.black
     },
     accountInfo: {
         fontFamily: 'Roboto-Italic',
         fontSize: 16,
+        color: COLORS.black
     },
     authorContainer: {
     },

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
     StyleSheet, View, TextInput, Text, TouchableOpacity, Image, TouchableWithoutFeedback,
-    Keyboard, Alert,
+    Keyboard, Alert, ScrollView,
 } from 'react-native'
 import DateTimePicker from "@react-native-community/datetimepicker";
 
@@ -226,112 +226,112 @@ const AddTreatmentScreen = ({route, navigation}) => {
             <TouchableWithoutFeedback
                 onPress={() => { Keyboard.dismiss() }}
             >
-                <View style={styles.container}>
-                    {/* Content */}
-                    <View style={styles.content}>
-                        {/* Ngày điều trị */}
-                        <View style={styles.two_on_row}>
-                            <View style={styles.input_holder_small}>
-                                <Text style={styles.label}>{strings.treatment_taken_date}</Text>
+                <ScrollView
+                    style={styles.container}
+                    showsVerticalScrollIndicator={false}
+                >
+                    {/* Ngày điều trị */}
+                    <View style={styles.two_on_row}>
+                        <View style={styles.input_holder_small}>
+                            <Text style={styles.label}>{strings.treatment_taken_date}</Text>
 
-                                <TextInput
-                                    editable={false}
-                                    style={styles.input}
-                                    placeholderTextColor={'#898989'}
-                                    placeholder={strings.treatment_taken_date}
-                                    value={
-                                        choseDate
-                                        ?
-                                        (
-                                            String(date.getDate()).padStart(2, '0') + "-" +
-                                            String(date.getMonth() + 1).padStart(2, '0') + "-" +
-                                            date.getFullYear()
-                                        ) : (null)
-                                    }
+                            <TextInput
+                                editable={false}
+                                style={styles.input}
+                                placeholderTextColor={'#898989'}
+                                placeholder={strings.treatment_taken_date}
+                                value={
+                                    choseDate
+                                    ?
+                                    (
+                                        String(date.getDate()).padStart(2, '0') + "-" +
+                                        String(date.getMonth() + 1).padStart(2, '0') + "-" +
+                                        date.getFullYear()
+                                    ) : (null)
+                                }
+                            />
+                        </View>
+
+                        {/* Calendar icon */}
+                        <View style={[styles.input_holder_small, {alignItems: 'center'}]}>
+                            <TouchableOpacity
+                                style={{width: '36%', alignItems: 'center', marginTop: 40,}}
+                                activeOpacity={0.6}
+                                onPress={() => setShow(true)}
+                            >
+                                <Image
+                                    source={require('../assets/icons/ic_calendar.png')}
+                                    style={styles.plus_icon}
                                 />
-                            </View>
-
-                            {/* Calendar icon */}
-                            <View style={[styles.input_holder_small, {alignItems: 'center'}]}>
-                                <TouchableOpacity
-                                    style={{width: '36%', alignItems: 'center', marginTop: 40,}}
-                                    activeOpacity={0.6}
-                                    onPress={() => setShow(true)}
-                                >
-                                    <Image
-                                        source={require('../assets/icons/ic_calendar.png')}
-                                        style={styles.plus_icon}
-                                    />
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-
-                        {/* Nội dung */}
-                        <View style={styles.input_holder}>
-                            <Text style={styles.label}>{strings.content_label}</Text>
-
-                            <TextInput
-                                style={styles.input}
-                                placeholderTextColor={'#898989'}
-                                placeholder={strings.content_label}
-                                value={detail}
-                                onChangeText={value => {
-                                    setDetail(value);
-                                }}
-                            />
-                        </View>
-
-                        {/* Thuốc sử dụng */}
-                        <View style={styles.input_holder}>
-                            <Text style={styles.label}>{strings.taken_medicine_label}</Text>
-
-                            <TextInput
-                                style={styles.input}
-                                placeholderTextColor={'#898989'}
-                                placeholder={strings.taken_medicine_label}
-                                value={medicine}
-                                onChangeText={value => {
-                                    setMedicine(value)
-                                }}
-                            />
-                        </View>
-
-                        {/* Ghi chú */}
-                        <View style={styles.input_holder}>
-                            <Text style={styles.label}>{strings.note_label}</Text>
-
-                            <TextInput
-                                style={[styles.input, {height: 90}]}
-                                multiline={true}
-                                placeholderTextColor={'#898989'}
-                                placeholder={strings.note_label}
-                                value={note}
-                                onChangeText={value => {
-                                    setNote(value)
-                                }}
-                            />
-                        </View>
-
-                        {/* Save + Cancel buttons */}
-                        <View style={styles.footer_buttons}>
-                            <Button
-                                title={strings.cancel}
-                                titleStyle={styles.button_title}
-                                buttonStyle={styles.button}
-                                onPress={() => handleCancelAction()}
-                            >
-                            </Button>
-
-                            <Button
-                                title={strings.save}
-                                titleStyle={styles.button_title}
-                                buttonStyle={styles.button}
-                                onPress={() => checkSubmitFields()}
-                            >
-                            </Button>
+                            </TouchableOpacity>
                         </View>
                     </View>
-                </View>
+
+                    {/* Nội dung */}
+                    <View style={styles.input_holder}>
+                        <Text style={styles.label}>{strings.content_label}</Text>
+
+                        <TextInput
+                            style={styles.input}
+                            placeholderTextColor={'#898989'}
+                            placeholder={strings.content_label}
+                            value={detail}
+                            onChangeText={value => {
+                                setDetail(value);
+                            }}
+                        />
+                    </View>
+
+                    {/* Thuốc sử dụng */}
+                    <View style={styles.input_holder}>
+                        <Text style={styles.label}>{strings.taken_medicine_label}</Text>
+
+                        <TextInput
+                            style={styles.input}
+                            placeholderTextColor={'#898989'}
+                            placeholder={strings.taken_medicine_label}
+                            value={medicine}
+                            onChangeText={value => {
+                                setMedicine(value)
+                            }}
+                        />
+                    </View>
+
+                    {/* Ghi chú */}
+                    <View style={styles.input_holder}>
+                        <Text style={styles.label}>{strings.note_label}</Text>
+
+                        <TextInput
+                            style={[styles.input, {height: 90}]}
+                            multiline={true}
+                            placeholderTextColor={'#898989'}
+                            placeholder={strings.note_label}
+                            value={note}
+                            onChangeText={value => {
+                                setNote(value)
+                            }}
+                        />
+                    </View>
+
+                    {/* Save + Cancel buttons */}
+                    <View style={styles.footer_buttons}>
+                        <Button
+                            title={strings.cancel}
+                            titleStyle={styles.button_title}
+                            buttonStyle={styles.button}
+                            onPress={() => handleCancelAction()}
+                        >
+                        </Button>
+
+                        <Button
+                            title={strings.save}
+                            titleStyle={styles.button_title}
+                            buttonStyle={styles.button}
+                            onPress={() => checkSubmitFields()}
+                        >
+                        </Button>
+                    </View>
+                </ScrollView>
             </TouchableWithoutFeedback>
 
             {/* Date Picker */}
@@ -372,11 +372,15 @@ const styles = StyleSheet.create({
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
+        backgroundColor: COLORS.dark
     },
     container: {
-        marginTop: 0,
-        backgroundColor: COLORS.dark,
-        alignItems: 'center',
+        paddingTop: 4,
+        paddingLeft: 22,
+        paddingRight: 22,
+        borderTopLeftRadius: 25,
+        borderTopRightRadius: 25,
+        backgroundColor: COLORS.white,
     },
     header: {
         width: '100%',
@@ -393,16 +397,6 @@ const styles = StyleSheet.create({
         fontFamily: 'Roboto-Medium',
         color: COLORS.white,
         textAlign: 'center',
-    },
-    content: {
-        height: '100%',
-        width: '100%',
-        paddingLeft: 22,
-        paddingRight: 22,
-        borderTopLeftRadius: 25,
-        borderTopRightRadius: 25,
-        alignItems: 'center',
-        backgroundColor: COLORS.white,
     },
     label: {
         fontSize: 16,

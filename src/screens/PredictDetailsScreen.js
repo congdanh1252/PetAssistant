@@ -58,6 +58,7 @@ const Section = (props) => {
                         style={{
                             fontFamily: 'Roboto-Bold',
                             fontSize: 18,
+                            color: COLORS.black
                         }}
                     >
                         {detail.title}
@@ -119,6 +120,7 @@ const SubDetail = (props) => {
                         fontFamily: 'Roboto-Light',
                         fontSize: 14,
                         alignItems: 'center',
+                        color: COLORS.black
                     }}
                 >
                     Chuẩn đoán
@@ -127,6 +129,7 @@ const SubDetail = (props) => {
                 <Text
                     style={{
                         flex: 6,
+                        color: COLORS.black
                     }}
                 >
                     {props.detail.predict}
@@ -140,6 +143,7 @@ const SubDetail = (props) => {
                         flex: 4,
                         fontFamily: 'Roboto-Light',
                         fontSize: 14,
+                        color: COLORS.black
                     }}
                 >
                     Gợi ý
@@ -148,6 +152,7 @@ const SubDetail = (props) => {
                 <Text 
                     style={{
                         flex: 6,
+                        color: COLORS.black
                     }}
                 >
                     {props.detail.advice}
@@ -202,7 +207,7 @@ export function PredictDetailsScreen({route, navigation}) {
             </View>
 
             <View style={styles.bodyContainer}>
-                <ScrollView>
+                <ScrollView showsVerticalScrollIndicator={false}>
                 {
                     predict.predictDetail.map(section => {
                         return (
@@ -233,6 +238,7 @@ const styles = StyleSheet.create({
     },
     headerIcon: {
         padding: 8,
+        marginTop: 12
     },
     bodyContainer: {
         flex: 8.8,
@@ -265,10 +271,12 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontFamily: 'Roboto-Bold',
         fontSize: 18,
+        color: COLORS.black
     },
     sectionDescription: {
         fontFamily: 'Roboto-Light',
         fontSize: 14,
+        color: COLORS.black
     },
     sectionDetailContainer: {
         width: '100%',
