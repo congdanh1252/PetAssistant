@@ -9,7 +9,7 @@ import {
   Dimensions, 
   Pressable
 } from 'react-native'
-
+import Toast from 'react-native-toast-message';
 import auth from '@react-native-firebase/auth';
 import { Input } from 'react-native-elements/dist/input/Input';
 import { 
@@ -51,7 +51,7 @@ export function LoginScreen({navigation}) {
 
   if (initializing) return null;
 
-  const login = (username, password) => {
+  const login = () => {
     console.log(username + "/" + password);
     auth()
       .signInWithEmailAndPassword(username, password)
@@ -61,23 +61,24 @@ export function LoginScreen({navigation}) {
         navigation.navigate('MainStack')
       })
       .catch(error => {
-        if (error === 'auth/invalid-email') {
-          setLoginState('Invalid email!')
-        }
-
-        if (error === 'auth/user-disabled') {
-          setLoginState('Your account has been block!')
-        }
-
-        if (error === 'auth/user-not-found') {
-          setLoginState('Cant find your account')
-        }
-
-        if (error === 'auth/wrong-password') {
-          setLoginState('Wrong password')
-          console.error(error);
-        }
+        Toast.show({
+          type: 'error',
+          text1: 'Thất bại!',
+          text2: 'Thông tin đăng nhập không chính xác!'
+        });
       }); 
+  }
+
+  const checkLogin = () => {
+    if (username == "" || password == "") {
+      Toast.show({
+        type: 'error',
+        text1: 'Thất bại!',
+        text2: 'Vui lòng nhập đủ thông tin!'
+      });
+    } else {
+      login()
+    }
   }
 
   if (!user) {
@@ -207,7 +208,7 @@ export function LoginScreen({navigation}) {
           {/* LOGIN BUTTON */}
           <Pressable
             onPress={() => {
-              login(username, password)
+              checkLogin()
             }}
             style={styles.button}
           >

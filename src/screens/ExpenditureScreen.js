@@ -636,7 +636,7 @@ export function ExpenditureScreen({navigation}) {
         const handelAdd = () => {
             expenditure.amount = expenditureAmount
             addExpenditure(expenditure, () => {
-                setSelectedMonth(expenditure.date)
+                setSelectedMonth(new Date(expenditure.date))
             })
         }
         const onFinishDatePicker = (event, selectedDate) => {
