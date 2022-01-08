@@ -135,21 +135,21 @@ export function ExpenditureScreen({navigation}) {
             return () => {
                 total
             }
-        }, [])
+        }, [selectedMonth])
 
         useEffect(() => {
             const limit = getMonthLimit(handleMonthLimitCallback)
             return () => {
                 limit
             }
-        }, [])
+        }, [selectedMonth])
 
         useEffect(() => {
             const avg = getMonthAverage(selectedMonth, handleMonthAvgCallback)
             return () => {
                 avg
             }
-        }, [])
+        }, [selectedMonth])
     
         return (
             <View style={styles.headerContainer}>

@@ -134,10 +134,10 @@ const HomeScreen = ({navigation}) => {
 
                     <View style={style.activity_box}>
                         <Text style={style.activity_heading}>
-                            {"10"}
+                            Hello
                         </Text>
                         <Text style={style.activity_label}>
-                            {strings.activity.toLowerCase()}
+                            Sắp cập nhật
                         </Text>
                     </View>
 

@@ -20,7 +20,6 @@ import BackButton from '../components/BackButton';
 import Pet from '../models/pet';
 import Reminder from '../models/reminder';
 
-
 LogBox.ignoreLogs([
     'Non-serializable values were found in the navigation state',
 ]);
@@ -171,7 +170,8 @@ const PetProfileScreen = ({route, navigation}) => {
     }
 
     const selectMomentFunction = (index) => {
-        return careSection[index].frequency=='custom' ? moment(careSection[index].datetime).fromNow() : moment(careSection[index].datetime).toNow();
+        console.log(careSection[index].type + "-" + careSection[index].datetime);
+        return moment(careSection[index].datetime).fromNow() 
     }
 
     const selectProgressColor = (index) => {
@@ -657,16 +657,23 @@ const PetProfileScreen = ({route, navigation}) => {
                     reminder.datetime.setFullYear(new Date().getFullYear() + 1)
                 }
                 if (reminder.frequency == 'monthly') {
-                    dt.setMonth(dt.getMonth() - 1)
+                    dt.setMonth(dt.getMonth() + 1)
+                    dt.setDate(reminder.datetime.getDate())
                     reminder.datetime = dt
                 }
                 if (reminder.frequency == 'weekly') {
-                    dt.setDate(dt.getDate() - 7)
+                    console.log("Weekly: " + reminder.datetime);
+                    let days = (7 - dt.getDay()) + reminder.datetime.getDay()
+                    console.log(dt.getDay() + "--" + reminder.datetime.getDay());
+                    dt.setDate(dt.getDate() + days)
                     reminder.datetime = dt
+                    console.log("Weekly2: " + reminder.datetime);
                 }
                 if (reminder.frequency == 'daily') {
-                    dt.setDate(dt.getDate() - 1)
+                    // console.log("Daily: " + reminder.datetime);
+                    dt.setDate(dt.getDate() + 1)
                     reminder.datetime = dt 
+                    // console.log("Daily2: " + reminder.datetime);
                 }
                 if (reminder.frequency != 'custom') {
                 }

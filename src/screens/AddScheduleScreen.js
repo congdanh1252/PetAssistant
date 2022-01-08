@@ -245,6 +245,17 @@ export function AddScheduleScreen({route, navigation}) {
                     text1: 'Thành công!',
                     text2: 'Đã thêm hoạt động mới!'
                 });
+                let repeat = "null"
+                switch (reminder.frequency) {
+                    case 'weekly':
+                        repeat = "weekly"
+                        break;
+                    case 'daily':
+                        repeat = "day"
+                        break;
+                    default:
+                        break;
+                }
                 console.log(reminder._id);
                 PushNotification.localNotificationSchedule({
                     id: reminder.notificationId,
@@ -252,6 +263,7 @@ export function AddScheduleScreen({route, navigation}) {
                     title: "PetAssistant", 
                     message: reminder.title,
                     date: new Date(reminder.datetime), 
+                    repeatType: repeat
                 });
                 navigation.goBack()
             })
