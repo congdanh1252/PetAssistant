@@ -256,12 +256,16 @@ export function AddScheduleScreen({route, navigation}) {
                     default:
                         break;
                 }
-                console.log(reminder._id);
+                var messages = ""
+                pets.forEach(pet => {
+                    messages += pet.name
+                    messages += " "
+                });
                 PushNotification.localNotificationSchedule({
                     id: reminder.notificationId,
                     channelId: "test-channel",
-                    title: "PetAssistant", 
-                    message: reminder.title,
+                    title: "Hoạt động sắp tới", 
+                    message: reminder.title + ": " + messages,
                     date: new Date(reminder.datetime), 
                     repeatType: repeat
                 });

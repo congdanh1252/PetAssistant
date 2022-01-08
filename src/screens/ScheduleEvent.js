@@ -244,7 +244,7 @@ export function ScheduleEvent ({route, navigation}) {
             id: reminder.notificationId,
             channelId: "test-channel",
             title: strings.incomingSchedule, 
-            message: reminder.title,
+            message: reminder.title + ":",
             date: reminder.datetime, 
         });
         Toast.show({
