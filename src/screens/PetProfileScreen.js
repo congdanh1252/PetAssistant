@@ -115,7 +115,7 @@ const PetProfileScreen = ({route, navigation}) => {
 
     const calculateProgress = (index) => {
         var time = moment(careSection[index].datetime).toNow()
-                    .substring(0, moment(careSection[0].datetime).toNow().indexOf(" "));
+                    .substring(0, moment(careSection[index].datetime).toNow().indexOf(" "));
 
         const calculateByDay = () => {
             return Math.round(Math.abs((parseInt(time) - 24) / 24) * 10) / 10;

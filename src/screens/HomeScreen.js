@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     Image, StyleSheet, View, Text, TouchableOpacity, TouchableWithoutFeedback,
-    TouchableHighlight
+    TouchableHighlight, BackHandler
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import BottomSheet from '@gorhom/bottom-sheet';
@@ -71,6 +71,15 @@ const HomeScreen = ({navigation}) => {
 
     //Main 
     
+    useEffect(() => {
+        navigation.addListener('beforeRemove', (e) => {
+    
+            BackHandler.exitApp();
+            // Prevent default behavior of leaving the screen
+           // e.preventDefault();
+        })
+    })
+
     return (
         <View style={style.container}>
             <View style={style.header}>
