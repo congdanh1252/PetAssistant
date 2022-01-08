@@ -240,11 +240,16 @@ export function ScheduleEvent ({route, navigation}) {
         //     default:
         //         break;
         // }
+        var messages = ""
+        pets.forEach(pet => {
+            messages += pet.name
+            messages += " "
+        });
         PushNotification.localNotificationSchedule({
             id: reminder.notificationId,
             channelId: "test-channel",
             title: strings.incomingSchedule, 
-            message: reminder.title + ":",
+            message: reminder.title + ": "+ messages,
             date: reminder.datetime, 
         });
         Toast.show({
