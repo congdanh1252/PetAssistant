@@ -257,7 +257,7 @@ export function AddScheduleScreen({route, navigation}) {
                         break;
                 }
                 var messages = ""
-                pets.forEach(pet => {
+                addingPets.forEach(pet => {
                     messages += pet.name
                     messages += " "
                 });
