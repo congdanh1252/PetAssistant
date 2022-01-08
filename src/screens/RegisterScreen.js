@@ -68,10 +68,7 @@ export const RegisterScreen_1 = ({navigation}) => {
             })
             .then(() => {
                 console.log('firestore added');
-                navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'Login' }],
-                });
+                navigation.goBack();
             });
     }
 

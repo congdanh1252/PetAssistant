@@ -57,10 +57,10 @@ export function LoginScreen({navigation}) {
       .signInWithEmailAndPassword(username, password)
       .then(() => {
         console.log('Signed in!');
-        console.log(user.email)
         navigation.navigate('MainStack')
       })
       .catch(error => {
+        console.log(error);
         Toast.show({
           type: 'error',
           text1: 'Thất bại!',
@@ -95,8 +95,8 @@ export function LoginScreen({navigation}) {
             inputStyle={styles.textStyle}
             containerStyle={styles.inputContainer}
             inputStyle={styles.input}
-            label={strings.username}
-            placeholder={strings.enterUsername}
+            label={strings.email}
+            placeholder={'Nhập email'}
             value={username}
             leftIcon={
               <AntDesign
