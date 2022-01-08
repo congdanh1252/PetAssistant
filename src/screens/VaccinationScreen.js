@@ -47,13 +47,22 @@ const VaccinationScreen = ({route, navigation}) => {
 
                 if (list.includes(vaccineList[i].type)) {
                     switch (vaccineList[i].type) {
-                        case 'Mũi 1' && 'Bệnh giảm bạch cầu':
+                        case 'Mũi 1':
                             taken_check[0] = 1;
                             break;
-                        case 'Mũi 2' && 'Bệnh Viêm mũi':
+                        case 'Bệnh giảm bạch cầu':
+                            taken_check[0] = 1;
+                            break;
+                        case 'Mũi 2':
                             taken_check[1] = 1;
                             break;
-                        case 'Mũi 3' && 'Bệnh do Herpesvirus':
+                        case 'Bệnh Viêm mũi':
+                            taken_check[1] = 1;
+                            break;
+                        case 'Mũi 3':
+                            taken_check[2] = 1;
+                            break;
+                        case 'Bệnh do Herpesvirus':
                             taken_check[2] = 1;
                             break;
                         default:

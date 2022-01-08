@@ -4,6 +4,7 @@ import { Image, StyleSheet, View, Text, ScrollView,
 } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
@@ -63,7 +64,7 @@ const GuideDetailScreen = ({route, navigation}) => {
     }
 
     const handleUserRatedList = (list) => {
-        const userId = "gwjLJ986xHN56PLYQ0uYPWMOB7g1";
+        const userId = auth().currentUser.uid;
         if (list.includes(userId)) {
             setIsRated(true);
         }

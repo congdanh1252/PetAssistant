@@ -316,6 +316,7 @@ export function ScheduleEvent ({route, navigation}) {
                 style={styles.headerContainer}
             >
                 <TouchableOpacity
+                    style={{marginTop: 12}}
                     onPress={() => {
                         navigation.goBack()
                     }}
