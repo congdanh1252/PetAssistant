@@ -28,7 +28,7 @@ const GuideDetailScreen = ({route, navigation}) => {
     const [isSaved, setIsSaved] = useState(false);
     const [isRated, setIsRated] = useState(false);
 
-    const snapPoints = useMemo(() => ['45%', '45%'], []);
+    const snapPoints = useMemo(() => ['43%', '43%'], []);
 
     const handleSaveGuide = (msg) => {
         if (msg == 'Success') {

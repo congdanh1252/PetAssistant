@@ -663,7 +663,11 @@ const PetProfileScreen = ({route, navigation}) => {
                 }
                 if (reminder.frequency == 'weekly') {
                     console.log("Weekly: " + reminder.datetime);
-                    let days = (7 - dt.getDay()) + reminder.datetime.getDay()
+                    let days = 0;
+                    if (dt.getDay() == 0)
+                        days = reminder.datetime.getDay()
+                    else 
+                        days = (7 - dt.getDay()) + reminder.datetime.getDay()
                     console.log(dt.getDay() + "--" + reminder.datetime.getDay());
                     dt.setDate(dt.getDate() + days)
                     reminder.datetime = dt
