@@ -230,14 +230,14 @@ export function AddScheduleScreen({route, navigation}) {
                 text1: 'Thất bại!',
                 text2: 'Vui lòng nhập tiêu đề cho hoạt động!'
             });
-            result = false
+            return false
         } 
+        return true
     }
 
     const hanldleAddReminder = () => {
         reminder.frequency = selectedFrequency
         reminder.reminderType = 'custom'
-        console.log(reminder);
         if (checkData()) {
             addReminder(reminder, (reminder) => {
                 Toast.show({
@@ -245,13 +245,29 @@ export function AddScheduleScreen({route, navigation}) {
                     text1: 'Thành công!',
                     text2: 'Đã thêm hoạt động mới!'
                 });
-                console.log(reminder._id);
+                let repeat = "null"
+                switch (reminder.frequency) {
+                    case 'weekly':
+                        repeat = "weekly"
+                        break;
+                    case 'daily':
+                        repeat = "day"
+                        break;
+                    default:
+                        break;
+                }
+                var messages = ""
+                addingPets.forEach(pet => {
+                    messages += pet.name
+                    messages += " "
+                });
                 PushNotification.localNotificationSchedule({
                     id: reminder.notificationId,
                     channelId: "test-channel",
-                    title: "PetAssistant", 
-                    message: reminder.title,
+                    title: "Hoạt động sắp tới", 
+                    message: reminder.title + ": " + messages,
                     date: new Date(reminder.datetime), 
+                    repeatType: repeat
                 });
                 navigation.goBack()
             })
@@ -641,6 +657,9 @@ export function AddScheduleScreen({route, navigation}) {
                                         case 'Food':
                                             setImgSource(FoodIcon) 
                                             break;
+                                        case 'Stuff':
+                                            setImgSource(StuffIcon) 
+                                            break;
                                         case 'HairBrush':
                                             setImgSource(HairBrushIcon) 
                                             break;
@@ -666,10 +685,11 @@ export function AddScheduleScreen({route, navigation}) {
                                 }}>
                                 <Picker.Item label="Tiêm ngừa" value="Vaccine" />
                                 <Picker.Item label="Khám bệnh" value="Doctor" />
+                                <Picker.Item label="Mua sắm" value="Stuff" />
                                 <Picker.Item label="Tắm" value="Shower" />
                                 <Picker.Item label="Đi dạo" value="Walk" />
                                 <Picker.Item label="Chải lông" value="HairBrush" />
-                                <Picker.Item label="Dọn cát" value="Sand" />
+                                <Picker.Item label="Vệ sinh" value="Sand" />
                                 <Picker.Item label="Cho ăn" value="Food" />
                                 <Picker.Item label="Khác" value="Other" />
                             </Picker>

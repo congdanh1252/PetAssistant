@@ -114,6 +114,7 @@ const styles = StyleSheet.create({
     },  
     headerIcon: {
         padding: 8,
+        marginTop: 12
     },
     sectionContainer: {
         display: 'flex',
@@ -129,9 +130,11 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontFamily: 'Roboto-Bold',
         fontSize: 18,
+        color: COLORS.black
     },
     sectionDescription: {
         fontFamily: 'Roboto-Regular',
         fontSize: 14,
+        color: COLORS.black
     }
 })

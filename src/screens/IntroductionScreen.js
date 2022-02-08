@@ -33,13 +33,13 @@ export function IntroductionScreen() {
 
 const style = StyleSheet.create({
     container: {
-        backgroundColor: COLORS.primary,
+        backgroundColor: COLORS.white,
         flex: 1,
         alignItems: 'center'
     },
     card: {
         marginTop: 80,
-        backgroundColor: COLORS.white,
+        backgroundColor: COLORS.black,
         height: windowHeight / 2,
         width: windowWidth - (windowWidth / 5),
         borderRadius: 25,
@@ -47,7 +47,7 @@ const style = StyleSheet.create({
         justifyContent: 'center'
     },
     button: {
-        backgroundColor: COLORS.primaryDark,
+        backgroundColor: COLORS.black,
         color: '#000',
         width: 130,
         height: 55,

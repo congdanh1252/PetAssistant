@@ -1,8 +1,9 @@
 import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 
 export const getSavedGuides = (handleCallback) => {
     firestore()
-    .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/guides')
+    .collection('users/' + auth().currentUser.uid + '/guides')
     .get()
     .then(querySnapshot => {
         var guide_list = new Array();
@@ -28,7 +29,7 @@ export const getRatedUserList = (id, handleCallback) => {
 
 export const addGuideToSavedList = (id, handleCallback) => {
     firestore()
-    .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/guides')
+    .collection('users/' + auth().currentUser.uid + '/guides')
     .add({
         id: id,
     })
@@ -42,7 +43,7 @@ export const addGuideToSavedList = (id, handleCallback) => {
 
 export const deleteGuideFromSavedList = (id, handleCallback) => {
     firestore()
-    .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/guides')
+    .collection('users/' + auth().currentUser.uid + '/guides')
     .where('id', '==', id)
     .get()
     .then(querySnapshot => {
@@ -71,7 +72,7 @@ export const rateGuide = (guide, rating, handleCallback) => {
 }
 
 export const addUserToRatedList = (guideId, handleCallback) => {
-    const userId = "gwjLJ986xHN56PLYQ0uYPWMOB7g1";
+    const userId = auth().currentUser.uid;
 
     firestore()
     .collection('camnang/' + guideId + "/UserRated")

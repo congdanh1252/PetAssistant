@@ -1,5 +1,7 @@
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
+import auth from '@react-native-firebase/auth';
+
 import Pet from '../models/pet';
 
 export const getSpeciesList = (handleCallback) => {
@@ -54,7 +56,7 @@ export const uploadImageToStorage = async (uri, name, handleImageUrl) => {
 
 export const addPetToFirestore = (pet, handlePetAdded) => {
     firestore()
-    .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/pets')
+    .collection('users/' + auth().currentUser.uid + '/pets')
     .add({
         name: pet.name,
         kind: pet.kind,
@@ -77,7 +79,7 @@ export const addPetToFirestore = (pet, handlePetAdded) => {
 
 export const updatePetInFirestore = (pet, handlePetUpdated) => {
     firestore()
-    .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/pets')
+    .collection('users/' + auth().currentUser.uid + '/pets')
     .doc(pet._id)
     .update({
         name: pet.name,
@@ -101,7 +103,7 @@ export const updatePetInFirestore = (pet, handlePetUpdated) => {
 
 export const deletePetFromFirestore = (id, photoUrl, handlePetDeleted) => {
     firestore()
-    .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/pets')
+    .collection('users/' + auth().currentUser.uid + '/pets')
     .doc(id)
     .delete()
     .then(() => {
@@ -125,7 +127,7 @@ export const deleteImageFromStorage = (url) => {
 
 export const getPetName = (id, handleCallback) => {
     firestore()
-    .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/pets')
+    .collection('users/' + auth().currentUser.uid + '/pets')
     .doc(id)
     .get()
     .then(documentSnapshot => {
@@ -137,7 +139,7 @@ export const getPetList = (handlePets) => {
     var petList = new Array();
 
     firestore()
-    .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/pets')
+    .collection('users/' + auth().currentUser.uid + '/pets')
     .onSnapshot(querySnapshot => {
         var petList = new Array();
         querySnapshot.forEach(documentSnapshot => {

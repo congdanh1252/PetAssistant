@@ -16,6 +16,7 @@ import firestore from '@react-native-firebase/firestore';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
 import COLORS from '../../theme/colors';
+import strings from '../../data/strings';
 import { 
   validateEmail,
   validatePhone,
@@ -44,8 +45,8 @@ export const ChangePasswordScreen_1 = (props) => {
   const [anotherCredentialType, setAnotherCredentialType] 
     = useState(
       credentialType == 'Email'
-      ? 'phone'
-      : 'email'
+      ? strings.phone
+      : strings.email
     )
   const [username, setUsername] = useState(null);
   const [isFoundUser, setIsFoundUser] = useState(false);
@@ -58,10 +59,11 @@ export const ChangePasswordScreen_1 = (props) => {
       .get()
       .then(querySnapshot => {
         if (querySnapshot.size > 0) {
-          setUsername(querySnapshot.docs[0].data().name);
+          console.log(querySnapshot.docs[0].data());
+          setUsername(querySnapshot.docs[0].data().username);
           setIsFoundUser(true);
           props.onReady(true);
-          var phoneNum = querySnapshot.docs[0].data().phone
+          var phoneNum = querySnapshot.docs[0].data().phone_number
           phoneNum != undefined 
           ? props.onGetPhoneNum(phoneNum)
           : "";
@@ -109,16 +111,14 @@ export const ChangePasswordScreen_1 = (props) => {
             textAlign: 'center',
             fontFamily: 'RedHatText-Italic',
             fontSize: 14, 
+            color: COLORS.black,
           }}
         >
-          Can't find your account, {"\n"}
-          Plese check your information and try again
+          {strings.accountNotFound}
         </Text>
       )
     }
   }
-
-  
 
   return (
     <View
@@ -132,14 +132,13 @@ export const ChangePasswordScreen_1 = (props) => {
           <Text
             style={styles.title}
           >
-            FORGET {"\n"}
-            PASSWORD
+            {strings.forgetPassowork}
           </Text>
 
           <Text
             style={styles.sub_title}
           >
-            Provide your account's credential
+            {strings.provideAccountCredential}
           </Text>
 
           <Input
@@ -153,7 +152,7 @@ export const ChangePasswordScreen_1 = (props) => {
             containerStyle={styles.inputContainer}
             inputStyle={styles.input}
             label={credentialType}
-            placeholder={"Enter " + credentialType.toLowerCase()}
+            placeholder={strings.enter + " " + credentialType.toLowerCase()}
             leftIcon={
               <MaterialIcons
                 name={credentialIcon}
@@ -197,7 +196,7 @@ export const ChangePasswordScreen_1 = (props) => {
                   <Text
                     style={styles.errorMessage}
                   >
-                    Invalid credential, please try again!
+                    {strings.invalidInformation}
                   </Text>
                 )
             }   
@@ -205,34 +204,28 @@ export const ChangePasswordScreen_1 = (props) => {
           })()}
 
           <Text
-            onPress={() => {
-                Toast.show({
-                  type: 'error',
-                  position: 'top',
-                  text1: 'Hello',
-                  text2: 'This is some something 👋'
-                });      
+            onPress={() => {     
                 setCredential('')
                 setIsFoundUser(false)
-                if (credentialType === 'Email') {
-                  setCredentialType('Phone')
+                if (credentialType === strings.email) {
+                  setCredentialType(strings.phone)
                   setCredentialIcon('local-phone')
                   setAnotherCredentialType('email')
                 } else {
                   setCredentialType('Email')
                   setCredentialIcon('email')
-                  setAnotherCredentialType('phone')
+                  setAnotherCredentialType(strings.phone)
                 }
             }}
             style={{
               fontWeight: '200',
-              fontSize: 12,
+              fontSize: 14,
               alignSelf: 'flex-end',
               marginRight: 20,
-              color: COLORS.primaryDark,
+              color: COLORS.blue,
             }}
           >
-            {"Use " + anotherCredentialType + " instead?"}
+            {strings.use + " " + anotherCredentialType}
           </Text>
 
           {renderUserProfile(username, "", isFoundUser)}
@@ -260,7 +253,7 @@ export const ChangePasswordScreen_1 = (props) => {
                 textAlign: 'center'
               }}
               >
-              Find account
+              {strings.findAccount}
             </Text>
           </TouchableOpacity>
       </View>
@@ -282,11 +275,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 22,
     marginBottom: 10,
+    color: COLORS.black,
   },
   sub_title: {
     textAlign: 'center',
     fontWeight: '600',
     fontSize: 14,
+    color: COLORS.black,
   },
   inputContainer: {
     marginTop: 20,
@@ -325,7 +320,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: '50%',
     marginTop: 20,  
-    backgroundColor: COLORS.primaryDark,
+    backgroundColor: COLORS.black,
     paddingVertical: 4,
     borderRadius: 15,
     elevation: 3,

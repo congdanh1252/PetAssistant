@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+
 import { 
   StyleSheet, 
   Text, 
@@ -7,23 +9,23 @@ import {
   Dimensions, 
   Pressable
 } from 'react-native'
-
+import Toast from 'react-native-toast-message';
 import auth from '@react-native-firebase/auth';
 import { Input } from 'react-native-elements/dist/input/Input';
 import { 
   Ionicons, 
   AntDesign, 
-  FontAwesome, 
   MaterialIcons   
 } from 'react-native-vector-icons';
 
-import COLORS from './src/theme/colors'
+import COLORS from '../theme/colors'
+import strings from '../data/strings';
 
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-export default function LoginScreen() {
+export function LoginScreen({navigation}) {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState();
 
@@ -32,10 +34,13 @@ export default function LoginScreen() {
   const [visiblePassword, setVisiblePassword] = useState(true);
   const [isTypingUsername, setIsTyingUsername] = useState(false);
   const [isTypingPassword, setIsTypingPassword] = useState(false);
-  const [loginState, setLoginState] = useState('Oops, forget your password?');
+  const [loginState, setLoginState] = useState(strings.oopsForgetPassword);
 
   function onAuthStateChanged(user) {
     setUser(user);
+    if (user) {
+      navigation.navigate('MainStack')
+    }
     if (initializing) setInitializing(false);
   }
 
@@ -46,222 +51,241 @@ export default function LoginScreen() {
 
   if (initializing) return null;
 
-
-  const login = (username, password) => {
+  const login = () => {
+    console.log(username + "/" + password);
     auth()
       .signInWithEmailAndPassword(username, password)
       .then(() => {
         console.log('Signed in!');
-        console.log(user.email)
+        navigation.navigate('MainStack')
       })
       .catch(error => {
-        if (error === 'auth/invalid-email') {
-          setLoginState('Invalid email!')
-        }
-
-        if (error === 'auth/user-disabled') {
-          setLoginState('Your account has been block!')
-        }
-
-        if (error === 'auth/user-not-found') {
-          setLoginState('Cant find your account')
-        }
-
-        if (error === 'auth/wrong-password') {
-          setLoginState('Wrong password')
-          console.error(error);
-        }
-      });
+        console.log(error);
+        Toast.show({
+          type: 'error',
+          text1: 'Thất bại!',
+          text2: 'Thông tin đăng nhập không chính xác!'
+        });
+      }); 
   }
 
-  return (
-    <View style={styles.container}>
-        <Image
-          source={require('../PetAssistant/src/assets/icons/Logo.png')}
-          style={styles.logo}
-        >
-        </Image>
+  const checkLogin = () => {
+    if (username == "" || password == "") {
+      Toast.show({
+        type: 'error',
+        text1: 'Thất bại!',
+        text2: 'Vui lòng nhập đủ thông tin!'
+      });
+    } else {
+      login()
+    }
+  }
 
-        {/* USERNAME INPUT */}
-        <Input
-          inputStyle={styles.textStyle}
-          containerStyle={styles.inputContainer}
-          inputStyle={styles.input}
-          label='Username'
-          placeholder='Enter username'
-          value={username}
-          leftIcon={
-            <AntDesign
-              name='user'
-              size={20}
-              color='black'
-              style={styles.icon}
-            />
-          }
-          rightIcon={ 
-            isTypingUsername==true ? (
-              <MaterialIcons
-                onPress={() => {
-                  setUsername('')
-                  setIsTyingUsername(false)
-                }}
-                name='clear'
+  if (!user) {
+    return (
+      <View style={styles.container}>
+          <Image
+            source={require('../assets/icons/Logo.png')}
+            style={styles.logo}
+          >
+          </Image>
+  
+          {/* USERNAME INPUT */}
+          <Input
+            inputStyle={styles.textStyle}
+            containerStyle={styles.inputContainer}
+            inputStyle={styles.input}
+            label={strings.email}
+            placeholder={'Nhập email'}
+            value={username}
+            leftIcon={
+              <AntDesign
+                name='user'
                 size={20}
                 color='black'
                 style={styles.icon}
               />
-            ) : (
-              null
-            )
-          }
-          onChangeText={input => {
-            input.length>0 
-            ? setIsTyingUsername(true)
-            : setIsTyingUsername(false)
-            setUsername(input)
-          }}
-        />
-
-        {/* PASSWORD INPUT */}
-        <Input
-          containerStyle={styles.inputContainer}
-          inputStyle={styles.input}
-          label='Password'
-          labelStyle={styles.label}
-          placeholder='Enter password'
-          secureTextEntry={visiblePassword}
-          value={password}
-          leftIcon={
-            <Ionicons
-              name='key'
-              size={20}
-              color='black'
-              style={styles.icon}
-            />
-          }
-          rightIcon={ 
-            <View
+            }
+            rightIcon={ 
+              isTypingUsername==true ? (
+                <MaterialIcons
+                  onPress={() => {
+                    setUsername('')
+                    setIsTyingUsername(false)
+                  }}
+                  name='clear'
+                  size={20}
+                  color='black'
+                  style={styles.icon}
+                />
+              ) : (
+                null
+              )
+            }
+            onChangeText={input => {
+              input.length>0 
+              ? setIsTyingUsername(true)
+              : setIsTyingUsername(false)
+              setUsername(input)
+            }}
+          />
+  
+          {/* PASSWORD INPUT */}
+          <Input
+            containerStyle={styles.inputContainer}
+            inputStyle={styles.input}
+            label={strings.password}
+            labelStyle={styles.label}
+            placeholder={strings.enterPassword}
+            secureTextEntry={visiblePassword}
+            value={password}
+            leftIcon={
+              <Ionicons
+                name='key'
+                size={20}
+                color='black'
+                style={styles.icon}
+              />
+            }
+            rightIcon={ 
+              <View
+                style={{
+                  flexDirection: 'row'
+                }}
+              >
+                <AntDesign
+                  onPress={() => {
+                    setVisiblePassword(!visiblePassword)
+                  }}
+                  name='eye'
+                  size={20}
+                  color='black'
+                  style={styles.icon}
+                />
+  
+                { 
+                  isTypingPassword==true ? (
+                    <MaterialIcons
+                      onPress={() => {
+                        setPassword('')
+                        setIsTypingPassword(false)
+                      }}
+                      name='clear'
+                      size={20}
+                      color='black'
+                      style={styles.icon}
+                    />
+                  ) : (
+                    null
+                  )
+                }
+  
+              </View>
+  
+            }
+            onChangeText={input => {
+              input.length>0 
+              ? setIsTypingPassword(true)
+              : setIsTypingPassword(false)
+              setPassword(input)
+            }}        
+          />
+  
+          {/* FORGER PASSWORD */}
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate('ChangePasswordScreen')
+            }}
+          >
+            <Text
+              style={styles.forgetText}
+            >
+              {loginState}
+            </Text>
+          </TouchableOpacity>
+  
+  
+          {/* LOGIN BUTTON */}
+          <Pressable
+            onPress={() => {
+              checkLogin()
+            }}
+            style={styles.button}
+          >
+             <Text
               style={{
-                flexDirection: 'row'
+                fontSize: 18,
+                color: COLORS.white,
+                fontFamily: 'Roboto-Light',
+                fontWeight: '700',
+              }}
+             >
+               ĐĂNG NHẬP
+             </Text>
+          </Pressable>
+  
+          <Text
+            style={styles.orText}
+          >
+            HOẶC
+          </Text>
+  
+          {/* SOCIAL ICONS */}
+          {/* <View
+            style={styles.socialContainer}
+          >
+            <Image
+              source={require('../assets/icons/Facebook.png')}
+              style={styles.socialIcon}
+            >
+            </Image>
+            <Image
+              source={require('../assets/icons/Google.png')}
+              style={styles.socialIcon}
+            >
+            </Image>
+            <Image
+              source={require('../assets/icons/Phone.png')}
+              style={styles.socialIcon}
+            >
+            </Image>
+          </View> */}
+  
+          <View
+            style={{
+              marginTop: 20,
+              alignItems: 'center',
+              flexDirection: 'row'
+            }}
+          >       
+            <Text style={{color: COLORS.black, fontSize: 16}}>
+              {strings.noaccount} {" "}
+            </Text>
+  
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate('RegisterStack')
               }}
             >
-              <AntDesign
-                onPress={() => {
-                  setVisiblePassword(!visiblePassword)
-                }}
-                name='eye'
-                size={20}
-                color='black'
-                style={styles.icon}
-              />
-
-              { 
-                isTypingPassword==true ? (
-                  <MaterialIcons
-                    onPress={() => {
-                      setPassword('')
-                      setIsTypingPassword(false)
-                    }}
-                    name='clear'
-                    size={20}
-                    color='black'
-                    style={styles.icon}
-                  />
-                ) : (
-                  null
-                )
-              }
-
-            </View>
-
-          }
-          onChangeText={input => {
-            input.length>0 
-            ? setIsTypingPassword(true)
-            : setIsTypingPassword(false)
-            setPassword(input)
-          }}        
-        />
-
-        {/* FORGER PASSWORD */}
-        <Text
-          style={styles.forgetText}
-        >
-          {loginState}
-        </Text>
-
-
-        {/* LOGIN BUTTON */}
-        <Pressable
-          onPress={() => {
-            console.log('Pressed');
-            login(username, password)
-          }}
-          style={styles.button}
-        >
-           <Text
-            style={{
-              fontSize: 18,
-              color: COLORS.white,
-              fontFamily: 'RedHatText',
-              fontWeight: '700',
-            }}
-           >
-             LOGIN
-           </Text>
-        </Pressable>
-
-        <Text
-          style={styles.orText}
-        >
-          OR
-        </Text>
-
-        {/* SOCIAL ICONS */}
-        <View
-          style={styles.socialContainer}
-        >
-          <Image
-            source={require('../PetAssistant/src/assets/icons/Facebook.png')}
-            style={styles.socialIcon}
-          >
-          </Image>
-          <Image
-            source={require('../PetAssistant/src/assets/icons/Google.png')}
-            style={styles.socialIcon}
-          >
-          </Image>
-          <Image
-            source={require('../PetAssistant/src/assets/icons/Phone.png')}
-            style={styles.socialIcon}
-          >
-          </Image>
-        </View>
-
-        <Text
-          style={{
-            marginTop: 20,
-          }}
-        >       
-          <Text>
-            Haven't got account? {" "}
-          </Text>
-
-          <Text
-            style={styles.registerText}
-          >
-             Register now!
-          </Text>
-        </Text>
-
-    </View>
-  );
+              <Text
+                style={styles.registerText}
+              >
+                {strings.register}
+              </Text>
+            </TouchableOpacity>
+          </View>
+  
+      </View>
+    )
+  } else {
+    return null
+  }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.white,
     alignItems: 'center',
   },
   logo: {
@@ -278,22 +302,23 @@ const styles = StyleSheet.create({
     //marginRight: 10,
   },
   forgetText: {
-    color: COLORS.primaryDark,
+    fontSize: 16,
+    color: COLORS.blue,
     alignSelf: 'flex-end',
-    marginRight: 50,
   },
   button: {
     marginTop: 20,  
-    backgroundColor: COLORS.primaryDark,
+    backgroundColor: COLORS.black,
     paddingVertical: 8,
     paddingHorizontal: 100,
-    borderRadius: 4,
+    borderRadius: 8,
     elevation: 3,
   },
   orText: {
-    fontSize: 15,
+    fontSize: 16,
     alignSelf: 'center',
     marginTop: 20,
+    color: COLORS.black
   },
   socialContainer: {
     flexDirection: 'row',
@@ -305,6 +330,7 @@ const styles = StyleSheet.create({
     marginRight: 20,
   },
   registerText: {
-    color: COLORS.primaryDark,
+    fontSize: 16,
+    color: COLORS.blue,
   },
 });

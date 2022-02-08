@@ -26,18 +26,20 @@ import {
     getAllDate, 
     getMonthTotal,
     findDateByKeyword, 
-    getMonthLimitAndAvg,
+    getMonthLimit,
+    getMonthAverage,
     addExpenditure,
     updateExpenditure,
     deleteExpenditure,
 } from '../api/ExpenditureAPI';
 import {
-    WaitIcon,
+    QuestionIcon,
     DoctorIcon,
     FoodIcon,
     StuffIcon, 
-    HelpIcon,
-    PenIcon
+    PenIcon,
+    ServiceIcon,
+    SettingIcon,
 } from '../assets/icons/index'
 
 export function ExpenditureScreen({navigation}) {
@@ -112,8 +114,10 @@ export function ExpenditureScreen({navigation}) {
             setMonthSpent(Total)
         }
 
-        const handleMonthLimitAvgCallback = (Limit, avg) => {
+        const handleMonthLimitCallback = (Limit) => {
             setMonthLimit(Limit)
+        }
+        const handleMonthAvgCallback = (avg) => {
             setMonthAverage(avg)
         }
 
@@ -131,26 +135,37 @@ export function ExpenditureScreen({navigation}) {
             return () => {
                 total
             }
-        }, [])
+        }, [selectedMonth])
 
         useEffect(() => {
-            const limitNavg = getMonthLimitAndAvg(handleMonthLimitAvgCallback)
+            const limit = getMonthLimit(handleMonthLimitCallback)
             return () => {
-                limitNavg
+                limit
             }
-        }, [])
+        }, [selectedMonth])
+
+        useEffect(() => {
+            const avg = getMonthAverage(selectedMonth, handleMonthAvgCallback)
+            return () => {
+                avg
+            }
+        }, [selectedMonth])
     
         return (
             <View style={styles.headerContainer}>
-                <View>
+                <View
+                    style={{
+                        position: 'relative'
+                    }}
+                >
                     <TouchableOpacity
                         onPress={()=>showPicker(true)}>
                         <Text style={styles.headerTitle}>
                             {moment(selectedMonth).format('MMMM - YYYY')}
                         </Text>
                     </TouchableOpacity>
-                    
                 </View>
+
                 <View style={{
                     display: 'flex',
                     flexDirection: 'row',
@@ -209,7 +224,7 @@ export function ExpenditureScreen({navigation}) {
     }
 
     const SubDetails = (props) => {
-        var imgSource = WaitIcon;
+        var imgSource = QuestionIcon;
         switch (props.expenditure.type) {
             case 'Food':
                 imgSource = FoodIcon
@@ -220,8 +235,11 @@ export function ExpenditureScreen({navigation}) {
             case 'Doctor': 
                 imgSource = DoctorIcon
                 break
+            case 'Service': 
+                imgSource = ServiceIcon
+                break
             default:
-                imgSource = WaitIcon;
+                imgSource = QuestionIcon;
                 break;
         }
         const [isShowDialog, setIsShowDialog] = useState(false);
@@ -617,9 +635,8 @@ export function ExpenditureScreen({navigation}) {
         }
         const handelAdd = () => {
             expenditure.amount = expenditureAmount
-            setIsShowDialog(false)
             addExpenditure(expenditure, () => {
-                setSelectedMonth(expenditure.date)
+                setSelectedMonth(new Date(expenditure.date))
             })
         }
         const onFinishDatePicker = (event, selectedDate) => {

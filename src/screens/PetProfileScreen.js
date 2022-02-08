@@ -2,19 +2,23 @@ import React, { useMemo, useRef, useState, useEffect } from 'react';
 import BottomSheet from '@gorhom/bottom-sheet';
 import Toast from "react-native-toast-message";
 import Dialog from "react-native-dialog";
+import moment from 'moment';
 import { ProgressCircle } from 'react-native-svg-charts';
 import {
-    Image, StyleSheet, View, Text, ScrollView, TouchableOpacity, LogBox,
+    Image, StyleSheet, View, Text, TouchableOpacity, LogBox,
     TouchableHighlight, TouchableWithoutFeedback, Switch
 } from 'react-native';
 import { deletePetFromFirestore } from '../api/PetAPI';
 import { windowWidth } from '../models/common/Dimensions';
+import { updateCorePets } from '../api/ReminderAPI';
 
 import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
 import Pet from '../models/pet';
+import Reminder from '../models/reminder';
 
 LogBox.ignoreLogs([
     'Non-serializable values were found in the navigation state',
@@ -28,38 +32,21 @@ const PetProfileScreen = ({route, navigation}) => {
     const [unmatchInput, setUnmatchInput] = useState(false);
     const [dialogVisible, setDialogVisible] = useState(false);
     const bottomSheetRef = useRef<BottomSheet>(null);
-    const snapPoints = useMemo(() => ['40%', '78%'], []);
-    const snapPointsDropdown = useMemo(() => ['20%', '20%'], []);
-
+    const snapPoints = useMemo(() => ['39%', '83%'], []);
+    const snapPointsDropdown = useMemo(() => ['19%', '19%'], []);
     const { pet_id } = route.params;
-    
-    var care_section = [
-        {
-            task: 'Shower',
-            activated: true,
-            due_date: new Date()
-        },
-        {
-            task: 'Shopping',
-            activated: false,
-            due_date: new Date()
-        },
-        {
-            task: 'Vaccination',
-            activated: true,
-            due_date: new Date()
-        },
-        {
-            task: 'Walking',
-            activated: false,
-            due_date: new Date()
-        },
-        {
-            task: 'Cleaning',
-            activated: true,
-            due_date: new Date()
-        }
-    ];
+    const [careSection, setCareSection] = useState([
+        new Reminder(),
+        new Reminder(),
+        new Reminder(),
+        new Reminder(),
+        new Reminder(),
+    ])
+    const [switchValue0, setSwitchValue0] = useState(false)
+    const [switchValue1, setSwitchValue1] = useState(false)
+    const [switchValue2, setSwitchValue2] = useState(false)
+    const [switchValue3, setSwitchValue3] = useState(false)
+    const [switchValue4, setSwitchValue4] = useState(false)
 
     const showResultToast = (result) => {
         if (result === 'Success') {
@@ -89,11 +76,7 @@ const PetProfileScreen = ({route, navigation}) => {
     const handlePetDeleted = (result) => {
         showResultToast(result);
 
-        navigation.navigate({
-            name: 'MyPets',
-            params: { deletedPet: pet},
-            merge: true,
-        });
+        navigation.goBack();
     }
 
     const handleDeleteButton = () => {
@@ -109,6 +92,97 @@ const PetProfileScreen = ({route, navigation}) => {
             action: 'edit',
             petObj: pet,
         })
+    }
+
+    const selectNextSchedulesDay = (index) => {
+        // var overdue = careSection[index].datetime < new Date() ? true : false;
+        // var date = new Date();
+        // if (careSection[index].frequency!='custom' && overdue) {
+        //     if (careSection[index].frequency=='daily') {
+        //         return new Date(date.getDay() + 1, date.getMonth(), date.getFullYear())
+        //     }
+        //     if (careSection[index].frequency=='weekly') {
+        //         return new Date(
+        //             careSection[index].datetime.getDay() + 7,
+        //             careSection[index].datetime.getMonth(),
+        //             careSection[index].datetime.getFullYear()
+        //         )
+        //     }
+        // }
+
+        // return careSection[index].datetime;
+    }
+
+    const calculateProgress = (index) => {
+        var time = moment(careSection[index].datetime).toNow()
+                    .substring(0, moment(careSection[index].datetime).toNow().indexOf(" "));
+
+        const calculateByDay = () => {
+            return Math.round(Math.abs((parseInt(time) - 24) / 24) * 10) / 10;
+        }
+        
+        const calculateByWeek = () => {
+            return Math.round(Math.abs((parseInt(time) - 7) / 7) * 10) / 10;
+        }
+
+        const calculateByMonth = () => {
+            return Math.round(Math.abs((parseInt(time) - 30) / 30) * 10) / 10;
+        }
+
+        const calculateByYear = () => {
+            return Math.round(Math.abs((parseInt(time) - 365) / 365) * 10) / 10;
+        }
+
+        const calculateCustomFrequency = () => {
+            if (parseInt(time) <= 3) {
+                return 0.9;
+            }
+            if (3 < parseInt(time) && parseInt(time) <= 7) {
+                return 0.8;
+            }
+            if (7 < parseInt(time) && parseInt(time) <= 14) {
+                return 0.6;
+            }
+            if (14 < parseInt(time) && parseInt(time) <= 21) {
+                return 0.4;
+            }
+            if (21 < parseInt(time) && parseInt(time) <= 28) {
+                return 0.3;
+            }
+            return 0.1;
+        }
+
+        if (!isOverdue(index)) { 
+            switch (careSection[index].frequency) {
+                case 'daily':
+                    return calculateByDay();
+                case 'weekly':
+                    return calculateByWeek();
+                case 'monthly':
+                    return calculateByMonth();
+                case 'yearly':
+                    return calculateByYear();
+                default:
+                    return calculateCustomFrequency();
+            }
+        }
+        return 1;
+    }
+
+    const selectMomentFunction = (index) => {
+        console.log(careSection[index].type + "-" + careSection[index].datetime);
+        return moment(careSection[index].datetime).fromNow() 
+    }
+
+    const selectProgressColor = (index) => {
+        return isOverdue(index) ? COLORS.error : COLORS.pet_green;
+    }
+
+    const isOverdue = (index) => {
+        if (careSection[index].frequency=='custom') {
+            return careSection[index].datetime < new Date() ? true : false;
+        }
+        return false;
     }
 
     //Find correct animal kind icon
@@ -135,38 +209,83 @@ const PetProfileScreen = ({route, navigation}) => {
 
     //Care boxes
     const CareContent = () => {
-        var boxes = [];
-        var icon;
-        for (let i = 0; i < care_section.length; i++) {
-            switch (care_section[i].task) {
-                case 'Shower':
-                    icon = require('../assets/icons/ic_shampoo.png')
+        
+        const sectionClicked = (index) => {
+            navigation.navigate('ScheduleEvent', {
+                reminder_id: careSection[index]._id,
+            })
+        }
+
+        const switchChange = (index) => {
+            let toogle = true
+            switch (index) {
+                case 0:
+                    toogle = !switchValue0
+                    setSwitchValue0(toogle)
                     break;
-                case 'Shopping':
-                    icon = require('../assets/icons/ic_shop.png')
+                case 1:
+                    toogle = !switchValue1
+                    setSwitchValue1(toogle)
                     break;
-                case 'Vaccination':
-                    icon = require('../assets/icons/ic_vaccination.png')
+                case 2:
+                    toogle = !switchValue2
+                    setSwitchValue2(toogle)
                     break;
-                case 'Walking':
-                    icon = require('../assets/icons/ic_leash.png')
+                case 3:
+                    toogle = !switchValue3
+                    setSwitchValue3(toogle)
+                    break;
+                case 4:
+                    toogle = !switchValue4
+                    setSwitchValue4(toogle)
                     break;
                 default:
-                    icon = require('../assets/icons/ic_scoop.png')
+                    break;
             }
+            if (toogle) {
+                careSection[index].pets.push(pet_id)
+            }
+            else {
+                let p_index = careSection[index].pets.indexOf(pet_id)
+                if (p_index > -1) 
+                    careSection[index].pets.splice(p_index, 1)
+            }
+            updateCorePets(careSection[index], () => {
+                if (toogle) {
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Thành công!',
+                        text2: 'Đã bật hoạt động!'
+                    });
+                } 
+                else {
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Thành công!',
+                        text2: 'Đã tắt hoạt động!'
+                    });
+                }
+            })
+        }
 
-            boxes.push(
-                <View style={style.care_box} key={i}>
+        return (
+            <View style={style.care_content}>
+                {/* Shower */}
+                <View style={style.care_box} key={0}>
                     <ProgressCircle
                         style={{height: 115}}
-                        progress={0.5}
+                        progress={switchValue0 ? calculateProgress(0) : 0}
                         startAngle={-Math.PI * 0.8}
                         endAngle={Math.PI * 0.8}
-                        progressColor={COLORS.pet_green}
+                        progressColor={selectProgressColor(0)}
                     />
 
                     <View style={style.care_uppers_chart}>
                         <TouchableOpacity
+                            onPress={() => {
+                                sectionClicked(0)}
+                            }
+                            disabled={!switchValue0}
                             activeOpacity={0.7}
                         >
                             <Image
@@ -179,24 +298,277 @@ const PetProfileScreen = ({route, navigation}) => {
                                         height: 50,
                                     }
                                 ]}
-                                source={icon}
+                                source={require('../assets/icons/ic_shampoo.png')}
                             />
                         </TouchableOpacity>
 
                         <Switch
+                            onChange={() => {
+                                switchChange(0)
+                            }}
                             thumbColor={"#f4f3f4"}
                             trackColor={{ false: "#767577", true: "#81b0ff" }}
                             ios_backgroundColor="#3e3e3e"
-                            value={care_section[i].activated}
+                            value={switchValue0}
                         />
+
+                        <Text 
+                            style={{
+                                fontFamily: 'Roboto-Regular',
+                                fontSize: 12,
+                                marginTop: 10,
+                            }}
+                        >
+                            {
+                                !switchValue0
+                                ?
+                                "Không có dữ liệu"
+                                :
+                                selectMomentFunction(0)
+                            }
+                        </Text>
                     </View>
                 </View>
-            )
-        }
 
-        return (
-            <View style={style.care_content}>
-                {boxes}
+                {/* Shopping */}
+                <View style={style.care_box} key={1}>
+                    <ProgressCircle
+                        style={{height: 115}}
+                        progress={switchValue1 ? calculateProgress(1) : 0}
+                        startAngle={-Math.PI * 0.8}
+                        endAngle={Math.PI * 0.8}
+                        progressColor={selectProgressColor(1)}
+                    />
+
+                    <View style={style.care_uppers_chart}>
+                        <TouchableOpacity
+                            onPress={() => {
+                                sectionClicked(1)}
+                            }
+                            disabled={!switchValue1}
+                            activeOpacity={0.7}
+                        >
+                            <Image
+                                style={[
+                                    style.pet_gender,
+                                    {
+                                        marginLeft: 0,
+                                        marginBottom: 4,
+                                        width: 50,
+                                        height: 50,
+                                    }
+                                ]}
+                                source={require('../assets/icons/ic_shop.png')}
+                            />
+                        </TouchableOpacity>
+
+                        <Switch                        
+                            onChange={() => {
+                                switchChange(1)
+                            }}
+                            thumbColor={"#f4f3f4"}
+                            trackColor={{ false: "#767577", true: "#81b0ff" }}
+                            ios_backgroundColor="#3e3e3e"
+                            value={switchValue1}
+                        />
+
+                        <Text 
+                            style={{
+                                fontFamily: 'Roboto-Regular',
+                                fontSize: 12,
+                                marginTop: 10,
+                            }}
+                        >
+                            {
+                                !switchValue1
+                                ?
+                                "Không có dữ liệu"
+                                :
+                                selectMomentFunction(1)
+                            }
+                        </Text>
+                    </View>
+                </View>
+
+                {/* Vaccination */}
+                <View style={style.care_box} key={2}>
+                    <ProgressCircle
+                        style={{height: 115}}
+                        progress={switchValue2 ? calculateProgress(2) : 0}
+                        startAngle={-Math.PI * 0.8}
+                        endAngle={Math.PI * 0.8}
+                        progressColor={selectProgressColor(2)}
+                    />
+
+                    <View style={style.care_uppers_chart}>
+                        <TouchableOpacity
+                            onPress={() => {
+                                sectionClicked(2)}
+                            }
+                            disabled={!switchValue2}
+                            activeOpacity={0.7}
+                        >
+                            <Image
+                                style={[
+                                    style.pet_gender,
+                                    {
+                                        marginLeft: 0,
+                                        marginBottom: 4,
+                                        width: 50,
+                                        height: 50,
+                                    }
+                                ]}
+                                source={require('../assets/icons/ic_vaccination.png')}
+                            />
+                        </TouchableOpacity>
+
+                        <Switch
+                            onChange={() => {
+                                switchChange(2)
+                            }}
+                            thumbColor={"#f4f3f4"}
+                            trackColor={{ false: "#767577", true: "#81b0ff" }}
+                            ios_backgroundColor="#3e3e3e"
+                            value={switchValue2}
+                        />
+
+                        <Text 
+                            style={{
+                                fontFamily: 'Roboto-Regular',
+                                fontSize: 12,
+                                marginTop: 10,
+                            }}
+                        >
+                            {
+                                !switchValue2
+                                ?
+                                "Không có dữ liệu"
+                                :
+                                selectMomentFunction(2)
+                            }
+                        </Text>
+                    </View>
+                </View>
+
+                {/* Walking */}
+                <View style={style.care_box} key={3}>
+                    <ProgressCircle
+                        style={{height: 115}}
+                        progress={switchValue3 ? calculateProgress(3) : 0}
+                        startAngle={-Math.PI * 0.8}
+                        endAngle={Math.PI * 0.8}
+                        progressColor={selectProgressColor(3)}
+                    />
+
+                    <View style={style.care_uppers_chart}>
+                        <TouchableOpacity
+                            onPress={() => {
+                                sectionClicked(3)}
+                            }
+                            disabled={!switchValue3}
+                            activeOpacity={0.7}
+                        >
+                            <Image
+                                style={[
+                                    style.pet_gender,
+                                    {
+                                        marginLeft: 0,
+                                        marginBottom: 4,
+                                        width: 50,
+                                        height: 50,
+                                    }
+                                ]}
+                                source={require('../assets/icons/ic_leash.png')}
+                            />
+                        </TouchableOpacity>
+
+                        <Switch
+                            onChange={() => {
+                                switchChange(3)}
+                            }
+                            thumbColor={"#f4f3f4"}
+                            trackColor={{ false: "#767577", true: "#81b0ff" }}
+                            ios_backgroundColor="#3e3e3e"
+                            value={switchValue3}
+                        />
+
+                        <Text 
+                            style={{
+                                fontFamily: 'Roboto-Regular',
+                                fontSize: 12,
+                                marginTop: 10,
+                            }}
+                        >
+                            {
+                                !switchValue3
+                                ?
+                                "Không có dữ liệu"
+                                :
+                                selectMomentFunction(3)
+                            }
+                        </Text>
+                    </View>
+                </View>
+
+                {/* Cleaning */}
+                <View style={style.care_box} key={4}>
+                    <ProgressCircle
+                        style={{height: 115}}
+                        progress={switchValue4 ? calculateProgress(4) : 0}
+                        startAngle={-Math.PI * 0.8}
+                        endAngle={Math.PI * 0.8}
+                        progressColor={selectProgressColor(4)}
+                    />
+
+                    <View style={style.care_uppers_chart}>
+                        <TouchableOpacity
+                            onPress={() => {
+                                sectionClicked(4)}
+                            }
+                            disabled={!switchValue4}
+                            activeOpacity={0.7}
+                        >
+                            <Image
+                                style={[
+                                    style.pet_gender,
+                                    {
+                                        marginLeft: 0,
+                                        marginBottom: 4,
+                                        width: 50,
+                                        height: 50,
+                                    }
+                                ]}
+                                source={require('../assets/icons/ic_scoop.png')}
+                            />
+                        </TouchableOpacity>
+
+                        <Switch
+                            onChange={() => {
+                                switchChange(4)}
+                            }
+                            thumbColor={"#f4f3f4"}
+                            trackColor={{ false: "#767577", true: "#81b0ff" }}
+                            ios_backgroundColor="#3e3e3e"
+                            value={switchValue4}
+                        />
+
+                        <Text 
+                            style={{
+                                fontFamily: 'Roboto-Regular',
+                                fontSize: 12,
+                                marginTop: 10,
+                            }}
+                        >
+                            {
+                                !switchValue4
+                                ?
+                                "Không có dữ liệu"
+                                :
+                                selectMomentFunction(4)
+                            }
+                        </Text>
+                    </View>
+                </View>
             </View>
         )
     }
@@ -205,7 +577,7 @@ const PetProfileScreen = ({route, navigation}) => {
         var bornDays = Math.abs(new Date() - num) / 86400000;
         var age = Math.round(bornDays / 365);
         var ageWithoutRound = (bornDays / 365) - age;
-        if (ageWithoutRound === 0) {
+        if (ageWithoutRound === 0 || age === 0) {
             setPetAge(age);
         } else {
             setPetAge('<' + age);
@@ -215,7 +587,7 @@ const PetProfileScreen = ({route, navigation}) => {
     //get pet data
     useEffect(() => {
         const subscriber = firestore()
-        .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/pets')
+        .collection('users/' + auth().currentUser.uid + '/pets')
         .doc(pet_id)
         .onSnapshot(documentSnapshot => {
             var newPet = new Pet();
@@ -226,6 +598,92 @@ const PetProfileScreen = ({route, navigation}) => {
             setPet(newPet);
         })
 
+        return () => subscriber();
+    }, [])
+
+    //get care data
+    useEffect(() => {
+        const subscriber = firestore()
+        .collection('users/' + auth().currentUser.uid + '/reminders')
+        .where('reminderType', '==', 'core')
+        .onSnapshot(querySnapshot => {
+            let reminder0 = new Reminder()
+            let reminder1 = new Reminder()
+            let reminder2 = new Reminder()
+            let reminder3 = new Reminder()
+            let reminder4 = new Reminder()
+            let reminders = new Array()
+            querySnapshot.forEach(documentSnapshot => {
+                // console.log("get:" + documentSnapshot.data()._id);
+                switch (documentSnapshot.data().type) {
+                    case "Shower":
+                        reminder0.update(documentSnapshot.data())
+                        if (documentSnapshot.data().pets.includes(pet_id))
+                            setSwitchValue0(true)
+                        break;
+                    case "Stuff":
+                        reminder1.update(documentSnapshot.data())
+                        if (documentSnapshot.data().pets.includes(pet_id))
+                            setSwitchValue1(true)
+                        break;
+                    case "Vaccination":
+                        reminder2.update(documentSnapshot.data())
+                        if (documentSnapshot.data().pets.includes(pet_id))
+                            setSwitchValue2(true)
+                        break;
+                    case "Walk":
+                        reminder3.update(documentSnapshot.data())
+                        if (documentSnapshot.data().pets.includes(pet_id))
+                            setSwitchValue3(true)
+                        break;
+                    case "Sand":
+                        reminder4.update(documentSnapshot.data())
+                        if (documentSnapshot.data().pets.includes(pet_id))
+                            setSwitchValue4(true)
+                        break;
+                    default:
+                        break;
+                }
+                
+            });
+            reminders.push(reminder0)
+            reminders.push(reminder1)
+            reminders.push(reminder2)
+            reminders.push(reminder3)
+            reminders.push(reminder4)
+            reminders.forEach(reminder => {
+                var dt = new Date()
+                if (reminder.frequency == 'yearly') {
+                    reminder.datetime.setFullYear(new Date().getFullYear() + 1)
+                }
+                if (reminder.frequency == 'monthly') {
+                    dt.setMonth(dt.getMonth() + 1)
+                    dt.setDate(reminder.datetime.getDate())
+                    reminder.datetime = dt
+                }
+                if (reminder.frequency == 'weekly') {
+                    console.log("Weekly: " + reminder.datetime);
+                    let days = 0;
+                    if (dt.getDay() == 0)
+                        days = reminder.datetime.getDay()
+                    else 
+                        days = (7 - dt.getDay()) + reminder.datetime.getDay()
+                    console.log(dt.getDay() + "--" + reminder.datetime.getDay());
+                    dt.setDate(dt.getDate() + days)
+                    reminder.datetime = dt
+                    console.log("Weekly2: " + reminder.datetime);
+                }
+                if (reminder.frequency == 'daily') {
+                    // console.log("Daily: " + reminder.datetime);
+                    dt.setDate(dt.getDate() + 1)
+                    reminder.datetime = dt 
+                    // console.log("Daily2: " + reminder.datetime);
+                }
+                if (reminder.frequency != 'custom') {
+                }
+            });
+            setCareSection(reminders)
+        })
         return () => subscriber();
     }, [])
     
@@ -338,14 +796,38 @@ const PetProfileScreen = ({route, navigation}) => {
                     <Text style={style.section_title}>
                         {strings.care_title}
                     </Text>
-
                     <CareContent/>
                 </View>
+
+                {/* Health book */}
+                <TouchableOpacity
+                    activeOpacity={0.7}
+                    style={style.health_book_holder}
+                    onPress={() => {
+                        navigation.navigate('HealthBook', {
+                            pet_id: pet._id,
+                            pet_kind: pet.kind
+                        })
+                    }}
+                >
+                    <Text
+                        style={
+                            [style.section_title, {marginBottom: 0}]
+                        }
+                    >
+                        {strings.health_book}
+                    </Text>
+
+                    <Image
+                        style={{height: 36, width: 36}}
+                        source={require('../assets/icons/ic_guide_fl.png')}
+                    />
+                </TouchableOpacity>
             </BottomSheet>
 
             {/* Overlay and Settings dropdown bottomsheet */}
             {
-                setting=='' ?
+                setting == '' ?
                     (null)
                 :
                     (
@@ -561,6 +1043,13 @@ const style = StyleSheet.create({
     care_information: {
         marginTop: 16,
     },
+    health_book_holder: {
+        marginTop: 32,
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
     dropdown_bottomsheet: {
         borderRadius: 10,
     },
@@ -598,10 +1087,13 @@ const style = StyleSheet.create({
     care_box: {
         width: windowWidth / 4,
         margin: 4,
+        marginBottom: 12,
+        textAlign: 'center',
+        justifyContent: 'center',
     },
     care_uppers_chart: {
         width: 98,
-        height: 98,
+        height: 120,
         left: 5,
         top: 12,
         position: 'absolute',
@@ -628,4 +1120,14 @@ const style = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.6)',
     },
+    loading: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        elevation: 3,
+        alignItems: 'center',
+        justifyContent: 'center',
+    }
 });

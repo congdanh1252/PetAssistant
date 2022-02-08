@@ -13,20 +13,21 @@ export function WelcomeScreen() {
 
 const style = StyleSheet.create({
     container: {
-        backgroundColor: COLORS.primary,
-        flex: 1,
+        backgroundColor: COLORS.white,
+        width: '100%',
+        height: '100%',
         alignItems: 'center',
         justifyContent: 'center',
     },
     app_logo: {
-        width: 200,
-        height: 200,
-        borderRadius: 200 / 2,
+        width: 160,
+        height: 160,
+        borderRadius: 160 / 2,
     },
     app_name: {
         marginTop: 25,
-        fontFamily: "RedHatText",
-        fontSize: 35,
-        fontWeight: '600'
+        fontFamily: "Roboto-Medium",
+        fontSize: 24,
+        color: COLORS.black
     }
 });

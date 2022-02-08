@@ -1,6 +1,8 @@
 import firestore from '@react-native-firebase/firestore';
 import Reminder from '../models/reminder';
 import Pet from '../models/pet';
+import auth from '@react-native-firebase/auth';
+
 
 import {
   getPetName
@@ -26,7 +28,7 @@ function sort(array) {
 export const getReminder = (reminderID, handleReminder) => {
   var reminder = new Reminder(reminderID);
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
+  .collection('users/' + auth().currentUser.uid + '/reminders')
   .doc(reminderID)
   .onSnapshot(documentSnapshot => {
       reminder.update(documentSnapshot.data())
@@ -36,13 +38,15 @@ export const getReminder = (reminderID, handleReminder) => {
 }
 
 export const addReminder = (reminder, handleCallback) => {
+  console.log(reminder);
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
+  .collection('users/' + auth().currentUser.uid + '/reminders')
   .add(reminder)
   .then(docRef => {
+    console.log("Added")
     reminder._id = docRef.id
     firestore()
-    .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
+    .collection('users/' + auth().currentUser.uid + '/reminders')
     .doc(docRef.id)
     .update({
       _id: reminder._id,
@@ -58,7 +62,7 @@ export const addReminder = (reminder, handleCallback) => {
 
 export const updateReminder = (reminder) => {
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
+  .collection('users/' + auth().currentUser.uid + '/reminders')
   .doc(reminder._id)
   .update({
     _id: reminder._id,
@@ -83,7 +87,7 @@ export const getPetsReminder = (petsId, handleCallback) => {
   var existPets = new Array() 
   var addingPets = new Array() 
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/pets')
+  .collection('users/' + auth().currentUser.uid + '/pets')
   .onSnapshot(querySnapshot => {
     querySnapshot.forEach(documentSnapshot => {
       var pet = new Pet()
@@ -103,10 +107,11 @@ export const getDateReminder = (date, handleCallback) => {
   var remindersList = new Array();
   var oldRemindersList = new Array();
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
+  .collection('users/' + auth().currentUser.uid + '/reminders')
   .where('month', '==', date.getMonth() + 1)
   .where('year', '==', date.getFullYear())
   .where('date', '==', date.getDate())
+  .where('frequency', '==', 'custom')
   .get()
   .then(querySnapshot => {
       querySnapshot.forEach(documentSnapshot => {
@@ -118,17 +123,84 @@ export const getDateReminder = (date, handleCallback) => {
               oldRemindersList.push(reminder)
           }
       });
-      handleCallback(sort(remindersList), sort(oldRemindersList));
+
+      // Monthly
+      firestore()
+      .collection('users/' + auth().currentUser.uid + '/reminders')
+      .where('frequency', '==', 'monthly')
+      .where('date', '==', date.getDate())
+      .get()
+      .then(querySnapshot => {
+          querySnapshot.forEach(documentSnapshot => {
+              var reminder = new Reminder();
+              reminder.update(documentSnapshot.data())
+              reminder.datetime.setDate(date.getDate())
+              reminder.datetime.setMonth(date.getMonth()) 
+              reminder.datetime.setFullYear(date.getFullYear()) 
+              console.log(reminder);
+              if (reminder.datetime > new Date()) {
+                  remindersList.push(reminder)
+              } else {
+                  oldRemindersList.push(reminder)
+              }
+          });
+
+          // Yearly
+          firestore()
+          .collection('users/' + auth().currentUser.uid + '/reminders')
+          .where('month', '==', date.getMonth() + 1)
+          .where('date', '==', date.getDate())
+          .where('frequency', '==', 'yearly')
+          .get()
+          .then(querySnapshot => {
+              querySnapshot.forEach(documentSnapshot => {
+                  var reminder = new Reminder();
+                  reminder.update(documentSnapshot.data())
+                  reminder.datetime.setDate(date.getDate())
+                  reminder.datetime.setMonth(date.getMonth()) 
+                  reminder.datetime.setFullYear(date.getFullYear()) 
+                  if (reminder.datetime > new Date()) {
+                      remindersList.push(reminder)
+                  } else {
+                      oldRemindersList.push(reminder)
+                  }
+              });
+
+              // Daily
+              firestore()
+              .collection('users/' + auth().currentUser.uid + '/reminders')
+              .where('frequency', '==', 'daily')
+              .get()
+              .then(querySnapshot => {
+                  querySnapshot.forEach(documentSnapshot => {
+                      var reminder = new Reminder();
+                      reminder.update(documentSnapshot.data())
+                      reminder.datetime.setDate(date.getDate()) 
+                      reminder.datetime.setMonth(date.getMonth()) 
+                      reminder.datetime.setFullYear(date.getFullYear()) 
+                      if (reminder.datetime > new Date()) {
+                          remindersList.push(reminder)
+                      } else {
+                          oldRemindersList.push(reminder)
+                      }
+                  });
+                  handleCallback(sort(remindersList), sort(oldRemindersList));
+              }, onError);
+          }, onError);
+      }, onError);
   }, onError);
 }
 
 export const getMonthReminderDate = (date, handleCallback) => {
   console.log(date.getDate() + "/" +(date.getMonth() + 1) + "/" +  date.getFullYear());
   var dates = new Array()
+
+  // Get no-repeat
   firestore()
-  .collection('users/VbNsDN6X1EgC4f0FfXAQvtZJ21q2/reminders')
+  .collection('users/' + auth().currentUser.uid + '/reminders')
   .where('month', '==', date.getMonth() + 1)
   .where('year', '==', date.getFullYear())
+  .where('frequency', '==', 'custom')
   .get()
   .then(querySnapshot => {
     querySnapshot.forEach(documentSnapshot => {
@@ -136,6 +208,62 @@ export const getMonthReminderDate = (date, handleCallback) => {
         dates.push(documentSnapshot.data().date)
       }
     });
-    handleCallback(sort(dates));
+
+    // Get monthly
+    firestore()
+    .collection('users/' + auth().currentUser.uid + '/reminders')
+    .where('frequency', '==', 'monthly')
+    .get()
+    .then(querySnapshot => {
+      querySnapshot.forEach(documentSnapshot => {
+        if (!(dates.includes(documentSnapshot.data().date))) {
+          dates.push(documentSnapshot.data().date)
+        }
+      });
+
+      // Get yearly
+      firestore()
+      .collection('users/' + auth().currentUser.uid + '/reminders')
+      .where('month', '==', date.getMonth() + 1)
+      .where('frequency', '==', 'yearly')
+      .get()
+      .then(querySnapshot => {
+        querySnapshot.forEach(documentSnapshot => {
+          if (!(dates.includes(documentSnapshot.data().date))) {
+            dates.push(documentSnapshot.data().date)
+          }
+        });
+        handleCallback(sort(dates));
+      }, onError);
+    }, onError);
   }, onError);
+}
+
+export const getCoreReminder = (handleCallback) => {
+  var reminders = new Array()
+  firestore()
+  .collection('users/' + auth().currentUser.uid + '/reminders')
+  .where('month', '==', date.getMonth() + 1)
+  .where('reminderType', '==', 'core')
+  .get()
+  .then(querySnapshot => {
+    querySnapshot.forEach(documentSnapshot => {
+      var reminder = new Reminder()
+      reminder.update(documentSnapshot.data())
+      reminders.push(reminder)
+    });
+    handleCallback(reminders);
+  }, onError);
+}
+
+export const updateCorePets = (reminder, handleCallback) => {
+  firestore()
+  .collection('users/' + auth().currentUser.uid + '/reminders')
+  .doc(reminder._id)
+  .update({
+    pets: reminder.pets
+  })
+  .then(() => {
+    handleCallback()
+  });
 }

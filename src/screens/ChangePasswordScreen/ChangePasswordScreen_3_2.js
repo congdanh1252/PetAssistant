@@ -81,6 +81,7 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-start',
         marginBottom: 15,
         marginLeft: 25,
+        color: COLORS.black,
     },
     sub__title: {
         fontFamily: 'RedHatText',
@@ -88,6 +89,7 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-start',
         marginBottom: 25,
         marginLeft: 25,
+        color: COLORS.black,
     },
     inputBox: {
         alignItems: 'center',
@@ -98,6 +100,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         fontFamily: 'RedHatText-Bold',
         fontSize: 16,
+        color: COLORS.black,
     },
     input: {
         width: windowWidth - windowWidth / 3,

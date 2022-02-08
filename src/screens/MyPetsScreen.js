@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Image, StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
 
 import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
@@ -30,7 +31,7 @@ const MyPetsScreen = ({route, navigation}) => {
     //load pet list
     useEffect(() => {
         const subscriber = firestore()
-        .collection('users/gwjLJ986xHN56PLYQ0uYPWMOB7g1/pets')
+        .collection('users/' + auth().currentUser.uid + '/pets')
         .onSnapshot(querySnapshot => {
             var petList = new Array();
             querySnapshot.forEach(documentSnapshot => {
@@ -212,7 +213,22 @@ const MyPetsScreen = ({route, navigation}) => {
                 <View style={style.my_pets}>
                     <Text style={style.title}>{strings.my_pet}</Text>
 
-                    <MyPets/>
+                    {
+                        myPet.length > 0 ?
+                        <MyPets/>
+                        :
+                        <Text
+                            style={{
+                                color: COLORS.black,
+                                fontFamily: 'Roboto-Light',
+                                fontSize: 16,
+                                textAlign: 'center',
+                                marginTop: 12,
+                            }}
+                        >
+                            {myPet.length > 0 ? 'Hãy bắt đầu thêm thú cưng mới để theo dõi bạn nhé!' : ''}
+                        </Text>
+                    }
                 </View>
             </View>
 

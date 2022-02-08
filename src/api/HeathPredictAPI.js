@@ -1,5 +1,7 @@
 import firestore from '@react-native-firebase/firestore';
 import HeathPredict from '../models/heathPredict';
+import auth from '@react-native-firebase/auth';
+
 
 function onError(error) {
   console.error(error);

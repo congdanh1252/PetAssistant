@@ -301,6 +301,22 @@ const AddPetScreen = ({route, navigation}) => {
                             options = options.concat(options, species_choice_base);
                         }
                         break;
+                    case 'Chim':
+                        if (species_choice_base.length == 0) {
+                            options = options.concat(options, speciesOpt.bird);
+                        }
+                        else {
+                            options = options.concat(options, species_choice_base);
+                        }
+                        break;
+                    case 'Hamster':
+                        if (species_choice_base.length == 0) {
+                            options = options.concat(options, speciesOpt.hamster);
+                        }
+                        else {
+                            options = options.concat(options, species_choice_base);
+                        }
+                        break;
                     default:
                         options.push(strings.else_option);
                 }
@@ -322,7 +338,7 @@ const AddPetScreen = ({route, navigation}) => {
                     activeOpacity={0.7}
                     underlayColor='#EEEEEE'
                     style={
-                        (options[i]==kind || options[i]==breed || options[i]==gender || options[i]==status)
+                        (options[i]==kind || options[i]==breed || options[i]==gender || options[i]==status || options[i]==species)
                         ?
                         [styles.dropdown_option, {backgroundColor: COLORS.grey}] : styles.dropdown_option
                     }
