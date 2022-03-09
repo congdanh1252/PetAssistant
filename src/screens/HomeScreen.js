@@ -246,21 +246,21 @@ const HomeScreen = ({navigation}) => {
 
                     </TouchableOpacity>
 
-                    {/* Tìm kiếm thông tin */}
-                    {/* <TouchableOpacity
+                    {/* Dịch vụ */}
+                    <TouchableOpacity
                         activeOpacity={0.7}
                         style={style.menu_box}
                         onPress={() => {
-                            navigation.navigate('Searching')
+                            //navigation.navigate('Searching')
                         }}
                     >
                         <Image
-                            source={require('../assets/icons/ic_search_fl.png')}
+                            source={require('../assets/icons/ic_treat.png')}
                             style={style.menu_icon}
                         />
 
-                        <Text style={style.menu_title}>{strings.search_info}</Text>
-                    </TouchableOpacity> */}
+                        <Text style={style.menu_title}>{strings.service_label}</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
 
