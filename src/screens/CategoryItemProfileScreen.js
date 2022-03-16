@@ -1,24 +1,69 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
-import { Image, StyleSheet, View, Text, TouchableOpacity, LogBox, SafeAreaView } from 'react-native';
+import { Image, StyleSheet, View, Text, TouchableOpacity, LogBox, SafeAreaView, ScrollView } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import Toast from "react-native-toast-message";
 import Carousel, { Pagination } from 'react-native-snap-carousel';
-
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import firestore from '@react-native-firebase/firestore';
+
+import ChatListScreen from './ChatListScreen';
+import ServiceItemListTab from './ServiceItemListTab';
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
-import { windowWidth } from '../models/common/Dimensions'
+import { windowWidth, windowHeight } from '../models/common/Dimensions'
 
 LogBox.ignoreLogs([
     'Non-serializable values were found in the navigation state',
 ]);
 
+const Tab = createMaterialTopTabNavigator();
+
+const MyTabs = (props) => {
+    return (
+        <Tab.Navigator
+            screenOptions={{
+                tabBarStyle: {
+                    borderTopLeftRadius: 22,
+                    borderTopRightRadius: 22,
+                    backgroundColor: COLORS.dark
+                },
+                tabBarLabelStyle: {
+                    fontSize: 16,
+                    fontFamily: 'Roboto-Medium',
+                    textTransform: 'none',
+                },
+                tabBarPressColor: COLORS.grey,
+                tabBarActiveTintColor: COLORS.white,
+                tabBarIndicatorStyle: {
+                    backgroundColor: COLORS.white
+                }
+            }}
+        >
+          <Tab.Screen
+            name={strings.vaccination_label}
+            component={ServiceItemListTab}
+            initialParams={{
+            //   pet_id: props.petId,
+            //   pet_kind: props.petKind
+            }}
+          />
+          <Tab.Screen
+            name={strings.treatment_label}
+            component={ChatListScreen}
+            initialParams={{
+            //   pet_id: props.petId
+            }}
+          />
+        </Tab.Navigator>
+    );
+}
+
 const CategoryItemProfileScreen = ({route, navigation}) => {
     const [activeIndex, setActiveIndex] = useState(0);
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = useMemo(() => ['38%', '100%'], []);
-    //const { pet_id } = route.params;
+    //const { item_id } = route.params;
     const obj = {
         name: "Phòng khám Zoey",
         img: [
@@ -148,6 +193,9 @@ const CategoryItemProfileScreen = ({route, navigation}) => {
                         <TouchableOpacity
                             activeOpacity={0.7}
                             style={[style.box_holder, {backgroundColor: COLORS.pet_green}]}
+                            onPress={() => {
+                                navigation.navigate('ChatScreen')
+                            }}
                         >
                             <Image
                                 style={style.box_icon}
@@ -187,8 +235,11 @@ const CategoryItemProfileScreen = ({route, navigation}) => {
                             </Text>
                         </View>
                     </View>
-                </View>
 
+                    <View style={style.tabs_container}>
+                        <MyTabs/>
+                    </View>
+                </View>
             </BottomSheet>
         </View>
     );
@@ -233,12 +284,6 @@ const style = StyleSheet.create({
     basic_information: {
         flexDirection: 'column',
     },
-    name_gender_container: {
-        width: '100%',
-        alignItems: 'center',
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-    },
     item_name: {
         fontSize: 24,
         fontWeight: 'bold',
@@ -281,8 +326,8 @@ const style = StyleSheet.create({
         backgroundColor: COLORS.pet_pink,
     },
     box_icon: {
-        width: 50,
-        height: 50,
+        width: 44,
+        height: 44,
         tintColor: COLORS.dark
     },
     information_detail: {
@@ -293,7 +338,11 @@ const style = StyleSheet.create({
     section_title: {
         color: COLORS.black,
         fontFamily: 'Roboto-Bold',
-        fontSize: 18,
+        fontSize: 16,
+    },
+    tabs_container: {
+        height: windowHeight / 2 + 32,
+        marginTop: 36,
     },
     overlay: {
         width: '100%',

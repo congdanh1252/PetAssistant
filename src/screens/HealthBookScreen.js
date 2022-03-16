@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
-
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+
 import VaccinationScreen from './VaccinationScreen';
 import TreatmentScreen from './TreatmentScreen';
 import COLORS from '../theme/colors';
@@ -63,7 +63,7 @@ const HealthBookScreen = ({route, navigation}) => {
             </View>
 
             <View style={style.container}>
-                <MyTabs petId={pet_id} petKind={pet_kind}/>
+              <MyTabs petId={pet_id} petKind={pet_kind}/>
             </View>
         </View>
     )

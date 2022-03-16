@@ -25,6 +25,9 @@ const ServiceScreen = ({route, navigation}) => {
                 <TouchableOpacity
                     activeOpacity={0.8}
                     style={style.category_item}
+                    onPress={() => {
+                        navigation.navigate('ServiceList')
+                    }}
                 >
                     <Image
                         style={style.category_icon}
@@ -256,7 +259,7 @@ const style = StyleSheet.create({
         justifyContent: 'space-between',
     },
     category_item: {
-        height: 80,
+        height: 70,
         marginBottom: 10,
         borderRadius: 12,
         justifyContent: 'center',
@@ -271,11 +274,11 @@ const style = StyleSheet.create({
     item_title: {
         color: COLORS.black,
         fontFamily: 'Roboto-Medium',
-        fontSize: 18,
+        fontSize: 16,
     },
     category_icon: {
-        width: 45,
-        height: 45,
+        width: 40,
+        height: 40,
         marginRight: 16,
     },
     dropdown_bottomsheet: {

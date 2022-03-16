@@ -251,7 +251,7 @@ const HomeScreen = ({navigation}) => {
                         activeOpacity={0.7}
                         style={style.menu_box}
                         onPress={() => {
-                            //navigation.navigate('Searching')
+                            navigation.navigate('Service')
                         }}
                     >
                         <Image
@@ -430,7 +430,7 @@ const style = StyleSheet.create({
     menu_title: {
         color: COLORS.black,
         fontFamily: 'Roboto-Medium',
-        fontSize: 16,
+        fontSize: 14,
     },
     saved_button: {
         width: 32,

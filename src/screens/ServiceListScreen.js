@@ -91,9 +91,9 @@ const ServiceListScreen = ({route, navigation}) => {
                     activeOpacity={0.7}
                     style={style.item_holder}
                     onPress={() => {
-                        // navigation.navigate('itemDetail', {
-                        //     item_id: items[i]._id
-                        // })
+                        navigation.navigate('CategoryItem', {
+                            item_id: items[i]._id
+                        })
                     }}
                 >
                     <Image

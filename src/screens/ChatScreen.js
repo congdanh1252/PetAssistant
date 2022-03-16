@@ -82,11 +82,11 @@ const ChatScreen = ({route, navigation}) => {
                             msg.user_id == chatUser.id ?
                             (
                                 // service person message
-                                <>
+                                <View key={msg.id}>
                                     {
                                         msg.attachment!="" ? 
                                         null :
-                                        <View style={style.service_msg_container} key={msg.id}>
+                                        <View style={style.service_msg_container}>
                                             <Image
                                                 source={{uri: chatUser.photo}}
                                                 style={style.user_photo}
@@ -117,16 +117,16 @@ const ChatScreen = ({route, navigation}) => {
                                             </View>
                                         </View>
                                     }
-                                </>
+                                </View>
                             )
                             :
                             (
                                 //own message
-                                <>
+                                <View key={msg.id}>
                                     {
                                         msg.attachment!="" ? 
                                         null :
-                                        <View style={style.own_msg_holder} key={msg.id}>
+                                        <View style={style.own_msg_holder}>
                                             <Text style={style.own_msg_text}>{msg.detail}</Text>
                                         </View>
                                     }
@@ -143,7 +143,7 @@ const ChatScreen = ({route, navigation}) => {
                                             />
                                         </View>
                                     }
-                                </>
+                                </View>
                             )
                         );
                     })
@@ -325,7 +325,7 @@ const style = StyleSheet.create({
     title: {
         color: COLORS.black,
         fontFamily: 'Roboto-Bold',
-        fontSize: 18,
+        fontSize: 16,
     },
     own_msg_holder: {
         padding: 10,
