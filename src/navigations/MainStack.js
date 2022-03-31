@@ -11,6 +11,7 @@ import { ScheduleEvent } from '../screens/ScheduleEvent';
 import ExpenditureStack from '../navigations/ExpenditureStack';
 import NurseryStack from '../navigations/NurseryStack';
 import PredictStack from '../navigations/PredictStack';
+import ServiceStack from './ServiceStack';
 import ProfileScreen from '../screens/ProfileScreen';
 import SettingScreen from '../screens/SettingScreen';
 
@@ -39,7 +40,7 @@ const MainStack = () => {
           <Stack.Screen name="Setting" component={SettingScreen} options={{headerShown: false}}/>
           <Stack.Screen name="ScheduleEvent" component={ScheduleEvent} options={{headerShown: false}}/> 
           <Stack.Screen name="NurseryStack" component={NurseryStack} options={{headerShown: false}}/> 
-      
+          <Stack.Screen name="Service" component={ServiceStack} options={{headerShown: false}}/>
       </Stack.Navigator>
       <Toast/>
     </>
