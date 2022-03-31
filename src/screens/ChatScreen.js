@@ -1,156 +1,199 @@
 import React, { useState, useEffect } from 'react';
 import { Image, StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput,
-    TouchableWithoutFeedback, Keyboard,
+    TouchableWithoutFeedback, Keyboard, FlatList,
 } from 'react-native';
 import Dialog from "react-native-dialog";
-
+import Toast from "react-native-toast-message";
 import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
+
+import {
+    addNewMessageToChat,
+    getChatId,
+    addNewChat,
+    deleteChat
+} from '../api/ChatAPI';
+import Message from '../models/message';
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
 import { windowWidth, windowHeight } from '../models/common/Dimensions'
 
 const ChatScreen = ({route, navigation}) => {
+    const { me } = auth().currentUser.uid;
+    const [chatId, setChatId] = useState('');
+    const { obj_id, obj_name, obj_avt } = route.params;
     const [chatUser, setChatUser] = useState({
-        id: 'id1',
-        name: 'Phòng khám Zoey',
-        photo: 'https://img.freepik.com/free-vector/businessman-character-avatar-isolated_24877-60111.jpg'
+        id: obj_id,
+        name: obj_name,
+        photo: obj_avt
     });
+    const [draft, setDraft] = useState('');
     const [show, setShow] = useState(false);
     const [dialogVisible, setDialogVisible] = useState(false);
-    const [messages, setMessages] = useState([
-        {
-            id: "msg1",
-            user_id: "user",
-            detail: "Hello Zoeyyyyyyyyyyyyyyyyy!",
-            attachment: "",
-            send_time: "",
-        },
-        {
-            id: "msg2",
-            user_id: "id1",
-            detail: "How can I help you?",
-            attachment: "",
-            send_time: "",
-        },
-        {
-            id: "msg3",
-            user_id: "user",
-            detail: "My dog is sick. Can I book an aid tomorrow?",
-            attachment: "",
-            send_time: "",
-        },
-        {
-            id: "msg4",
-            user_id: "user",
-            detail: "",
-            attachment: "https://cf.ltkcdn.net/dogs/images/orig/246946-1600x1030-signs-your-dog-might-be-sick.jpg",
-            send_time: "",
-        },
-    ]);
+    const [messages, setMessages] = useState([]);
 
     const handleDeleteButton = () => {
+        deleteChat(chatId, (res) => {
+            if (res == 'Success') {
+                Toast.show({
+                    type: 'success',
+                    text1: strings.success,
+                    text2: 'Đã xóa đoạn chat! 🖐',
+                    position: 'top',
+                    autoHide: true,
+                });
 
+                navigation.goBack();
+            }
+        })
     }
+
+    const handleChatId = (result) => {
+        if (result == 'empty') {
+            setChatId('');
+        }
+        else {
+            setChatId(result);
+        }
+    }
+
+    const checkExistedChat = () => {
+        return chatId == '' ? false : true;
+    }
+
+    const handleMessageSent = (result) => {
+        setDraft('');
+    }
+
+    const handleSendMessage = () => {
+        if (draft != '') {
+            if (!checkExistedChat()) {
+                addNewChat(obj_id, obj_name, obj_avt, (result) => {
+                    getChatId(obj_id, handleChatId)
+                    addNewMessageToChat(draft, '', result, handleMessageSent);
+                })
+            }
+            else {
+                addNewMessageToChat(draft, '', chatId, handleMessageSent)
+            }
+        }
+    }
+
+    const renderItem = ({ item }) => {
+        return (
+            item.sender == chatUser.id ?
+            (
+                // service person message
+                <View key={item._id}>
+                    {
+                        item.attachment!="" ? 
+                        null :
+                        <View style={style.service_msg_container}>
+                            <Image
+                                source={{uri: chatUser.photo}}
+                                style={style.user_photo}
+                            />
+
+                            <View style={style.service_msg_holder}>
+                                <Text style={style.service_msg_text}>{item.detail}</Text>
+                            </View>
+                        </View>
+                    }
+
+                    {/* photo */}
+                    {
+                        item.attachment=="" ? 
+                        null :
+                        <View style={style.service_msg_container}>
+                            <Image
+                                source={{uri: chatUser.photo}}
+                                style={style.user_photo}
+                            />
+
+                            <View style={style.service_msg_holder}>
+                                <Image
+                                    source={{uri: item.attachment}}
+                                    style={style.msg_attachment}
+                                    resizeMode='contain'
+                                />
+                            </View>
+                        </View>
+                    }
+                </View>
+            )
+            :
+            (
+                //own message
+                <View key={item._id}>
+                    {
+                        item.attachment!="" ? 
+                        null :
+                        <View style={style.own_msg_holder}>
+                            <Text style={style.own_msg_text}>{item.detail}</Text>
+                        </View>
+                    }
+                    
+                    {/* image message */}
+                    {
+                        item.attachment=="" ? 
+                        null :
+                        <View style={style.own_msg_holder}>
+                            <Image
+                                source={{uri: item.attachment}}
+                                style={style.msg_attachment}
+                                resizeMode='contain'
+                            />
+                        </View>
+                    }
+                </View>
+            )
+        )
+    };
+
+    const ListMessages = () => {
+        return (
+            <FlatList
+                inverted
+                data={messages}
+                renderItem={renderItem}
+                keyExtractor={(item) => item._id}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={style.messages_container}
+            />
+        )
+    }
+
+    //get chat id
+    useEffect(() => {
+        let isMounted = true;
+        if (isMounted) {
+            const subscribe = getChatId(obj_id, handleChatId);
+        }
+        
+        return () => isMounted = false;
+    }, []),
 
     //load all chat messages
     useEffect(() => {
-        // const subscriber = firestore()
-        // .collection('camnang')
-        // .onSnapshot(querySnapshot => {
-        //     var guideList = new Array();
-        //     setFilter('');
-        //     querySnapshot.forEach(documentSnapshot => {
-        //         var guide = new Guide();
-        //         guide.update(documentSnapshot.data());
-        //         guide._id = documentSnapshot.id;
-        //         guideList.push(guide);
-        //     });
-        //     setGuides(guideList);
-        //     setDataList(guideList);
-        // });
+        if (chatId != '') {
+        const subscriber = firestore()
+            .collection('chat/' + chatId + '/messages')
+            .orderBy('createdAt', 'desc')
+            .onSnapshot(querySnapshot => {
+                var messages = new Array();
+                querySnapshot.forEach(documentSnapshot => {
+                    var msg = new Message();
+                    msg.update(documentSnapshot.data());
+                    msg._id = documentSnapshot.id;
+                    messages.push(msg);
+                });
+                setMessages(messages);
+            });
 
-        // return () => subscriber();
-    }, []);
-
-    const Messages = () => {
-        return (
-            <ScrollView style={style.messages_container} showsVerticalScrollIndicator={false}>
-                {
-                    messages.map((msg) => {
-                        return (
-                            msg.user_id == chatUser.id ?
-                            (
-                                // service person message
-                                <View key={msg.id}>
-                                    {
-                                        msg.attachment!="" ? 
-                                        null :
-                                        <View style={style.service_msg_container}>
-                                            <Image
-                                                source={{uri: chatUser.photo}}
-                                                style={style.user_photo}
-                                            />
-
-                                            <View style={style.service_msg_holder}>
-                                                <Text style={style.service_msg_text}>{msg.detail}</Text>
-                                            </View>
-                                        </View>
-                                    }
-
-                                    {/* photo */}
-                                    {
-                                        msg.attachment=="" ? 
-                                        null :
-                                        <View style={style.service_msg_container}>
-                                            <Image
-                                                source={{uri: chatUser.photo}}
-                                                style={style.user_photo}
-                                            />
-
-                                            <View style={style.service_msg_holder}>
-                                                <Image
-                                                    source={{uri: msg.attachment}}
-                                                    style={style.msg_attachment}
-                                                    resizeMode='contain'
-                                                />
-                                            </View>
-                                        </View>
-                                    }
-                                </View>
-                            )
-                            :
-                            (
-                                //own message
-                                <View key={msg.id}>
-                                    {
-                                        msg.attachment!="" ? 
-                                        null :
-                                        <View style={style.own_msg_holder}>
-                                            <Text style={style.own_msg_text}>{msg.detail}</Text>
-                                        </View>
-                                    }
-                                    
-                                    {/* image message */}
-                                    {
-                                        msg.attachment=="" ? 
-                                        null :
-                                        <View style={style.own_msg_holder}>
-                                            <Image
-                                                source={{uri: msg.attachment}}
-                                                style={style.msg_attachment}
-                                                resizeMode='contain'
-                                            />
-                                        </View>
-                                    }
-                                </View>
-                            )
-                        );
-                    })
-                }
-            </ScrollView>
-        );
-    }
+            return () => subscriber();
+        }
+    }, [chatId]);
 
     //Main 
     return (
@@ -161,31 +204,35 @@ const ChatScreen = ({route, navigation}) => {
                     navigation={navigation}
                 />
 
-                <Text style={style.headerTitle}>{chatUser.name}</Text>
+                <Text style={style.headerTitle} numberOfLines={2}>{chatUser.name}</Text>
 
-                <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={() => {
-                        setDialogVisible(true)
-                    }}
-                >
-                    <Image
-                        style={{
-                            width: 30,
-                            height: 30,
-                            marginTop: 16,
-                            marginLeft: 8,
-                            tintColor: COLORS.white
+                {
+                    chatId != '' ?
+                    <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={() => {
+                            setDialogVisible(true)
                         }}
-                        source={require('../assets/icons/ic_bin.png')}
-                    />
-                </TouchableOpacity>
+                    >
+                        <Image
+                            style={{
+                                width: 30,
+                                height: 30,
+                                marginTop: 16,
+                                marginLeft: 8,
+                                tintColor: COLORS.white
+                            }}
+                            source={require('../assets/icons/ic_bin.png')}
+                        />
+                    </TouchableOpacity>
+                    : null
+                }
             </View>
 
             <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
                 <View style={style.container}>
                     {/* Chat messages area */}
-                    <Messages/>
+                    <ListMessages/>
 
                     {/* Keyboard area */}
                     <View style={style.bottom_stack_holder}>
@@ -204,8 +251,9 @@ const ChatScreen = ({route, navigation}) => {
                             placeholder={strings.type_something_msg}
                             multiline={true}
                             returnKeyType={'done'}
+                            value={draft}
                             onChangeText={(value) => {
-                                
+                                setDraft(value);
                             }}
                         />
 
@@ -213,7 +261,7 @@ const ChatScreen = ({route, navigation}) => {
                             activeOpacity={0.7}
                             style={style.send_button}
                             onPress={() => {
-                                
+                                handleSendMessage()
                             }}
                         >
                             <Text style={style.title}>GỬI</Text>
@@ -294,12 +342,7 @@ const style = StyleSheet.create({
         color: COLORS.white,
     },
     messages_container: {
-        width: '100%',
-        height: windowHeight - 188,
-        paddingLeft: 2,
-        paddingRight: 2,
-        flexGrow: 1,
-        justifyContent: 'flex-end'
+        // justifyContent: 'flex-end'
     },
     bottom_stack_holder: {
         width: '100%',

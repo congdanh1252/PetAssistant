@@ -121,6 +121,7 @@ export default strings = {
     msg_unsave_guide_success: "Đã bỏ lưu bài viết!",
     msg_unsave_guide_fail: "Bỏ lưu bài viết thất bại!",
     msg_saved_guide_list_empty: "Có vẻ danh sách đã lưu trống.\nBạn hãy đọc và lưu lại bài viết bạn thấy hữu ích nhé!",
+    msg_saved_service_list_empty: "Có vẻ danh sách đã lưu trống.\nBạn hãy tìm và lưu lại dịch vụ quan tâm nhé!",
     msg_guide_rated: "Bạn đã đánh giá bài viết rồi!",
     msg_choose_photo_to_search: "Chọn một hình ảnh của thú cưng để tìm thêm thông tin bạn nhé!",
     msg_send_feedback_success: "Ý kiến của bạn đã được ghi nhận. Xin chân thành cảm ơn! 👏",
@@ -156,6 +157,7 @@ export default strings = {
     saved_service_label: "Dịch vụ đã lưu",
     chat_list_label: "Danh sách chat",
     type_something_msg: "Nhập gì đó...",
+    book_service_label: "Đặt lịch",
 
 
     back: "Trở lại",

@@ -3,8 +3,8 @@ import { Image, StyleSheet, View, Text, ScrollView, TouchableOpacity,
     TouchableWithoutFeedback, TouchableHighlight,
 } from 'react-native';
 
-import firestore from '@react-native-firebase/firestore';
 import BottomSheet from '@gorhom/bottom-sheet';
+
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
@@ -26,7 +26,9 @@ const ServiceScreen = ({route, navigation}) => {
                     activeOpacity={0.8}
                     style={style.category_item}
                     onPress={() => {
-                        navigation.navigate('ServiceList')
+                        navigation.navigate('ServiceList', {
+                            category: 'Phòng khám'
+                        })
                     }}
                 >
                     <Image
@@ -41,6 +43,11 @@ const ServiceScreen = ({route, navigation}) => {
                 <TouchableOpacity
                     activeOpacity={0.8}
                     style={style.category_item}
+                    onPress={() => {
+                        navigation.navigate('ServiceList', {
+                            category: 'Spa chăm sóc'
+                        })
+                    }}
                 >
                     <Image
                         style={style.category_icon}
@@ -122,7 +129,12 @@ const ServiceScreen = ({route, navigation}) => {
                 <View style={style.promotion_holder}>
                     <Text style={style.title}>{strings.promotion_label}</Text>
 
-                    <View style={style.promotion_img_holder}></View>
+                    <View style={style.promotion_img_holder}>
+                        <Image
+                            style={[style.promotion_img_holder, {marginTop: 0}]}
+                            source={{uri: 'https://img.freepik.com/free-vector/veterinary-banner-template_23-2148980674.jpg'}}
+                        />
+                    </View>
                 </View>
                 
                 <View style={style.category_list_holder}>
@@ -156,6 +168,7 @@ const ServiceScreen = ({route, navigation}) => {
                                     style={style.dropdown_option}
                                     onPress={() => {
                                         setShow(false)
+                                        navigation.navigate('SavedServiceList')
                                     }}
                                 >
                                     <Text style={style.dropdown_option_text}>
@@ -171,6 +184,7 @@ const ServiceScreen = ({route, navigation}) => {
                                     style={style.dropdown_option}
                                     onPress={() => {
                                         setShow(false)
+                                        navigation.navigate('ChatList');
                                     }}
                                 >
                                     <Text style={style.dropdown_option_text}>
@@ -265,9 +279,8 @@ const style = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'row',
-        borderTopColor: COLORS.grey,
-        borderTopWidth: 2,
-        elevation: 4,
+        borderWidth: 3,
+        borderColor: COLORS.grey,
         shadowRadius: 10,
         backgroundColor: COLORS.white,
     },

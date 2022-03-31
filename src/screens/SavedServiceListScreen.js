@@ -1,44 +1,19 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Image, StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput,
-    TouchableWithoutFeedback, TouchableHighlight,
-} from 'react-native';
-import firestore from '@react-native-firebase/firestore';
-import BottomSheet from '@gorhom/bottom-sheet';
+import React, { useState, useEffect } from 'react';
+import { Image, StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 
-import thirdParty from '../models/thirdParty';
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
+
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
+import thirdParty from '../models/thirdParty';
 
-const ServiceListScreen = ({route, navigation}) => {
-    const [show, setShow] = useState(false);
+const SavedServiceListScreen = ({route, navigation}) => {
     const [items, setItems] = useState([]);
     const [dataList, setDataList] = useState([]);
-    const [filter, setFilter] = useState('');
-    const { category } = route.params;
-
-    const snapPoints = useMemo(() => ['19%', '19%'], []);
-
-    const getItemListOrderByRating = (con) => {
-        const subscriber =
-        firestore()
-        .collection('thirdParty')
-        .orderBy('rating', con)
-        .get()
-        .then(querySnapshot => {
-            var list = new Array();
-            querySnapshot.forEach(documentSnapshot => {
-                if (documentSnapshot.data().category == category) {
-                    var item = new thirdParty();
-                    item.update(documentSnapshot.data());
-                    item._id = documentSnapshot.id;
-                    list.push(item);
-                }
-            })
-            setItems(list);
-            // setDataList(list);
-        })
-    }
+    const [saveList, setSaveList] = useState([]);
+    const [msgEmpty, setMsgEmpty] = useState('');
 
     const filterListBySearch = (input) => {
         var newList = [];
@@ -48,8 +23,47 @@ const ServiceListScreen = ({route, navigation}) => {
             }
         });
         setItems(newList);
-        input == "" ? setFilter('') : setFilter(filter);
     }
+
+    //get list services saved
+    useEffect(() => {
+        const subscribe = firestore()
+        .collection('users/' + auth().currentUser.uid + '/thirdParties')
+        .onSnapshot(querySnapshot => {
+            var list = new Array();
+            querySnapshot.forEach(documentSnapshot => {
+                list.push(documentSnapshot.data().id);
+            })
+
+            if (list.length == 0) {
+                setMsgEmpty(strings.msg_saved_service_list_empty);
+            }
+            setSaveList(list);
+        })
+        
+        return () => subscribe();
+    }, []),
+
+    //load list service
+    useEffect(() => {
+        const subscriber = firestore()
+        .collection('thirdParty')
+        .onSnapshot(querySnapshot => {
+            var list = new Array();
+            querySnapshot.forEach(documentSnapshot => {
+                if (saveList.includes(documentSnapshot.id)) {
+                    var item = new thirdParty();
+                    item.update(documentSnapshot.data());
+                    item._id = documentSnapshot.id;
+                    list.push(item);
+                }
+            });
+            setItems(list);
+            setDataList(list);
+        });
+
+        return () => subscriber();
+    }, [saveList]);
 
     const ItemList = () => {
         var itemList = [];
@@ -89,26 +103,6 @@ const ServiceListScreen = ({route, navigation}) => {
         )
     }
 
-    //load pet list
-    useEffect(() => {
-        const subscriber = firestore()
-        .collection('thirdParty')
-        .where('category', '==', category)
-        .onSnapshot(querySnapshot => {
-            var list = new Array();
-            querySnapshot.forEach(documentSnapshot => {
-                var item = new thirdParty();
-                item.update(documentSnapshot.data());
-                item._id = documentSnapshot.id;
-                list.push(item);
-            })
-            setItems(list);
-            setDataList(list);
-        })
-
-        return () => subscriber();
-    }, []);
-
     //Main 
     return (
         <View style={style.screen}>
@@ -118,7 +112,7 @@ const ServiceListScreen = ({route, navigation}) => {
                     navigation={navigation}
                 />
 
-                <Text style={style.headerTitle}>{category}</Text>
+                <Text style={style.headerTitle}>{strings.saved}</Text>
             </View>
 
             <View style={style.container}>
@@ -129,104 +123,26 @@ const ServiceListScreen = ({route, navigation}) => {
                         filterListBySearch(value)
                     }}
                 />
-
-                <View style={style.filter_holder}>
-                    <TouchableOpacity
-                        activeOpacity={0.6}
-                        onPress={() => {
-                            setShow(true)
-                        }}
-                        style={{width: 70}}
-                    >
-                        <Text style={style.title}>{strings.sort}</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        activeOpacity={0.7}
-                        style={style.location_filter_holder}
-                    >
-                        <Text style={[style.item_rating_label, {opacity: 0.7}]}>Bình Dương</Text>
-
-                        <Image
-                            style={style.arrow_down}
-                            source={require('../assets/icons/Back_black.png')}
-                        />
-                    </TouchableOpacity>
-                </View>
                 
-                <ItemList/>
+                {
+                    items.length == 0 ?
+                    <Text
+                        style={[style.item_rating_label, {
+                            marginTop: 40,
+                            textAlign: 'center',
+                        }]}
+                    >
+                        {msgEmpty}
+                    </Text>
+                    :
+                    <ItemList/>
+                }
             </View>
-
-            {/* BottomSheet Filter */}
-            {
-                !show ?
-                    null
-                :
-                    <TouchableWithoutFeedback onPress={() => {setShow(false)}}>
-                        <View style={style.overlay}>
-                            <BottomSheet
-                                index={1}
-                                snapPoints={snapPoints}
-                                backgroundStyle={{borderWidth: 1}}
-                                style={style.dropdown_bottomsheet}
-                                enableOverDrag={false}
-                                enablePanDownToClose={true}
-                                onClose={() => {setShow(false)}}
-                            >
-                                {/* Hữu ích giảm */}
-                                <TouchableHighlight
-                                    key={1}
-                                    activeOpacity={0.7}
-                                    underlayColor='#EEEEEE'
-                                    style={
-                                        filter != 'desc'
-                                        ?
-                                        style.dropdown_option
-                                        :
-                                        [style.dropdown_option, {backgroundColor: COLORS.grey}]
-                                    }
-                                    onPress={() => {
-                                        setShow(false)
-                                        setFilter('desc')
-                                        getItemListOrderByRating('desc');
-                                    }}
-                                >
-                                    <Text style={style.dropdown_option_text}>
-                                        {strings.rating_desc_sort}
-                                    </Text>
-                                </TouchableHighlight>
-
-                                {/* Hữu ích tăng */}
-                                <TouchableHighlight
-                                    key={2}
-                                    activeOpacity={0.7}
-                                    underlayColor='#EEEEEE'
-                                    style={
-                                        filter != 'asc'
-                                        ?
-                                        style.dropdown_option
-                                        :
-                                        [style.dropdown_option, {backgroundColor: COLORS.grey}]
-                                    }
-                                    onPress={() => {
-                                        setShow(false)
-                                        setFilter('asc')
-                                        getItemListOrderByRating('asc')
-                                    }}
-                                >
-                                    <Text style={style.dropdown_option_text}>
-                                        {strings.rating_asc_sort}
-                                    </Text>
-                                </TouchableHighlight>
-                            </BottomSheet>
-                        </View>
-                    </TouchableWithoutFeedback>
-            }
         </View>
     );
 }
 
-export default ServiceListScreen;
+export default SavedServiceListScreen;
 
 const style = StyleSheet.create({
     screen: {

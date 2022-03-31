@@ -1,13 +1,19 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
-import { Image, StyleSheet, View, Text, TouchableOpacity, LogBox, SafeAreaView, ScrollView } from 'react-native';
+import { Image, StyleSheet, View, Text, TouchableOpacity, LogBox, ScrollView } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import Toast from "react-native-toast-message";
 import Carousel, { Pagination } from 'react-native-snap-carousel';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import firestore from '@react-native-firebase/firestore';
 
-import ChatListScreen from './ChatListScreen';
 import ServiceItemListTab from './ServiceItemListTab';
+import ServiceFeedbackListTab from './ServiceFeedbackListTab';
+import {
+    getSavedThirdParties,
+    addThirdPartyToSavedList,
+    deleteThirdPartyFromSavedList
+} from '../api/ThirdPartyAPI';
+import thirdParty from '../models/thirdParty';
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
@@ -41,18 +47,17 @@ const MyTabs = (props) => {
             }}
         >
           <Tab.Screen
-            name={strings.vaccination_label}
+            name={strings.service_label}
             component={ServiceItemListTab}
             initialParams={{
-            //   pet_id: props.petId,
-            //   pet_kind: props.petKind
+                obj_id: props.itemId,
             }}
           />
           <Tab.Screen
-            name={strings.treatment_label}
-            component={ChatListScreen}
+            name={strings.feedback_label}
+            component={ServiceFeedbackListTab}
             initialParams={{
-            //   pet_id: props.petId
+                obj_id: props.itemId,
             }}
           />
         </Tab.Navigator>
@@ -60,19 +65,42 @@ const MyTabs = (props) => {
 }
 
 const CategoryItemProfileScreen = ({route, navigation}) => {
+    const { item_id } = route.params;
+    const [isSaved, setIsSaved] = useState(false);
+    const [obj, setObj] = useState(new thirdParty());
     const [activeIndex, setActiveIndex] = useState(0);
     const bottomSheetRef = useRef<BottomSheet>(null);
-    const snapPoints = useMemo(() => ['38%', '100%'], []);
-    //const { item_id } = route.params;
-    const obj = {
-        name: "Phòng khám Zoey",
-        img: [
-            "https://topbrands.vn/wp-content/uploads/2020/11/Phong-kham-thu-y.jpg",
-            "https://top247.vn/wp-content/uploads/2020/05/top-10-benh-vien-phong-kham-thu-y-tot-nhat-tai-tphcm-3.jpg",
-            "https://nguyentuanhung.vn/wp-content/uploads/2020/02/Phong-kham-thu-y-Animal-Health.jpg",
-        ],
-        address: "154 Trương Định, Ba Đình, Hà Nội",
-        phone_number: "0914.541.022",
+    const snapPoints = useMemo(() => ['39%', '100%'], []);
+    
+    const handleSaveButton = () => {
+        if (isSaved) {
+            deleteThirdPartyFromSavedList(item_id, (res) => {
+                if (res == 'Success') {
+                    Toast.show({
+                        type: 'success',
+                        text1: strings.success,
+                        text2: 'Đã bỏ lưu dịch vụ! 🖐',
+                        position: 'top',
+                        autoHide: true,
+                    });
+                    setIsSaved(false);
+                }
+            })
+        }
+        else {
+            addThirdPartyToSavedList(item_id, (res) => {
+                if (res == 'Success') {
+                    Toast.show({
+                        type: 'success',
+                        text1: strings.success,
+                        text2: 'Đã lưu dịch vụ! 👋',
+                        position: 'top',
+                        autoHide: true,
+                    });
+                    setIsSaved(true);
+                }
+            })
+        }
     }
 
     const RenderItem = ({item, index}) => {
@@ -85,21 +113,34 @@ const CategoryItemProfileScreen = ({route, navigation}) => {
         );
     }
 
+    //check is item saved
+    useEffect(() => {
+        let isMounted = true;
+        if (isMounted) {
+            const subscribe = getSavedThirdParties((list) => {
+                if (list.includes(item_id)) {
+                    setIsSaved(true);
+                }
+            })
+        }
+        
+        return () => isMounted = false;
+    }, []),
+
     //get pet data
     useEffect(() => {
-        // const subscriber = firestore()
-        // .collection('users/' + auth().currentUser.uid + '/pets')
-        // .doc(pet_id)
-        // .onSnapshot(documentSnapshot => {
-        //     var newPet = new Pet();
-        //     newPet.update(documentSnapshot.data());
-        //     newPet.birthday = new Date(documentSnapshot.data().dob.toDate());
-        //     newPet._id = documentSnapshot.id;
-        //     calculateAge(newPet.birthday);
-        //     setPet(newPet);
-        // })
+        const subscriber = firestore()
+        .collection('thirdParty')
+        .doc(item_id)
+        .onSnapshot(documentSnapshot => {
+            var item = new thirdParty();
+            item.update(documentSnapshot.data());
+            item._id = documentSnapshot.id;
 
-        // return () => subscriber();
+            setObj(item);
+        })
+
+        return () => subscriber();
     }, [])
 
     //Main 
@@ -166,7 +207,7 @@ const CategoryItemProfileScreen = ({route, navigation}) => {
 
                             <Text
                                 style={[style.information_detail, {width: '90%'}]}
-                                numberOfLines={1}
+                                numberOfLines={2}
                             >
                                 {obj.address}
                             </Text>
@@ -194,7 +235,11 @@ const CategoryItemProfileScreen = ({route, navigation}) => {
                             activeOpacity={0.7}
                             style={[style.box_holder, {backgroundColor: COLORS.pet_green}]}
                             onPress={() => {
-                                navigation.navigate('ChatScreen')
+                                navigation.navigate('ChatScreen', {
+                                    obj_id: item_id,
+                                    obj_name: obj.name,
+                                    obj_avt: obj.thumbnail
+                                })
                             }}
                         >
                             <Image
@@ -211,6 +256,9 @@ const CategoryItemProfileScreen = ({route, navigation}) => {
                         <TouchableOpacity
                             activeOpacity={0.7}
                             style={[style.box_holder, {backgroundColor: COLORS.pet_blue}]}
+                            onPress={() => {
+                                handleSaveButton()
+                            }}
                         >
                             <Image
                                 style={style.box_icon}
@@ -218,16 +266,16 @@ const CategoryItemProfileScreen = ({route, navigation}) => {
                             />
 
                             <Text style={style.section_title}>
-                                {strings.save}
+                                {isSaved ? strings.unsave : strings.save}
                             </Text>
                         </TouchableOpacity>
 
-                        {/* Weight box */}
+                        {/* Rating box */}
                         <View
                             style={[style.box_holder, {backgroundColor: COLORS.pet_pink}]}
                         >
-                            <Text style={[style.section_title, {fontSize: 28}]}>
-                                4.8
+                            <Text style={[style.section_title, {fontSize: 24}]}>
+                                {obj.rating} ⭐
                             </Text>
 
                             <Text style={style.section_title}>
@@ -237,7 +285,7 @@ const CategoryItemProfileScreen = ({route, navigation}) => {
                     </View>
 
                     <View style={style.tabs_container}>
-                        <MyTabs/>
+                        <MyTabs itemId={item_id}/>
                     </View>
                 </View>
             </BottomSheet>
@@ -341,7 +389,7 @@ const style = StyleSheet.create({
         fontSize: 16,
     },
     tabs_container: {
-        height: windowHeight / 2 + 32,
+        height: windowHeight / 2 + 90,
         marginTop: 36,
     },
     overlay: {

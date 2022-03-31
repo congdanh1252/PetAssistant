@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Image, StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput,
-    TouchableWithoutFeedback, TouchableHighlight,
+import { Image, StyleSheet, View, Text, ScrollView, TextInput, TouchableHighlight
 } from 'react-native';
-
+import moment from 'moment';
 import firestore from '@react-native-firebase/firestore';
+
+import Chat from '../models/chat';
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import BackButton from '../components/BackButton';
@@ -11,55 +12,42 @@ import { windowWidth } from '../models/common/Dimensions';
 
 const ChatListScreen = ({route, navigation}) => {
     const [chats, setChats] = useState([]);
-    const [filter, setFilter] = useState(0);
-    const list = [
-        {
-            chat_id: "id1",
-            user_id: "id",
-            username: "Phòng khám Zoey",
-            photo_url: "https://img.freepik.com/free-vector/businessman-character-avatar-isolated_24877-60111.jpg",
-            last_message: "alo bạn đâu rồi?",
-            send_time: "5 phút",
-            is_read: "false",
-        },
-        {
-            chat_id: "id2",
-            user_id: "id",
-            username: "Phòng khám Zoey",
-            photo_url: "https://img.freepik.com/free-vector/businessman-character-avatar-isolated_24877-60111.jpg",
-            last_message: "alo bạn đâu rồi?",
-            send_time: "5 phút",
-            is_read: "true",
-        },
-        {
-            chat_id: "id3",
-            user_id: "id",
-            username: "Phòng khám Zoey",
-            photo_url: "https://img.freepik.com/free-vector/businessman-character-avatar-isolated_24877-60111.jpg",
-            last_message: "alo bạn đâu rồi?",
-            send_time: "5 phút",
-            is_read: "true",
-        }
-    ];
+    const [dataList, setDataList] = useState([]);
+    const [filter, setFilter] = useState('');
+
+    const filterListBySearch = (input) => {
+        var newList = [];
+        dataList.forEach(item => {
+            if (item.user2Name.toLowerCase().includes(input.toLowerCase())) {
+                newList.push(item);
+            }
+        });
+        setChats(newList);
+        input == "" ? setFilter('') : setFilter(filter);
+    }
 
     //load list chat
     useEffect(() => {
-        // const subscriber = firestore()
-        // .collection('camnang')
-        // .onSnapshot(querySnapshot => {
-        //     var guideList = new Array();
-        //     setFilter('');
-        //     querySnapshot.forEach(documentSnapshot => {
-        //         var guide = new Guide();
-        //         guide.update(documentSnapshot.data());
-        //         guide._id = documentSnapshot.id;
-        //         guideList.push(guide);
-        //     });
-        //     setGuides(guideList);
-        //     setDataList(guideList);
-        // });
+        const subscriber = firestore()
+        .collection('chat')
+        .onSnapshot(querySnapshot => {
+            var list = new Array();
+            querySnapshot.forEach(documentSnapshot => {
+                var chat = new Chat();
+                chat.update(documentSnapshot.data());
+                chat._id = documentSnapshot.id;
+                chat.createdAt = new Date(documentSnapshot.data().createdAt.toDate());
+                chat.updatedAt = new Date(documentSnapshot.data().updatedAt.toDate());
+                chat.user2Name = documentSnapshot.data().user2Name;
+                chat.photoUrl = documentSnapshot.data().user2Image;
 
-        // return () => subscriber();
+                list.push(chat);
+            });
+            setChats(list);
+            setDataList(list);
+        });
+
+        return () => subscriber();
     }, []);
 
     const ChatList = () => {    
@@ -69,18 +57,22 @@ const ChatListScreen = ({route, navigation}) => {
                 showsVerticalScrollIndicator={false}
             >
                 {
-                    list.map((item) => {
+                    chats.map((item) => {
                         return (
                             <TouchableHighlight
-                                key={item.chat_id}
+                                key={item._id}
                                 underlayColor={'#EEEEEE'}
                                 onPress={() => {
-
+                                    navigation.navigate('ChatScreen', {
+                                        obj_id: item.user2,
+                                        obj_name: item.user2Name,
+                                        obj_avt: item.photoUrl
+                                    })
                                 }}
                             >
                                 <View style={style.chat_holder}>
                                     <Image
-                                        source={{uri: item.photo_url}}
+                                        source={{uri: item.photoUrl}}
                                         resizeMode={'cover'}
                                         style={style.user_photo}
                                     />
@@ -89,12 +81,20 @@ const ChatListScreen = ({route, navigation}) => {
                                         <View style={style.username_time_holder}>
                                             <Text
                                                 numberOfLines={1}
-                                                style={[style.text, {width: '82%'}]}
+                                                style={[style.text, {width: '82%', fontWeight: 'bold'}]}
                                             >
-                                                {item.username}
+                                                {item.user2Name}
                                             </Text>
 
-                                            <Text style={style.text}>{item.send_time}</Text>
+                                            <Text style={style.text}>
+                                                {
+                                                    moment(item.createdAt).fromNow()
+                                                    .substring(
+                                                        0,
+                                                        moment(item.createdAt).fromNow().lastIndexOf(' ')
+                                                    )
+                                                }
+                                            </Text>
                                         </View>
 
                                         <Text
@@ -105,7 +105,7 @@ const ChatListScreen = ({route, navigation}) => {
                                             }
                                             numberOfLines={1}
                                         >
-                                            {item.last_message}
+                                            {item.lastMessage}
                                         </Text>
                                     </View>
                                 </View>
@@ -134,7 +134,7 @@ const ChatListScreen = ({route, navigation}) => {
                     style={style.input}
                     placeholder={strings.find}
                     onChangeText={(value) => {
-                        
+                        filterListBySearch(value)
                     }}
                 />
                 
@@ -223,7 +223,7 @@ const style = StyleSheet.create({
         justifyContent: 'space-between',
     },
     username_time_holder: {
-        flexWrap: 'wrap',
+        flexWrap: 'nowrap',
         alignItems: 'center',
         flexDirection: 'row',
         justifyContent: 'space-between',
