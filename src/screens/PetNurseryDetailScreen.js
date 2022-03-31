@@ -38,11 +38,11 @@ const Rating = () => {
           >
             Mai Cong Danh
           </Text>
-          <Text> da thue 2 ngay</Text>
+          <Text> đã thuê 2 ngay</Text>
         </Text>
-        <Star num={5} />
+        <Star num={4} />
       </View>
-      <Text>
+      <Text style={{ textAlign: "justify" }}>
         Bạn có kinh nghiệm nên gửi rất yên tâm, lúc về Tom nhà mình còn quyến
         luyến nữa cơ, sẽ còn ủng hộ bạn!
       </Text>
@@ -108,24 +108,22 @@ export function PetNurseryDetailScreen() {
                 </View>
 
                 <View style={[styles.rowContainer, { marginTop: 8 }]}>
-                  <View
+                  <View>
+                    <Text style={{ fontSize: 12, color: COLORS.green }}>
+                      Đang sẵn sàng
+                    </Text>
+                  </View>
+                  <TouchableOpacity
                     style={{
                       backgroundColor: COLORS.grey,
-                      borderRadius: 5,
-                      padding: 6,
+                      borderRadius: 8,
+                      padding: 8,
                     }}
                   >
-                    <Text style={{ fontSize: 12 }}>Đang sẵn sàng</Text>
-                  </View>
-                  <View
-                    style={{
-                      backgroundColor: COLORS.grey,
-                      borderRadius: 5,
-                      padding: 6,
-                    }}
-                  >
-                    <Text style={{ fontSize: 12 }}>Đang sẵn sàng</Text>
-                  </View>
+                    <Text style={{ fontSize: 12, color: COLORS.black }}>
+                      Liên hệ ngay
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             </View>
@@ -136,7 +134,9 @@ export function PetNurseryDetailScreen() {
             <Text style={styles.sectionTitle}>Kinh nghiệm</Text>
             <View style={styles.line} />
             <View style={{ padding: 10 }}>
-              <Text style={{ fontFamily: "Roboto-Regular" }}>
+              <Text
+                style={{ fontFamily: "Roboto-Regular", textAlign: "justify" }}
+              >
                 Nhà mình có nuôi cả cho và mèo nên mình có kinh nghiệm chăm sóc
                 cả 2 loài. Một số loài mình có nhận trông hộ, mình có thức ăn
                 như hạt khô, mình nhận giữ từ vài ngày đến 1 tháng.
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderTopLeftRadius: 15,
     borderTopRightRadius: 15,
-    padding: 8,
+    padding: 10,
   },
   rowContainer: {
     display: "flex",

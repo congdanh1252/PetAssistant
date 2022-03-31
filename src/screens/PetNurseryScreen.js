@@ -7,11 +7,16 @@ import COLORS from "../theme/colors"
 import strings from "../data/strings"
 import { windowHeight, windowWidth } from "../models/common/Dimensions"
 
-export function PetNurseryScreen() {
+export function PetNurseryScreen({ navigation, route }) {
   const Nurserer = (props) => {
     return (
       <View style={{ width: "50%" }}>
-        <TouchableOpacity activeOpacity={0.8}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => {
+            navigation.navigate("NurseryDetail")
+          }}
+        >
           <View style={styles.nurserer}>
             <Image
               source={require("../assets/icons/img.png")}
@@ -35,67 +40,38 @@ export function PetNurseryScreen() {
                 {props.nurserer.name}
               </Text>
 
-              <View
-                style={{
-                  width: (windowWidth - 58) / 2,
-                  display: "flex",
-                  flexDirection: "row",
-                  padding: 4,
-                }}
-              >
+              <View style={styles.row}>
                 <View>
-                  <Text
-                    style={{
-                      color: COLORS.black,
-                      fontFamily: "Roboto-Regular",
-                      fontSize: 12,
-                      marginRight: 4,
-                    }}
-                  >
-                    Kinh nghiệm{"\n"}Đánh giá{"\n"}Trình độ
-                  </Text>
+                  <Text style={styles.regular12}>Kinh nghiệm</Text>
+                  <Text style={styles.regular12}>Trình độ</Text>
+                  <Text style={styles.regular12}>Đánh giá</Text>
                 </View>
                 <View>
-                  <Text
-                    style={{
-                      width: (windowWidth - 58) / 2,
-                      color: COLORS.black,
-                      fontFamily: "Roboto-Medium",
-                      fontSize: 12,
-                    }}
-                  >
-                    {props.nurserer.experience}
-                    {"\n"}
-                    {props.nurserer.rating}
-                    {"\n"}
-                    {props.nurserer.level}
-                  </Text>
+                  <Text style={styles.bold12}>{props.nurserer.experience}</Text>
+                  <Text style={styles.bold12}>{props.nurserer.level}</Text>
+                  <Text style={styles.bold12}>{props.nurserer.rating}</Text>
                 </View>
               </View>
-
-              <Text
-                style={{
-                  width: (windowWidth - 58) / 2,
-                  alignSelf: "flex-start",
-                  color: COLORS.black,
-                  fontFamily: "Roboto-Italic",
-                  fontSize: 12,
-                }}
-              >
-                {" "}
-                Được thuê {props.nurserer.hired} lần
-              </Text>
 
               <View
                 style={{
                   backgroundColor: "rbga(196, 196, 196, 0.5)",
                   borderRadius: 10,
-                  padding: 4,
                 }}
               >
                 <Text
                   style={{
-                    textAlign: "center",
+                    color: COLORS.black,
+                    fontFamily: "Roboto-Italic",
+                    fontSize: 12,
+                  }}
+                >
+                  {" "}
+                  Được thuê {props.nurserer.hired} lần
+                </Text>
+                <Text
+                  style={{
+                    textAlign: "right",
                     color: COLORS.green,
                   }}
                 >
@@ -119,7 +95,7 @@ export function PetNurseryScreen() {
       status: "Dang san sang",
     },
     {
-      name: "Tong Duc Dung",
+      name: "Tong Duc D",
       experience: "Chó, mèo",
       rating: 4.7,
       level: "Chuyen nghiep",
@@ -127,7 +103,7 @@ export function PetNurseryScreen() {
       status: "Dang san sang",
     },
     {
-      name: "Tong Duc Dung",
+      name: "Tong Duc",
       experience: "Chó, mèo",
       rating: 4.7,
       level: "Chuyen nghiep",
@@ -176,6 +152,7 @@ export function PetNurseryScreen() {
       </View>
 
       <View style={styles.bodyContainer}>
+        {/* Filter */}
         <View style={styles.filterContainer}>
           <View style={[styles.filter, { width: 180 }]}>
             <Text>Trình độ</Text>
@@ -205,6 +182,7 @@ export function PetNurseryScreen() {
             </TouchableOpacity>
           </View>
         </View>
+        {/* Items */}
         <View
           style={{
             display: "flex",
@@ -213,7 +191,7 @@ export function PetNurseryScreen() {
           }}
         >
           {nurserer.map((p) => {
-            return <Nurserer nurserer={p} />
+            return <Nurserer key={p.name} nurserer={p} />
           })}
         </View>
       </View>
@@ -312,5 +290,23 @@ const styles = StyleSheet.create({
   contentContainer: {
     padding: 10,
     alignItems: "center",
+  },
+  row: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  regular12: {
+    color: COLORS.black,
+    fontFamily: "Roboto-Regular",
+    fontSize: 12,
+    marginRight: 8,
+  },
+  bold12: {
+    color: COLORS.black,
+    fontFamily: "Roboto-Bold",
+    fontSize: 12,
   },
 })
