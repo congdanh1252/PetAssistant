@@ -61,6 +61,11 @@ const ServiceScreen = ({route, navigation}) => {
                 <TouchableOpacity
                     activeOpacity={0.8}
                     style={style.category_item}
+                    onPress={() => {
+                        navigation.navigate('SellPet', {
+                            action: 'add'
+                        })
+                    }}
                 >
                     <Image
                         style={style.category_icon}
