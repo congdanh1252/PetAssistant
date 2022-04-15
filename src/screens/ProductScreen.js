@@ -58,7 +58,7 @@ export function ProductScreen({ navigation }) {
         >
           <View style={styles.product}>
             <Image
-              source={{uri: props.item.photo}}
+              source={{ uri: props.item.photo }}
               style={{
                 width: (windowWidth - 58) / 2,
                 borderRadius: 10,
@@ -154,6 +154,16 @@ export function ProductScreen({ navigation }) {
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <SearchBar />
+
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate("SellPet", {
+              action: "add",
+            })
+          }}
+        >
+          <Image source={require("../assets/icons/Add_white.png")} />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.bodyContainer}>
@@ -239,6 +249,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   searchBar: {
+    marginRight: 12,
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
@@ -283,7 +294,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.grey,
     borderRadius: 10,
     margin: 10,
-    justifyContent: 'space-between'
+    justifyContent: "space-between",
   },
   contentContainer: {
     padding: 10,
