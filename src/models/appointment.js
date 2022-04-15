@@ -5,6 +5,7 @@ export default class Appointment {
       this.third_party_name = '';
       this.third_party_thumbnail = '';
       this.third_party_address = '';
+      this.customer_id = '';
       this.customer_name = '';
       this.customer_phone_number = '';
       this.service = new Array();
@@ -22,6 +23,7 @@ export default class Appointment {
         this.third_party_name = data.third_party_name || '';
         this.third_party_thumbnail = data.third_party_thumbnail || '';
         this.third_party_address = data.third_party_address || '';
+        this.customer_id = data.customer_id || '';
         this.customer_name = data.customer_name || '';
         this.customer_phone_number = data.customer_phone_number || '';
         this.service = data.service || new Array();

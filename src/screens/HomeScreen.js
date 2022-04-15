@@ -288,6 +288,31 @@ const HomeScreen = ({ navigation }) => {
                   </Text>
                 </View>
               </TouchableHighlight>
+
+              {/* Đăng xuất */}
+              <TouchableHighlight
+                key={2}
+                activeOpacity={0.7}
+                underlayColor='#EEEEEE'
+                style={style.dropdown_option}
+                onPress={() => {
+                    auth()
+                    .signOut()
+                    .then(() => console.log('User signed out!'));
+                    navigation.navigate('Login')
+                }}
+              >
+                <View style={style.dropdown_detail}>
+                  <Image
+                      style={style.dropdown_option_icon}
+                      source={require('../assets/icons/ic_logout.png')}
+                  />
+
+                  <Text style={style.dropdown_option_text}>
+                      {strings.logout_label}
+                  </Text>
+                </View>
+              </TouchableHighlight>
             </BottomSheet>
           </View>
         </TouchableWithoutFeedback>

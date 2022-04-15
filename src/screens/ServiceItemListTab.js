@@ -97,6 +97,13 @@ const ServiceItemListTab = ({route, navigation}) => {
                                                 <TouchableOpacity
                                                     activeOpacity={0.7}
                                                     style={style.book_button}
+                                                    onPress={() => {
+                                                        navigation.navigate('MakeAppointment', {
+                                                            action: 'add',
+                                                            thirdPartyID: obj_id,
+                                                            currentService: item.detail
+                                                        })
+                                                    }}
                                                 >
                                                     <Text style={style.button_text}>{strings.book_service_label}</Text>
                                                 </TouchableOpacity>
