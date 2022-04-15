@@ -1,13 +1,18 @@
 import { View, Text, StyleSheet, Image } from "react-native"
-import React, { useState, useRef, useMemo, useCallback } from "react"
-import { TextInput, TouchableOpacity } from "react-native-gesture-handler"
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
+import {
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+} from "react-native-gesture-handler"
 import BottomSheet from "@gorhom/bottom-sheet"
 
 import COLORS from "../theme/colors"
 import strings from "../data/strings"
 import { windowHeight, windowWidth } from "../models/common/Dimensions"
+import { getMarketList } from "../api/MarketAPI"
 
-export function ProductScreen() {
+export function ProductScreen({ navigation }) {
   const SearchBar = () => {
     const [keyword, setKeyword] = useState()
 
@@ -25,7 +30,7 @@ export function ProductScreen() {
           ></TextInput>
         </View>
         <View style={styles.inputBox}>
-          <TouchableOpacity onPress={() => {}}>
+          <TouchableOpacity>
             {/* <Image
               style={{
                 width: 20,
@@ -42,7 +47,14 @@ export function ProductScreen() {
   const Product = (props) => {
     return (
       <View style={{ width: "100%" }}>
-        <TouchableOpacity activeOpacity={0.8}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => {
+            navigation.navigate('ProductDetail', {
+              item_id: props.item._id
+          })
+          }}
+        >
           <View style={styles.product}>
             <Image
               source={require("../assets/icons/img.png")}
@@ -63,7 +75,7 @@ export function ProductScreen() {
                   fontFamily: "Roboto-Bold",
                 }}
               >
-                {props.product.title}
+                {props.item.name}
               </Text>
 
               <View
@@ -81,10 +93,10 @@ export function ProductScreen() {
                 </View>
                 <View>
                   <Text style={{ color: COLORS.green }}>10000000</Text>
-                  <Text style={styles.bold}>{props.product.kind}</Text>
-                  <Text style={styles.bold}>{props.product.gender}</Text>
+                  <Text style={styles.bold}>{props.item.kind}</Text>
+                  <Text style={styles.bold}>{props.item.gender}</Text>
                   <Text style={styles.bold}>
-                    {props.product.age} {" tháng"}
+                    {"1"} {" tháng"}
                   </Text>
                 </View>
               </View>
@@ -97,7 +109,7 @@ export function ProductScreen() {
                   fontSize: 14,
                 }}
               >
-                {props.product.place}
+                {props.item.description}
               </Text>
             </View>
           </View>
@@ -106,32 +118,7 @@ export function ProductScreen() {
     )
   }
 
-  const products = [
-    {
-      title: "Cho' Husky",
-      price: 400000,
-      gender: "Đực",
-      kind: "Husky",
-      age: 2,
-      place: "Ho Chi Minh",
-    },
-    {
-      title: "Cho' Husky",
-      price: 400000,
-      gender: "Đực",
-      kind: "Husky",
-      age: 2,
-      place: "Ho Chi Minh",
-    },
-    {
-      title: "Cho' Husky",
-      price: 400000,
-      gender: "Đực",
-      kind: "Husky",
-      age: 2,
-      place: "Ho Chi Minh",
-    },
-  ]
+  const [marketList, setMarketList] = useState([])
 
   const provinces = ["Toàn quốc", "Bình Dương", "Hà Nội"]
   const types = ["Chó", "Mèo"]
@@ -145,9 +132,22 @@ export function ProductScreen() {
   const open = () => {
     bottomSheetRef.current.expand()
   }
-
   const [province, setProvince] = useState()
   const [bottomSheetContent, setBottomSheetContent] = useState(provinces)
+
+  useEffect(() => {
+    let isCancelled = false
+    console.log("====================================")
+    console.log("getting items")
+    console.log("====================================")
+    getMarketList((marketList) => {
+      console.log(marketList)
+      setMarketList(marketList)
+    })
+    return () => {
+      isCancelled = true
+    }
+  }, [])
 
   return (
     <View style={styles.container}>
@@ -187,9 +187,11 @@ export function ProductScreen() {
             </TouchableOpacity>
           </View>
         </View>
-        {products.map((p) => {
-          return <Product product={p} />
-        })}
+        <ScrollView>
+          {marketList.map((item) => {
+            return <Product key={item._id} item={item} />
+          })}
+        </ScrollView>
       </View>
 
       <BottomSheet

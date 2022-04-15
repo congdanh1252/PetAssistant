@@ -1,6 +1,10 @@
 import { View, Text, StyleSheet, Image } from "react-native"
 import React, { useState, useRef, useMemo, useCallback } from "react"
-import { TextInput, TouchableOpacity } from "react-native-gesture-handler"
+import {
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native-gesture-handler"
 import BottomSheet from "@gorhom/bottom-sheet"
 
 import COLORS from "../theme/colors"
@@ -183,17 +187,19 @@ export function PetNurseryScreen({ navigation, route }) {
           </View>
         </View>
         {/* Items */}
-        <View
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            flexWrap: "wrap",
-          }}
-        >
-          {nurserer.map((p) => {
-            return <Nurserer key={p.name} nurserer={p} />
-          })}
-        </View>
+        <ScrollView style={{ marginTop: 4 }}>
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              flexWrap: "wrap",
+            }}
+          >
+            {nurserer.map((p) => {
+              return <Nurserer key={p.name} nurserer={p} />
+            })}
+          </View>
+        </ScrollView>
       </View>
 
       <BottomSheet
