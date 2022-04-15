@@ -1,23 +1,65 @@
 import { View, Text, StyleSheet, Image, ScrollView } from "react-native"
-import React, { useState, useRef, useMemo, useCallback } from "react"
+import React, { useState, useRef, useMemo, useCallback, useEffect } from "react"
 import { TextInput, TouchableOpacity } from "react-native-gesture-handler"
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet"
 
 import COLORS from "../theme/colors"
 import strings from "../data/strings"
 import { windowHeight, windowWidth } from "../models/common/Dimensions"
+import { moneyFormat } from "../models/common/moneyStringFormat"
+import MarketItem from "../models/MarketItem"
+import { getMarketItem } from "../api/MarketAPI"
+import { getUserInfo } from "../api/UserAPI"
+import User from "../models/user"
 
-export function ProductDetailScreen() {
+export function ProductDetailScreen({ route, navigation }) {
   const bottomSheetRef = useRef(BottomSheet)
   const snapPoints = useMemo(() => ["60%", "90%"], [])
   const handleSheetChanges = useCallback((index) => {
     console.log("handleSheetChanges", index)
   }, [])
+  const [item, setItem] = useState(new MarketItem())
+  const [seller, setSeller] = useState(new User())
+
+  useEffect(() => {
+    const { item_id } = route.params
+    let isCancelled = false
+    getMarketItem(item_id, (item) => {
+      if (item != "error") {
+        setItem(item)
+        let temp = new User()
+        temp._id = item.seller_id
+        setSeller(temp)
+      }
+    })
+    return () => {
+      isCancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    let isCancelled = false
+    console.log("Getting seller");
+    console.log(seller);
+    if (seller._id != "") {
+      getUserInfo(seller._id, user => {
+        setSeller(user)
+      })
+    }
+    return () => {
+      isCancelled = true
+    }
+  }, [seller._id])
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={[styles.row60, { height: 50 }]}>
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.goBack()
+          }}
+        >
           <Image source={require("../assets/icons/Back.png")} />
         </TouchableOpacity>
         <Text
@@ -27,7 +69,7 @@ export function ProductDetailScreen() {
             color: COLORS.white,
           }}
         >
-          Mèo
+          {item.name}
         </Text>
         <TouchableOpacity>
           <Image source={require("../assets/icons/Back.png")} />
@@ -44,9 +86,9 @@ export function ProductDetailScreen() {
         <BottomSheetScrollView style={styles.contentContainer}>
           <View>
             <View style={styles.sectionContainer}>
-              <Text style={styles.headerText}>Mèo gì không viết tên</Text>
-              <Text style={styles.normalText}>Chiahuahua - Thuần chủng</Text>
-              <Text style={styles.priceText}>2.000.000 VNĐ</Text>
+              <Text style={styles.headerText}>{item.name}</Text>
+              <Text style={styles.normalText}>{item.species}</Text>
+              <Text style={styles.priceText}>{moneyFormat(item.price)} VNĐ</Text>
             </View>
 
             <View style={styles.sectionContainer}>
@@ -54,19 +96,10 @@ export function ProductDetailScreen() {
 
               <View style={styles.row60}>
                 <View style={{ width: "50%" }}>
-                  <Text style={styles.petInfo}>Giống</Text>
+                  <Text style={styles.petInfo}>Loài</Text>
                 </View>
                 <View style={{ width: "50%" }}>
-                  <Text style={styles.petInfo}>Chihuahua</Text>
-                </View>
-              </View>
-
-              <View style={styles.row60}>
-                <View style={{ width: "50%" }}>
-                  <Text style={styles.petInfo}>Giống</Text>
-                </View>
-                <View style={{ width: "50%" }}>
-                  <Text style={styles.petInfo}>Chihuahua</Text>
+                  <Text style={styles.petInfo}>{item.kind}</Text>
                 </View>
               </View>
 
@@ -75,7 +108,34 @@ export function ProductDetailScreen() {
                   <Text style={styles.petInfo}>Giống</Text>
                 </View>
                 <View style={{ width: "50%" }}>
-                  <Text style={styles.petInfo}>Chihuahua</Text>
+                  <Text style={styles.petInfo}>{item.species}</Text>
+                </View>
+              </View>
+
+              <View style={styles.row60}>
+                <View style={{ width: "50%" }}>
+                  <Text style={styles.petInfo}>Giới tính</Text>
+                </View>
+                <View style={{ width: "50%" }}>
+                  <Text style={styles.petInfo}>{item.gender}</Text>
+                </View>
+              </View>
+
+              <View style={styles.row60}>
+                <View style={{ width: "50%" }}>
+                  <Text style={styles.petInfo}>Chiều cao</Text>
+                </View>
+                <View style={{ width: "50%" }}>
+                  <Text style={styles.petInfo}>{item.height} cm</Text>
+                </View>
+              </View>
+
+              <View style={styles.row60}>
+                <View style={{ width: "50%" }}>
+                  <Text style={styles.petInfo}>Cân nặng</Text>
+                </View>
+                <View style={{ width: "50%" }}>
+                  <Text style={styles.petInfo}>{item.weight} kg</Text>
                 </View>
               </View>
 
@@ -85,12 +145,7 @@ export function ProductDetailScreen() {
                 }}
               >
                 <Text style={styles.petInfo}>
-                  Bé đã được tiêm đầy đủ các liều vaccine cơ bản, sức khỏe hiện
-                  tại vẫn đang rất tốt, vì điều kiện gia đình không cho phép nên
-                  chủ không thể tiếp tục nuôi, chỉ bán cho những người chỉ thực
-                  sự yêu quý động vật. Ai có nhu cầu vui lòng liên hệ trực tiếp
-                  qua ứng dụng hoặc qua số điện thoại được hiển thị ở trên, xin
-                  cảm ơn
+                  {item.description}
                 </Text>
               </View>
             </View>
@@ -105,7 +160,7 @@ export function ProductDetailScreen() {
                 </View>
                 <View style={{ width: "50%" }}>
                   <Text style={styles.petInfo}>
-                    132 Trương Định, Hoàng Mai, Hà Nội
+                    {seller.address}
                   </Text>
                 </View>
               </View>
@@ -116,7 +171,7 @@ export function ProductDetailScreen() {
                   <Text style={styles.petInfo}>Số điện thoại</Text>
                 </View>
                 <View style={{ width: "50%" }}>
-                  <Text style={styles.petInfo}>+84 932 69 63 61</Text>
+                  <Text style={styles.petInfo}>{seller.phoneNumber}</Text>
                 </View>
               </View>
 
@@ -146,7 +201,7 @@ export function ProductDetailScreen() {
                     />
                   </View>
 
-                  <Text style={styles.normalText}>dungtd</Text>
+                  <Text style={styles.normalText}>{seller.name}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={{ alignItems: "center" }}>
                   <Image source={require("../assets/icons/Save_black.png")} />
