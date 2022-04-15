@@ -9,6 +9,7 @@ import BottomSheet from "@gorhom/bottom-sheet"
 
 import COLORS from "../theme/colors"
 import strings from "../data/strings"
+import { moneyFormat } from "../models/common/moneyStringFormat"
 import { windowHeight, windowWidth } from "../models/common/Dimensions"
 import { getMarketList } from "../api/MarketAPI"
 
@@ -50,14 +51,14 @@ export function ProductScreen({ navigation }) {
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => {
-            navigation.navigate('ProductDetail', {
-              item_id: props.item._id
-          })
+            navigation.navigate("ProductDetail", {
+              item_id: props.item._id,
+            })
           }}
         >
           <View style={styles.product}>
             <Image
-              source={require("../assets/icons/img.png")}
+              source={{uri: props.item.photo}}
               style={{
                 width: (windowWidth - 58) / 2,
                 borderRadius: 10,
@@ -71,29 +72,32 @@ export function ProductScreen({ navigation }) {
             >
               <Text
                 style={{
-                  width: (windowWidth - 58) / 2,
                   fontFamily: "Roboto-Bold",
+                  fontSize: 16,
                 }}
               >
-                {props.item.name}
+                [ {props.item.kind} ] {props.item.name}
               </Text>
-
+              <Text style={{ color: COLORS.green, fontSize: 20 }}>
+                {moneyFormat(props.item.price)} VNĐ
+              </Text>
               <View
                 style={{
                   display: "flex",
                   flexDirection: "row",
-                  justifyContent: "space-between",
                 }}
               >
-                <View>
-                  <Text style={styles.medium}>Giá</Text>
+                <View
+                  style={{
+                    marginRight: 20,
+                  }}
+                >
                   <Text style={styles.medium}>Loài</Text>
                   <Text style={styles.medium}>Giống</Text>
                   <Text style={styles.medium}>Tuổi</Text>
                 </View>
                 <View>
-                  <Text style={{ color: COLORS.green }}>10000000</Text>
-                  <Text style={styles.bold}>{props.item.kind}</Text>
+                  <Text style={styles.bold}>{props.item.species}</Text>
                   <Text style={styles.bold}>{props.item.gender}</Text>
                   <Text style={styles.bold}>
                     {"1"} {" tháng"}
@@ -103,13 +107,12 @@ export function ProductScreen({ navigation }) {
 
               <Text
                 style={{
+                  color: "#000",
+                  fontStyle: "italic",
                   alignSelf: "flex-end",
-                  color: COLORS.black,
-                  fontFamily: "Roboto-Regular",
-                  fontSize: 14,
                 }}
               >
-                {props.item.description}
+                {props.item.province}
               </Text>
             </View>
           </View>
@@ -121,33 +124,31 @@ export function ProductScreen({ navigation }) {
   const [marketList, setMarketList] = useState([])
 
   const provinces = ["Toàn quốc", "Bình Dương", "Hà Nội"]
-  const types = ["Chó", "Mèo"]
+  const types = ["Tất cả", "Chó", "Mèo"]
 
   const bottomSheetRef = useRef(BottomSheet)
   const snapPoints = useMemo(() => ["0%", "50%"], [])
-  const handleSheetChanges = useCallback((index) => {
-    console.log("handleSheetChanges", index)
-  }, [])
 
   const open = () => {
     bottomSheetRef.current.expand()
   }
-  const [province, setProvince] = useState()
+  const close = () => {
+    bottomSheetRef.current.close()
+  }
+  const [province, setProvince] = useState("Toàn quốc")
+  const [kind, setKind] = useState("Tất cả")
+
   const [bottomSheetContent, setBottomSheetContent] = useState(provinces)
 
   useEffect(() => {
     let isCancelled = false
-    console.log("====================================")
-    console.log("getting items")
-    console.log("====================================")
-    getMarketList((marketList) => {
-      console.log(marketList)
+    getMarketList(province, kind, (marketList) => {
       setMarketList(marketList)
     })
     return () => {
       isCancelled = true
     }
-  }, [])
+  }, [kind, province])
 
   return (
     <View style={styles.container}>
@@ -159,7 +160,7 @@ export function ProductScreen({ navigation }) {
         <View style={styles.filterContainer}>
           <View style={[styles.filter, { width: 180 }]}>
             <Image source={require("../assets/icons/Map.png")} />
-            <Text>Toàn quốc</Text>
+            <Text>{province}</Text>
             <TouchableOpacity
               onPress={() => {
                 setBottomSheetContent(provinces)
@@ -171,7 +172,7 @@ export function ProductScreen({ navigation }) {
           </View>
           <View style={[styles.filter, { width: 120 }]}>
             <Image source={require("../assets/icons/Map.png")} />
-            <Text>Thuốc</Text>
+            <Text>{kind}</Text>
             <TouchableOpacity
               onPress={() => {
                 setBottomSheetContent(types)
@@ -194,12 +195,7 @@ export function ProductScreen({ navigation }) {
         </ScrollView>
       </View>
 
-      <BottomSheet
-        ref={bottomSheetRef}
-        index={1}
-        snapPoints={snapPoints}
-        onChange={handleSheetChanges}
-      >
+      <BottomSheet ref={bottomSheetRef} index={1} snapPoints={snapPoints}>
         <View style={styles.contentContainer}>
           {bottomSheetContent.map((p, index) => {
             return (
@@ -210,11 +206,14 @@ export function ProductScreen({ navigation }) {
                 }}
                 onPress={(event) => {
                   if (bottomSheetContent[0] == types[0]) {
+                    setKind(types[index])
                     console.log(types[index])
                   }
                   if (bottomSheetContent[0] == provinces[0]) {
+                    setProvince(provinces[index])
                     console.log(provinces[index])
                   }
+                  close()
                 }}
               >
                 <Text>{p}</Text>
@@ -284,6 +283,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.grey,
     borderRadius: 10,
     margin: 10,
+    justifyContent: 'space-between'
   },
   contentContainer: {
     padding: 10,
@@ -292,9 +292,11 @@ const styles = StyleSheet.create({
   medium: {
     fontFamily: "Roboto-Meidum",
     fontSize: 14,
+    color: "#000",
   },
   bold: {
     fontFamily: "Roboto-Bold",
     fontSize: 14,
+    color: "#000",
   },
 })

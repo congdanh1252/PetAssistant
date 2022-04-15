@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Image } from "react-native"
-import React, { useState, useRef, useMemo, useCallback } from "react"
+import React, { useState, useRef, useMemo, useCallback, useEffect } from "react"
 import {
   TextInput,
   TouchableOpacity,
@@ -10,22 +10,27 @@ import BottomSheet from "@gorhom/bottom-sheet"
 import COLORS from "../theme/colors"
 import strings from "../data/strings"
 import { windowHeight, windowWidth } from "../models/common/Dimensions"
+import { getNurseryList, getNurseryItem } from "../api/NurseryAPI"
 
 export function PetNurseryScreen({ navigation, route }) {
   const Nurserer = (props) => {
+    console.log(props.nurserer.photo)
     return (
       <View style={{ width: "50%" }}>
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => {
-            navigation.navigate("NurseryDetail")
+            navigation.navigate("NurseryDetail", {
+              item_id: props.nurserer._id,
+            })
           }}
         >
           <View style={styles.nurserer}>
             <Image
-              source={require("../assets/icons/img.png")}
+              source={require("../assets/icons/nursery.png")}
               style={{
                 width: (windowWidth - 40) / 2,
+                height: (windowWidth - 40) / 2,
                 borderRadius: 10,
               }}
             />
@@ -39,6 +44,7 @@ export function PetNurseryScreen({ navigation, route }) {
                 style={{
                   fontFamily: "Roboto-Bold",
                   textAlign: "center",
+                  color: COLORS.black,
                 }}
               >
                 {props.nurserer.name}
@@ -46,12 +52,12 @@ export function PetNurseryScreen({ navigation, route }) {
 
               <View style={styles.row}>
                 <View>
-                  <Text style={styles.regular12}>Kinh nghiệm</Text>
+                  {/* <Text style={styles.regular12}>Kinh nghiệm</Text> */}
                   <Text style={styles.regular12}>Trình độ</Text>
                   <Text style={styles.regular12}>Đánh giá</Text>
                 </View>
                 <View>
-                  <Text style={styles.bold12}>{props.nurserer.experience}</Text>
+                  {/* <Text style={styles.bold12}>{props.nurserer.experience}</Text> */}
                   <Text style={styles.bold12}>{props.nurserer.level}</Text>
                   <Text style={styles.bold12}>{props.nurserer.rating}</Text>
                 </View>
@@ -71,7 +77,7 @@ export function PetNurseryScreen({ navigation, route }) {
                   }}
                 >
                   {" "}
-                  Được thuê {props.nurserer.hired} lần
+                  Được thuê {props.nurserer.hired_time} lần
                 </Text>
                 <Text
                   style={{
@@ -79,7 +85,7 @@ export function PetNurseryScreen({ navigation, route }) {
                     color: COLORS.green,
                   }}
                 >
-                  Đang sẵn sàng
+                  {props.nurserer.status}
                 </Text>
               </View>
             </View>
@@ -89,35 +95,11 @@ export function PetNurseryScreen({ navigation, route }) {
     )
   }
 
-  const nurserer = [
-    {
-      name: "Tong Duc Dung",
-      experience: "Chó, mèo",
-      rating: 4.7,
-      level: "Chuyen nghiep",
-      hired: 78,
-      status: "Dang san sang",
-    },
-    {
-      name: "Tong Duc D",
-      experience: "Chó, mèo",
-      rating: 4.7,
-      level: "Chuyen nghiep",
-      hired: 78,
-      status: "Dang san sang",
-    },
-    {
-      name: "Tong Duc",
-      experience: "Chó, mèo",
-      rating: 4.7,
-      level: "Chuyen nghiep",
-      hired: 78,
-      status: "Dang san sang",
-    },
-  ]
+  const [nurseries, setnNurseries] = useState([])
 
-  const provinces = ["Toàn quốc", "Bình Dương", "Hà Nội"]
-  const types = ["Chó", "Mèo"]
+  const levels = ["Tất cả", "Chuyên nghiệp", "Bán chuyên", "Nghiệp dư"]
+  const provinces = ["Toàn quốc", "Hà Nội", "Bình Dương", "TP. HCM"]
+  const types = ["Tất cả", "Chó", "Mèo"]
 
   const bottomSheetRef = useRef(BottomSheet)
   const snapPoints = useMemo(() => ["0%", "50%"], [])
@@ -129,8 +111,26 @@ export function PetNurseryScreen({ navigation, route }) {
     bottomSheetRef.current.expand()
   }
 
-  const [province, setProvince] = useState()
-  const [bottomSheetContent, setBottomSheetContent] = useState(provinces)
+  const close = () => {
+    bottomSheetRef.current.close()
+  }
+
+  const [province, setProvince] = useState("Toàn quốc")
+  const [level, setLevel] = useState("Tất cả")
+  const [type, setType] = useState("Tất cả")
+
+  const [bottomSheetContent, setBottomSheetContent] = useState(levels)
+
+  useEffect(() => {
+    let isCancelled = false
+
+    getNurseryList(province, type, level, (nurseryList) => {
+      setnNurseries(nurseryList)
+    })
+    return () => {
+      isCancelled = true
+    }
+  }, [province, type, level])
 
   return (
     <View style={styles.container}>
@@ -158,8 +158,8 @@ export function PetNurseryScreen({ navigation, route }) {
       <View style={styles.bodyContainer}>
         {/* Filter */}
         <View style={styles.filterContainer}>
-          <View style={[styles.filter, { width: 180 }]}>
-            <Text>Trình độ</Text>
+          <View style={[styles.filter, { width: 120 }]}>
+            <Text style={{ color: COLORS.black }}>{province}</Text>
             <TouchableOpacity
               onPress={() => {
                 setBottomSheetContent(provinces)
@@ -169,8 +169,19 @@ export function PetNurseryScreen({ navigation, route }) {
               <Image source={require("../assets/icons/Dropdown.png")} />
             </TouchableOpacity>
           </View>
-          <View style={[styles.filter, { width: 120 }]}>
-            <Text>Chó</Text>
+          <View style={[styles.filter, { width: 130 }]}>
+            <Text style={{ color: COLORS.black }}>{level}</Text>
+            <TouchableOpacity
+              onPress={() => {
+                setBottomSheetContent(levels)
+                open()
+              }}
+            >
+              <Image source={require("../assets/icons/Dropdown.png")} />
+            </TouchableOpacity>
+          </View>
+          <View style={[styles.filter, { width: 70 }]}>
+            <Text style={{ color: COLORS.black }}>{type}</Text>
             <TouchableOpacity
               onPress={() => {
                 setBottomSheetContent(types)
@@ -195,8 +206,8 @@ export function PetNurseryScreen({ navigation, route }) {
               flexWrap: "wrap",
             }}
           >
-            {nurserer.map((p) => {
-              return <Nurserer key={p.name} nurserer={p} />
+            {nurseries.map((p) => {
+              return <Nurserer key={p._id} nurserer={p} />
             })}
           </View>
         </ScrollView>
@@ -217,11 +228,15 @@ export function PetNurseryScreen({ navigation, route }) {
                   padding: 10,
                 }}
                 onPress={(event) => {
-                  if (bottomSheetContent[0] == types[0]) {
-                    console.log(types[index])
-                  }
-                  if (bottomSheetContent[0] == provinces[0]) {
-                    console.log(provinces[index])
+                  if (bottomSheetContent[1] == types[1]) {
+                    setType(types[index])
+                    close()
+                  } else if (bottomSheetContent[1] == provinces[1]) {
+                    setProvince(provinces[index])
+                    close()
+                  } else if (bottomSheetContent[1] == levels[1]) {
+                    setLevel(levels[index])
+                    close()
                   }
                 }}
               >
@@ -292,6 +307,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.grey,
     borderRadius: 10,
     margin: 5,
+    padding: 4,
   },
   contentContainer: {
     padding: 10,
