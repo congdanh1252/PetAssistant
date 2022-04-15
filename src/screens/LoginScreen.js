@@ -92,7 +92,6 @@ export function LoginScreen({navigation}) {
   
           {/* USERNAME INPUT */}
           <Input
-            inputStyle={styles.textStyle}
             containerStyle={styles.inputContainer}
             inputStyle={styles.input}
             label={strings.email}

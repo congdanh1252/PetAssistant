@@ -5346,6 +5346,15 @@ prop-types@^15.5.10, prop-types@^15.6.0, prop-types@^15.6.2, prop-types@^15.7.2:
     object-assign "^4.1.1"
     react-is "^16.13.1"
 
+prop-types@^15.6.1:
+  version "15.8.1"
+  resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.8.1.tgz#67d87bf1a694f48435cf332c24af10214a3140b5"
+  integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
+  dependencies:
+    loose-envify "^1.4.0"
+    object-assign "^4.1.1"
+    react-is "^16.13.1"
+
 pseudomap@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/pseudomap/-/pseudomap-1.0.2.tgz#f052a28da70e618917ef0a8ac34c1ae5a68286b3"
@@ -5384,6 +5393,14 @@ range-parser@~1.2.1:
   resolved "https://registry.yarnpkg.com/range-parser/-/range-parser-1.2.1.tgz#3cf37023d199e1c24d1a55b84800c2f3e6468031"
   integrity sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==
 
+react-addons-shallow-compare@15.6.2:
+  version "15.6.2"
+  resolved "https://registry.yarnpkg.com/react-addons-shallow-compare/-/react-addons-shallow-compare-15.6.2.tgz#198a00b91fc37623db64a28fd17b596ba362702f"
+  integrity sha1-GYoAuR/DdiPbZKKP0XtZa6NicC8=
+  dependencies:
+    fbjs "^0.8.4"
+    object-assign "^4.1.0"
+
 react-devtools-core@^4.6.0:
   version "4.24.1"
   resolved "https://registry.yarnpkg.com/react-devtools-core/-/react-devtools-core-4.24.1.tgz#d274390db86898d779b6202a318fe6422eb046bb"
@@ -5407,7 +5424,11 @@ react-freeze@^1.0.0:
   resolved "https://registry.yarnpkg.com/react-freeze/-/react-freeze-1.0.0.tgz#b21c65fe1783743007c8c9a2952b1c8879a77354"
   integrity sha512-yQaiOqDmoKqks56LN9MTgY06O0qQHgV4FUrikH357DydArSZHQhl0BJFqGKIZoTqi8JizF9Dxhuk1FIZD6qCaw==
 
+<<<<<<< HEAD
 react-is@^16.12.0, react-is@^16.13.0, react-is@^16.13.1, react-is@^16.7.0, react-is@^16.8.4:
+=======
+react-is@^16.12.0, react-is@^16.13.0, react-is@^16.13.1, react-is@^16.7.0, react-is@^16.8.1, react-is@^16.8.4:
+>>>>>>> b08147d74edf4dc270e8aebf10fd6db8cdd5f631
   version "16.13.1"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
@@ -5501,9 +5522,9 @@ react-native-month-year-picker@^1.8.0:
     moment "^2.24.0"
 
 react-native-pager-view@^5.4.9:
-  version "5.4.15"
-  resolved "https://registry.yarnpkg.com/react-native-pager-view/-/react-native-pager-view-5.4.15.tgz#075fef5ae4ba6ecc37e49b6c4a24770131a2a3cc"
-  integrity sha512-5NssD840wFCuOL4B1ZRiRADvt+Vx2Dgify4SmAUqHXCx03yiGPnRWmFjYXyQeK6gq/8VY+gPGE4bTy9ahzBbDw==
+  version "5.4.9"
+  resolved "https://registry.yarnpkg.com/react-native-pager-view/-/react-native-pager-view-5.4.9.tgz#c0d40847cfeda5a4e729b53271b0ee0fedff3eb5"
+  integrity sha512-D6tzxpwMGdl6CXgtskGWhKRc5cJakCazESRGt7PkqnpyiH3N35ft1KmR82pCSQetAFlytFiToeu3a/dG5CELvA==
 
 react-native-push-notification@^8.1.1:
   version "8.1.1"
@@ -5561,6 +5582,14 @@ react-native-size-matters@^0.3.1:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/react-native-size-matters/-/react-native-size-matters-0.3.1.tgz#24d0cfc335a2c730f6d58bd7b43ea5a41be4b49f"
   integrity sha512-mKOfBLIBFBcs9br1rlZDvxD5+mAl8Gfr5CounwJtxI6Z82rGrMO+Kgl9EIg3RMVf3G855a85YVqHJL2f5EDRlw==
+
+react-native-snap-carousel@^3.9.1:
+  version "3.9.1"
+  resolved "https://registry.yarnpkg.com/react-native-snap-carousel/-/react-native-snap-carousel-3.9.1.tgz#6fd9bd8839546c2c6043a41d2035afbc6fe0443e"
+  integrity sha512-xWEGusacIgK1YaDXLi7Gao2+ISLoGPVEBR8fcMf4tOOJQufutlNwkoLu0l6B8Qgsrre0nTxoVZikRgGRDWlLaQ==
+  dependencies:
+    prop-types "^15.6.1"
+    react-addons-shallow-compare "15.6.2"
 
 react-native-svg-charts@^5.4.0:
   version "5.4.0"

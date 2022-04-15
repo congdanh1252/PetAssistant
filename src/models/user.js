@@ -7,6 +7,7 @@ export default class User {
       this.phoneNumber = '';
       this.avatar = '';
       this.expenditureLimit = 0;
+      this.address = '';
     }
   
     update(data) {
@@ -16,6 +17,7 @@ export default class User {
       this.name = data.name || '';
       this.phoneNumber = data.phone_number || '';
       this.expenditureLimit = data.expenditure_limit || 0;
+      this.address = data.address || '';
     }
   
     static clone(data) {
