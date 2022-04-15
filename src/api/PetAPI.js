@@ -54,6 +54,34 @@ export const uploadImageToStorage = async (uri, name, handleImageUrl) => {
     });
 };
 
+export const uploadMultipleImagesToStorage = async (uriArr, fNameArr, handleCallback) => {
+    let urlArr = [];
+
+    for (let i = 0; i < uriArr.length; i++) {
+        const reference = storage().ref(`${fNameArr[i]}`)
+        let task = reference.putFile(uriArr[i]);
+        task.then(() => {
+            console.log('Image ' + i + ' uploaded to the bucket!');
+        
+            reference.getDownloadURL()
+            .then((url) => {
+                console.log(url);
+                urlArr.push(url)
+
+                if (urlArr.length == uriArr.length) {
+                    handleCallback(urlArr)
+                }
+            })
+            .catch((e) => {
+                console.log('get downloadUrl error => ', reference.name);
+            })
+        })
+        .catch((e) => {
+            console.log('uploading image error => ', e);
+        });
+    }
+}
+
 export const addPetToFirestore = (pet, handlePetAdded) => {
     firestore()
     .collection('users/' + auth().currentUser.uid + '/pets')
@@ -122,6 +150,31 @@ export const deleteImageFromStorage = (url) => {
         console.log('pet photo deleted!')
     }).catch((error) => {
         console.log('Error deleting pet photo: ' + error);
+    });
+};
+
+export const addSellPetToFirestore = (pet, handlePetAdded) => {
+    firestore()
+    .collection('market')
+    .add({
+        name: pet.name,
+        kind: pet.kind,
+        gender: pet.gender,
+        species: pet.species,
+        height: pet.height,
+        weight: pet.weight,
+        photo: pet.photo,
+        price: pet.price,
+        discount_price: pet.discount_price,
+        description: pet.description,
+        additional_photos: pet.additional_photos,
+        seller_id: auth().currentUser.uid
+    })
+    .then(() => {
+        handlePetAdded('Success');
+    })
+    .catch((e) => {
+        handlePetAdded(e);
     });
 };
 

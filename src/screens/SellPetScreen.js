@@ -11,25 +11,32 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import Toast from "react-native-toast-message";
 import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 
-import { getSpeciesList } from "../api/PetAPI";
+import { 
+    getSpeciesList,
+    uploadMultipleImagesToStorage,
+    addSellPetToFirestore
+} from "../api/PetAPI";
 import COLORS from '../theme/colors';
 import strings from "../data/strings";
 import BackButton from "../components/BackButton";
-import Pet from "../models/pet";
+import PetSell from "../models/petSell";
 
 const SellPetScreen = ({route, navigation}) => {
     var elseOption = '';
-    var pet = new Pet();
-    const { action, petObj } = route.params;
-    const [photoUri, setPhotoUri] = useState(action=='add' ? '' : petObj.photo);
-    const [photoFileName, setPhotoFileName] = useState('');
+    var pet = new PetSell();
+    const { petObj } = {
+        
+    };
+    const { action } = route.params;
+    const [photoUri, setPhotoUri] = useState(action=='add' ? [] : petObj.photo.concat(petObj.additional_photos));
+    const [photoFileName, setPhotoFileName] = useState([]);
     const [name, setName] = useState(action=='add' ? '' : petObj.name);
     const [kind, setKind] = useState(action=='add' ? '' : petObj.kind);
     const [gender, setGender] = useState(action=='add' ? '' : petObj.gender);
     const [species, setSpecies] = useState(action=='add' ? '' : petObj.species);
-    const [price, setPrice] = useState(action=='add' ? '' : petObj.species);
-    const [discountPrice, setDiscountPrice] = useState(action=='add' ? '' : petObj.species);
-    const [description, setDescription] = useState(action=='add' ? '' : petObj.breed);
+    const [price, setPrice] = useState(action=='add' ? '' : petObj.price);
+    const [discountPrice, setDiscountPrice] = useState(action=='add' ? '' : petObj.discount_price);
+    const [description, setDescription] = useState(action=='add' ? '' : petObj.description);
     const [height, setHeight] = useState(action=='add' ? '' : (petObj.height + ''));
     const [weight, setWeight] = useState(action=='add' ? '' : (petObj.weight + ''));
     const [dropdown, setDropdown] = useState('');
@@ -51,23 +58,24 @@ const SellPetScreen = ({route, navigation}) => {
         setSpeciesOpt(list);
     }
 
-    const initPetData = (photoUrl) => {
+    const initPetData = (urlArr) => {
         pet.name = name;
         pet.kind = kind;
         pet.gender = gender;
         pet.species = species;
-        pet.photo = photoUrl;
+        pet.photo = urlArr[0];
+        pet.additional_photos = urlArr.splice(1);
         pet.height = parseFloat(height);
         pet.weight = parseFloat(weight);
-        pet.price = price;
-        pet.discountPrice = discountPrice;
+        pet.price = parseInt(price);
+        pet.discount_price = parseInt(discountPrice);
         pet.description = description;
-        action === 'edit' ? pet._id = petObj._id : null;
+        //action === 'edit' ? pet._id = petObj._id : null;
     }
 
     const checkSubmitFields = () => {
-        if (photoUri=='' || name=='' || kind=='' || gender=='' || species==''
-            || breed=='' || description=='' || height=='' || weight=='' || price=='') {
+        if (photoUri.length < 1 || name=='' || kind=='' || gender=='' || species==''
+            || description=='' || height=='' || weight=='' || price=='') {
             Alert.alert(
                 strings.fail,
                 strings.err_check_inputs,
@@ -82,9 +90,10 @@ const SellPetScreen = ({route, navigation}) => {
             console.log('check input ok');
             setUploading(true);
 
-            // if (action==='add') {
-            //     uploadImageToStorage(photoUri, photoFileName, handleImageUrl);
-            // } else {
+            if (action==='add') {
+                uploadMultipleImagesToStorage(photoUri, photoFileName, handleImageUrl);
+            }
+            // else {
             //     if (photoFileName==='') {
             //         initPetData(petObj.photo);
             //         updatePetInFirestore(pet, handlePetUpdated);
@@ -97,8 +106,8 @@ const SellPetScreen = ({route, navigation}) => {
     }
 
     const resetAllFields = () => {
-        setPhotoUri('');
-        setPhotoFileName('');
+        setPhotoUri(new Array());
+        setPhotoFileName(new Array());
         setName('');
         setKind('');
         setGender('');
@@ -117,7 +126,7 @@ const SellPetScreen = ({route, navigation}) => {
         Alert.alert(
             'Cảnh báo',
             (action == 'add'
-            ? 'Bạn có chắc muốn hủy việc thêm thông tin thú cưng?'
+            ? 'Bạn có chắc muốn hủy đăng thông tin bán thú cưng?'
             : 'Bạn có chắc muốn hủy việc chỉnh sửa thông tin thú cưng?'),
             [
                 {
@@ -135,10 +144,14 @@ const SellPetScreen = ({route, navigation}) => {
         );
     }
 
-    const handleImageUrl = (url) => {
-        initPetData(url);
-        // action==='add' ?
-        // addPetToFirestore(pet, handlePetAdded) : updatePetInFirestore(pet, handlePetUpdated)
+    const handleImageUrl = (urlArr) => {
+        if (urlArr.length == photoUri.length) {
+            console.log(urlArr)
+            initPetData(urlArr);
+            addSellPetToFirestore(pet, handlePetAdded);
+        } else {
+            console.log('Not enough download urls!');
+        }
     }
 
     const showResultToast = (result) => {
@@ -146,12 +159,12 @@ const SellPetScreen = ({route, navigation}) => {
             Toast.show({
                 type: 'success',
                 text1: strings.success,
-                text2: action==='add' ? strings.msg_add_pet_success : strings.msg_update_pet_success,
+                text2: action==='add' ? strings.msg_upload_sell_pet_success : strings.msg_update_sell_pet_success,
                 position: 'top',
                 autoHide: true,
             });
 
-            action==='add' ? console.log('Pet added!') : console.log('Pet updated!');
+            action==='add' ? console.log('Sell pet uploaded!') : console.log('Updated sell pet!');
         }
         else {
             Toast.show({
@@ -175,50 +188,39 @@ const SellPetScreen = ({route, navigation}) => {
         navigation.goBack();
     }
 
-    const handlePetUpdated = (result) => {
-        setUploading(false);
-        showResultToast(result);
+    const updatePhotoUris = (response) => {
+        let listUri = [];
+        let listFilename = [];
 
-        navigation.goBack();
+        response.forEach(item => {
+            listUri.push(item.uri);
+        });
+
+        response.forEach(item => {
+            listFilename.push(item.fileName);
+        });
+
+        setPhotoUri(listUri)
+        setPhotoFileName(listFilename)
     }
 
-    const addPetPhoto = (method) => {
-        console.log(method);
+    const addPetPhoto = () => {
         let options = {
             selectionLimit: 0,
             mediaType: 'photo',
         }
 
-        if (method==strings.pick_photo_fr_lib) {
-            launchImageLibrary(options, (response) => {
-                if (response.didCancel) {
-                    console.log('User cancelled image picker');
-                }
-                else if (response.errorCode == 'permission') {
-                    console.log(strings.err_photo_picker_permission);
-                }
-                else {
-                    setPhotoUri(response.assets[0].uri);
-                    setPhotoFileName(response.assets[0].fileName);
-                    console.log(response.assets[0].fileName);
-                }
-            })
-        }
-        else {
-            launchCamera(options, (response) => {
-                if (response.didCancel) {
-                    console.log('User cancelled image picker');
-                }
-                else if (response.errorCode == 'permission') {
-                    console.log(strings.err_photo_picker_permission);
-                }
-                else {
-                    setPhotoUri(response.assets[0].uri);
-                    setPhotoFileName(response.assets[0].fileName);
-                    console.log(response.assets[0].fileName);
-                }
-            })
-        }
+        launchImageLibrary(options, (response) => {
+            if (response.didCancel) {
+                console.log('User cancelled image picker');
+            }
+            else if (response.errorCode == 'permission') {
+                console.log(strings.err_photo_picker_permission);
+            }
+            else {
+                updatePhotoUris(response.assets)
+            }
+        })
     }
 
     const setValueFromDropdown = (value) => {
@@ -248,9 +250,6 @@ const SellPetScreen = ({route, navigation}) => {
         switch (dropdown) {
             case 'Kind':
                 options.push(strings.dog, strings.cat, strings.bird, strings.snake, 'Hamster', strings.else_option);
-                break;
-            case 'Gender':
-                options.push(strings.male, strings.female);
                 break;
             case 'Species':
                 switch (kind) {
@@ -291,7 +290,7 @@ const SellPetScreen = ({route, navigation}) => {
                 }
                 break;
             default:
-                options.push(strings.take_photo, strings.pick_photo_fr_lib);
+                options.push(strings.male, strings.female);
         }
 
         for (let i = 0; i < options.length; i++) {
@@ -363,6 +362,71 @@ const SellPetScreen = ({route, navigation}) => {
         setSpeciesChoiceBase(map);
     }
 
+    const removePhotoOnClick = (uri) => {
+        let listUri = [];
+        let listFilename = [];
+        let removeIndex = 0;
+
+        for (let i = 0; i < photoUri.length; i++) {
+            if (photoUri[i] != uri) {
+                listUri.push(photoUri[i])
+            }
+            if (photoUri[i] == uri) {
+                removeIndex = i;
+            }
+        }
+
+        for (let i = 0; i < photoFileName.length; i++) {
+            if (i != removeIndex) {
+                listFilename.push(photoFileName[i])
+            }
+        }
+
+        setPhotoUri(listUri)
+        setPhotoFileName(listFilename)
+    }
+
+    const AdditionalPhotos = () => {
+        let photos = photoUri.slice(1);
+
+        return (
+            <View style={styles.additional_photos_holder}>
+                {
+                    photos.map((item) => {
+                        return (
+                            <View
+                                key={item}
+                                style={[styles.pet_photo,
+                                    {
+                                        width: '30%',
+                                        marginLeft: 4,
+                                        marginRight: 4,
+                                        marginBottom: 6,
+                                    }
+                                ]}
+                            >
+                                <Image
+                                    source={{uri: item}}
+                                    style={styles.pet_photo}
+                                />
+
+                                <TouchableOpacity
+                                    activeOpacity={0.7}
+                                    style={styles.remove_photo_icon}
+                                    onPress={() => {
+                                        removePhotoOnClick(item)
+                                    }}
+                                >
+                                    <Text style={{fontSize: 22, color: '#fff'}}>-</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )
+                    })
+                }
+            </View>
+        )
+    }
+
     //get species list
     useEffect(() => {
         let isMounted = true;
@@ -385,7 +449,7 @@ const SellPetScreen = ({route, navigation}) => {
                 />
 
                 <Text style={styles.header_title}>
-                    {action==='add' ? strings.add_pet : strings.edit_pet_info}
+                    {strings.sell_pet_info_label}
                 </Text>
             </View>
 
@@ -413,9 +477,9 @@ const SellPetScreen = ({route, navigation}) => {
                                 <TouchableOpacity
                                     style={styles.photo_picker}
                                     activeOpacity={0.7}
-                                    onPress={() => setDropdown('AddPhoto')}
+                                    onPress={() => addPetPhoto()}
                                 >
-                                    {(photoUri=='' ? 
+                                    {(photoUri.length < 1 ? 
                                         <View style={styles.plus_icon}>
                                             <Image
                                                 source={require('../assets/icons/Add.png')}
@@ -425,13 +489,20 @@ const SellPetScreen = ({route, navigation}) => {
                                         : 
                                         <View style={styles.pet_photo}>
                                             <Image
-                                                source={{uri: photoUri}}
+                                                source={{uri: photoUri[0]}}
                                                 style={styles.pet_photo}
                                             />
                                         </View>
                                     )}
                                 </TouchableOpacity>
                             </View>
+
+                            {/* Additional photos */}
+                            {
+                                photoUri.length > 1 ?
+                                <AdditionalPhotos/>
+                                : null
+                            }
 
                             {/* Name */}
                             <View style={styles.input_holder}>
@@ -520,55 +591,6 @@ const SellPetScreen = ({route, navigation}) => {
                                 </TouchableOpacity>
                             </View>
 
-                            {/* Breed + Status */}
-                            <View style={styles.two_on_row}>
-                                {/* Breed */}
-                                <View style={styles.input_holder_small}>
-                                    <Text style={styles.label}>{strings.breed}</Text>
-
-                                    <TouchableOpacity
-                                        activeOpacity={0.7}
-                                        onPress={() => setDropdown('Breed')}
-                                    >
-                                        <TextInput
-                                            editable={false}
-                                            style={styles.input}
-                                            placeholderTextColor={'#898989'}
-                                            placeholder={strings.breed}
-                                            value={breed}
-                                        />
-
-                                        <Image
-                                            source={require('../assets/icons/ic_down.png')}
-                                            style={styles.down_icon}
-                                        />
-                                    </TouchableOpacity>
-                                </View>
-
-                                {/* Status */}
-                                <View style={styles.input_holder_small}>
-                                    <Text style={styles.label}>{strings.status}</Text>
-
-                                    <TouchableOpacity
-                                        activeOpacity={0.7}
-                                        onPress={() => setDropdown('Status')}
-                                    >
-                                        <TextInput
-                                            editable={false}
-                                            style={styles.input}
-                                            placeholderTextColor={'#898989'}
-                                            placeholder={strings.status}
-                                            value={status}
-                                        />
-
-                                        <Image
-                                            source={require('../assets/icons/ic_down.png')}
-                                            style={styles.down_icon}
-                                        />
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-
                             {/* Height + Weight */}
                             <View style={styles.two_on_row}>
                                 {/* Height */}
@@ -614,24 +636,69 @@ const SellPetScreen = ({route, navigation}) => {
                                 </View>
                             </View>
 
-                            {/* Chi tiết */}
+                            {/* Price + Discount price */}
+                            <View style={styles.two_on_row}>
+                                {/* Price */}
+                                <View style={styles.input_holder_small}>
+                                    <Text style={styles.label}>{strings.og_price_label} (VNĐ)</Text>
+
+                                    <TouchableOpacity
+                                        activeOpacity={0.7}
+                                    >
+                                        <TextInput
+                                            style={styles.input}
+                                            keyboardType={'numeric'}
+                                            textContentType={"telephoneNumber"}
+                                            placeholderTextColor={'#898989'}
+                                            placeholder={strings.og_price_label}
+                                            onChangeText={value => {
+                                                setPrice(value)
+                                            }}
+                                            value={price}
+                                        />
+                                    </TouchableOpacity>
+                                </View>
+
+                                {/* Discount price */}
+                                <View style={styles.input_holder_small}>
+                                    <Text style={styles.label}>{strings.discount_price_label} (VNĐ)</Text>
+
+                                    <TouchableOpacity
+                                        activeOpacity={0.7}
+                                    >
+                                        <TextInput
+                                            style={styles.input}
+                                            keyboardType={'numeric'}
+                                            textContentType={"telephoneNumber"}
+                                            placeholderTextColor={'#898989'}
+                                            placeholder={strings.discount_price_label}
+                                            onChangeText={value => {
+                                                setDiscountPrice(value)
+                                            }}
+                                            value={discountPrice}
+                                        />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+
+                            {/* Mô tả */}
                             <View style={styles.input_holder}>
-                                <Text style={styles.label}>{strings.detail}</Text>
+                                <Text style={styles.label}>{strings.description_label}</Text>
 
                                 <TextInput
-                                    editable={editDetail}
-                                    style={[styles.input, {height: 66}]}
+                                    editable={true}
+                                    style={[styles.input, {height: 116}]}
                                     multiline={true}
                                     placeholderTextColor={'#898989'}
-                                    placeholder={strings.detail + ' ' + strings.injection_label.toLowerCase()}
-                                    value={detail}
+                                    placeholder={strings.sell_description_msg}
+                                    value={description}
                                     onChangeText={value => {
                                         setDescription(value)
                                     }}
                                 />
                             </View>
 
-                            {/* Save + Cancel buttons */}
+                            {/* Finish + Cancel buttons */}
                             <View style={styles.footer_buttons}>
                                 <Button
                                     title={strings.cancel}
@@ -642,7 +709,7 @@ const SellPetScreen = ({route, navigation}) => {
                                 </Button>
 
                                 <Button
-                                    title={strings.save}
+                                    title={strings.finist}
                                     titleStyle={styles.button_title}
                                     buttonStyle={styles.button}
                                     onPress={() => checkSubmitFields()}
@@ -754,8 +821,8 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     pet_photo_holder: {
-        width: '40%',
-        height: 180,
+        width: '38%',
+        height: 160,
         marginTop: 12,
         marginBottom: 4,
         alignItems: 'center',
@@ -763,7 +830,7 @@ const styles = StyleSheet.create({
     },
     photo_picker: {
         width: '100%',
-        height: 140,
+        height: 120,
         borderRadius: 15,
         alignItems: 'center',
         justifyContent: 'center',
@@ -771,12 +838,31 @@ const styles = StyleSheet.create({
     },
     pet_photo: {
         width: '100%',
-        height: 140,
+        height: 120,
         borderRadius: 15,
     },
     plus_icon: {
         width: 50,
         height: 50,
+    },
+    remove_photo_icon: {
+        position: 'absolute',
+        right: -6,
+        top: -6,
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: COLORS.black
+    },
+    additional_photos_holder: {
+        width: '100%',
+        display: 'flex',
+        flexWrap: 'wrap',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     input_holder: {
         width: '100%',
@@ -828,7 +914,7 @@ const styles = StyleSheet.create({
     footer_buttons: {
         width: '100%',
         height: 40,
-        marginTop: 70,
+        marginTop: 40,
         marginBottom: 24,
         flexDirection: 'row',
         alignItems: 'center',
