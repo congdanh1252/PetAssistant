@@ -176,7 +176,7 @@ export function PetNurseryDetailScreen({ navigation, route }) {
               >
                 {item.experience}
               </Text>
-              <View
+              {/* <View
                 style={[
                   styles.rowContainer,
                   { width: "60%", alignSelf: "center" },
@@ -190,7 +190,7 @@ export function PetNurseryDetailScreen({ navigation, route }) {
                   <Text style={styles.bold}>Chiahuahua, Alaska</Text>
                   <Text style={styles.bold}>Anh long ngan, Mun</Text>
                 </View>
-              </View>
+              </View> */}
             </View>
           </View>
 
