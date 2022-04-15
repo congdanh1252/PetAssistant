@@ -2,7 +2,10 @@ import firestore from "@react-native-firebase/firestore"
 import auth from "@react-native-firebase/auth"
 import MarketItem from "../models/MarketItem"
 
-export const getMarketList = (handleCallback) => {
+export const getMarketList = (province, kind, handleCallback) => {
+  console.log("Province: ", province)
+  console.log("Kind : ", kind)
+
   var marketList = new Array()
   firestore()
     .collection("market")
@@ -12,10 +15,17 @@ export const getMarketList = (handleCallback) => {
         handleCallback("empty")
       } else {
         querySnapshot.forEach((documentSnapshot) => {
-          let marketItem = new MarketItem()
-          marketItem.update(documentSnapshot.data())
-          marketItem._id = documentSnapshot.id
-          marketList.push(marketItem)
+          if (
+            (documentSnapshot.data().kind == kind || kind == "Tất cả") &&
+            (documentSnapshot.data().province == province ||
+              province == "Toàn quốc")
+          ) {
+            console.log(documentSnapshot.data());
+            let marketItem = new MarketItem()
+            marketItem.update(documentSnapshot.data())
+            marketItem._id = documentSnapshot.id
+            marketList.push(marketItem)
+          }
         })
         handleCallback(marketList)
       }

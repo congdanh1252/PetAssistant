@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Image } from "react-native"
-import React, { useState, useRef, useMemo, useCallback } from "react"
+import React, { useState, useRef, useMemo, useCallback, useEffect } from "react"
 import {
   ScrollView,
   TextInput,
@@ -10,6 +10,8 @@ import BottomSheet from "@gorhom/bottom-sheet"
 import COLORS from "../theme/colors"
 import strings from "../data/strings"
 import { windowHeight, windowWidth } from "../models/common/Dimensions"
+import { getNurseryItem, getRatingList } from "../api/NurseryAPI"
+import Nursery from "../models/nursery"
 
 const Star = (props) => {
   var star = []
@@ -19,7 +21,7 @@ const Star = (props) => {
   return <View style={styles.rowContainer}>{star}</View>
 }
 
-const Rating = () => {
+const Rating = (props) => {
   return (
     <View
       style={{
@@ -34,23 +36,53 @@ const Rating = () => {
           <Text
             style={{
               fontFamily: "Roboto-Bold",
+              color: COLORS.black,
             }}
           >
-            Mai Cong Danh
+            {props.rating.user}
           </Text>
-          <Text> đã thuê 2 ngay</Text>
+          <Text> đã thuê {props.rating.period} ngày</Text>
         </Text>
-        <Star num={4} />
+        <Star num={props.rating.rating} />
       </View>
-      <Text style={{ textAlign: "justify" }}>
-        Bạn có kinh nghiệm nên gửi rất yên tâm, lúc về Tom nhà mình còn quyến
-        luyến nữa cơ, sẽ còn ủng hộ bạn!
+      <Text style={{ textAlign: "justify", color: COLORS.black }}>
+        {props.rating.detail}
       </Text>
     </View>
   )
 }
 
-export function PetNurseryDetailScreen() {
+export function PetNurseryDetailScreen({ navigation, route }) {
+  const [item, setItem] = useState(new Nursery())
+  const [ratingList, setRatingList] = useState([])
+
+  useEffect(() => {
+    const { item_id } = route.params
+    let isCancelled = false
+    getNurseryItem(item_id, (item) => {
+      if (item != "error") {
+        setItem(item)
+      }
+    })
+    return () => {
+      isCancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    const { item_id } = route.params
+    let isCancelled = false
+    getRatingList(item_id, (ratingList) => {
+      if (item != "error") {
+        console.log(ratingList)
+        setRatingList(ratingList)
+      }
+    })
+    return () => {
+      isCancelled = true
+    }
+  }, [item._id])
+
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
@@ -82,9 +114,10 @@ export function PetNurseryDetailScreen() {
             <View style={styles.line} />
             <View style={styles.rowContainer}>
               <Image
-                source={require("../assets/icons/img.png")}
+                source={require("../assets/icons/nursery.png")}
                 style={{
                   width: (windowWidth - 40) / 2,
+                  height: (windowWidth - 40) / 2,
                   borderRadius: 10,
                 }}
               />
@@ -92,25 +125,25 @@ export function PetNurseryDetailScreen() {
               <View>
                 <View style={styles.rowContainer}>
                   <View style={{ marginRight: 8 }}>
-                    <Text>Họ tên</Text>
-                    <Text>Tuổi</Text>
-                    <Text>Trình độ</Text>
-                    <Text>Đánh giá</Text>
-                    <Text>Được thuê</Text>
+                    <Text style={{ color: COLORS.black }}>Họ tên</Text>
+                    <Text style={{ color: COLORS.black }}>Tuổi</Text>
+                    <Text style={{ color: COLORS.black }}>Trình độ</Text>
+                    <Text style={{ color: COLORS.black }}>Đánh giá</Text>
+                    <Text style={{ color: COLORS.black }}>Được thuê</Text>
                   </View>
                   <View>
-                    <Text style={styles.bold}>TỐNG ĐỨC DŨNG</Text>
-                    <Text style={styles.bold}>20</Text>
-                    <Text style={styles.bold}>Chuyên nghiệp</Text>
-                    <Text style={styles.bold}>4.7</Text>
-                    <Text style={styles.bold}>78 lần</Text>
+                    <Text style={styles.bold}>{item.name.toUpperCase()}</Text>
+                    <Text style={styles.bold}>{item.age}</Text>
+                    <Text style={styles.bold}>{item.level}</Text>
+                    <Text style={styles.bold}>{item.rating}</Text>
+                    <Text style={styles.bold}>{item.hired_time} lần</Text>
                   </View>
                 </View>
 
                 <View style={[styles.rowContainer, { marginTop: 8 }]}>
                   <View>
                     <Text style={{ fontSize: 12, color: COLORS.green }}>
-                      Đang sẵn sàng
+                      {item.status}
                     </Text>
                   </View>
                   <TouchableOpacity
@@ -135,11 +168,13 @@ export function PetNurseryDetailScreen() {
             <View style={styles.line} />
             <View style={{ padding: 10 }}>
               <Text
-                style={{ fontFamily: "Roboto-Regular", textAlign: "justify" }}
+                style={{
+                  fontFamily: "Roboto-Regular",
+                  textAlign: "justify",
+                  color: COLORS.black,
+                }}
               >
-                Nhà mình có nuôi cả cho và mèo nên mình có kinh nghiệm chăm sóc
-                cả 2 loài. Một số loài mình có nhận trông hộ, mình có thức ăn
-                như hạt khô, mình nhận giữ từ vài ngày đến 1 tháng.
+                {item.experience}
               </Text>
               <View
                 style={[
@@ -148,8 +183,8 @@ export function PetNurseryDetailScreen() {
                 ]}
               >
                 <View>
-                  <Text>Cho</Text>
-                  <Text>Meo</Text>
+                  <Text style={{ color: COLORS.black }}>Chó</Text>
+                  <Text style={{ color: COLORS.black }}>Mèo</Text>
                 </View>
                 <View>
                   <Text style={styles.bold}>Chiahuahua, Alaska</Text>
@@ -164,10 +199,9 @@ export function PetNurseryDetailScreen() {
             <Text style={styles.sectionTitle}>Đánh giá</Text>
             <View style={styles.line} />
             <View>
-              <Rating />
-              <Rating />
-              <Rating />
-              <Rating />
+              {ratingList.map((rating) => {
+                return <Rating key={rating._id} rating={rating} />
+              })}
             </View>
           </View>
         </ScrollView>
@@ -215,15 +249,18 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.grey,
     padding: 10,
     borderRadius: 10,
+    color: COLORS.black,
   },
   sectionTitle: {
     fontFamily: "Roboto-Bold",
     fontSize: 20,
     marginTop: 20,
+    color: COLORS.black,
   },
   bold: {
     fontFamily: "Roboto-Bold",
     fontSize: 14,
+    color: COLORS.black,
   },
   line: {
     backgroundColor: COLORS.dark,

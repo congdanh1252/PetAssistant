@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, Image, ScrollView } from "react-native"
 import React, { useState, useRef, useMemo, useCallback, useEffect } from "react"
 import { TextInput, TouchableOpacity } from "react-native-gesture-handler"
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet"
-
+import { Linking } from "react-native"
 import COLORS from "../theme/colors"
 import strings from "../data/strings"
 import { windowHeight, windowWidth } from "../models/common/Dimensions"
@@ -29,6 +29,7 @@ export function ProductDetailScreen({ route, navigation }) {
         setItem(item)
         let temp = new User()
         temp._id = item.seller_id
+        console.log(item.photo)
         setSeller(temp)
       }
     })
@@ -39,10 +40,9 @@ export function ProductDetailScreen({ route, navigation }) {
 
   useEffect(() => {
     let isCancelled = false
-    console.log("Getting seller");
-    console.log(seller);
+
     if (seller._id != "") {
-      getUserInfo(seller._id, user => {
+      getUserInfo(seller._id, (user) => {
         setSeller(user)
       })
     }
@@ -71,12 +71,17 @@ export function ProductDetailScreen({ route, navigation }) {
         >
           {item.name}
         </Text>
-        <TouchableOpacity>
-          <Image source={require("../assets/icons/Back.png")} />
-        </TouchableOpacity>
+        <TouchableOpacity></TouchableOpacity>
       </View>
 
-      <Image source={require("../assets/icons/Photos.png")} />
+      <Image
+        source={{ uri: item.photo }}
+        style={{
+          width: 200,
+          borderRadius: 10,
+        }}
+      />
+
       <BottomSheet
         ref={bottomSheetRef}
         index={1}
@@ -88,7 +93,9 @@ export function ProductDetailScreen({ route, navigation }) {
             <View style={styles.sectionContainer}>
               <Text style={styles.headerText}>{item.name}</Text>
               <Text style={styles.normalText}>{item.species}</Text>
-              <Text style={styles.priceText}>{moneyFormat(item.price)} VNĐ</Text>
+              <Text style={styles.priceText}>
+                {moneyFormat(item.price)} VNĐ
+              </Text>
             </View>
 
             <View style={styles.sectionContainer}>
@@ -144,9 +151,7 @@ export function ProductDetailScreen({ route, navigation }) {
                   marginTop: 8,
                 }}
               >
-                <Text style={styles.petInfo}>
-                  {item.description}
-                </Text>
+                <Text style={styles.petInfo}>{item.description}</Text>
               </View>
             </View>
 
@@ -159,9 +164,7 @@ export function ProductDetailScreen({ route, navigation }) {
                   <Text style={styles.petInfo}>Địa chỉ</Text>
                 </View>
                 <View style={{ width: "50%" }}>
-                  <Text style={styles.petInfo}>
-                    {seller.address}
-                  </Text>
+                  <Text style={styles.petInfo}>{seller.address}</Text>
                 </View>
               </View>
 
@@ -249,6 +252,9 @@ export function ProductDetailScreen({ route, navigation }) {
       >
         <View style={{ width: "50%" }}>
           <TouchableOpacity
+            onPress={() => {
+              Linking.openURL(`tel:${seller.phoneNumber}`)
+            }}
             style={[
               {
                 backgroundColor: COLORS.pet_green,
@@ -292,10 +298,12 @@ const styles = StyleSheet.create({
   headerText: {
     fontFamily: "Roboto-Bold",
     fontSize: 20,
+    color: COLORS.black,
   },
   normalText: {
     fontFamily: "Roboto-Regular",
     fontSize: 16,
+    color: COLORS.black,
   },
   priceText: {
     fontFamily: "Roboto-Bold",
@@ -305,6 +313,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontFamily: "Roboto-Bold",
     fontSize: 18,
+    color: COLORS.black,
   },
   bodyContainer: {
     display: "flex",
@@ -327,6 +336,7 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto-Regular",
     padding: 4,
     fontSize: 16,
+    color: "#000",
   },
   row60: {
     display: "flex",
