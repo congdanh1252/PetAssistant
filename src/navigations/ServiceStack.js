@@ -8,6 +8,9 @@ import ChatListScreen from '../screens/ChatListScreen';
 import ChatScreen from '../screens/ChatScreen';
 import SavedServiceListScreen from '../screens/SavedServiceListScreen';
 import SellPetScreen from '../screens/SellPetScreen';
+import AppointmentArchivedScreen from '../screens/AppointmentArchivedScreen';
+import NurseryStack from './NurseryStack';
+import ProductStack from './ProductStack';
 
 const Stack = createNativeStackNavigator();
 
@@ -23,7 +26,10 @@ const ServiceStack = () => {
         <Stack.Screen name="CategoryItem" component={CategoryItemProfileScreen} options={{headerShown: false}}/>
         <Stack.Screen name="ChatList" component={ChatListScreen} options={{headerShown: false}}/>
         <Stack.Screen name="ChatScreen" component={ChatScreen} options={{headerShown: false}}/>
-        <Stack.Screen name="SellPet" component={SellPetScreen} options={{headerShown: false}}/>
+        <Stack.Screen name="ProductStack" component={ProductStack} options={{headerShown: false}}/>
+        {/* <Stack.Screen name="SellPet" component={SellPetScreen} options={{headerShown: false}}/> */}
+        <Stack.Screen name="NurseryStack" component={NurseryStack} options={{headerShown: false}}/>
+        <Stack.Screen name="AppointmentArchive" component={AppointmentArchivedScreen} options={{headerShown: false}}/>
         <Stack.Screen name="SavedServiceList" component={SavedServiceListScreen} options={{headerShown: false}}/>
       </Stack.Navigator>
   );

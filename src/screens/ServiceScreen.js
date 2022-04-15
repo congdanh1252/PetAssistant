@@ -62,9 +62,7 @@ const ServiceScreen = ({route, navigation}) => {
                     activeOpacity={0.8}
                     style={style.category_item}
                     onPress={() => {
-                        navigation.navigate('SellPet', {
-                            action: 'add'
-                        })
+                        navigation.navigate('ProductStack')
                     }}
                 >
                     <Image
@@ -79,6 +77,9 @@ const ServiceScreen = ({route, navigation}) => {
                 <TouchableOpacity
                     activeOpacity={0.8}
                     style={style.category_item}
+                    onPress={() => {
+                        navigation.navigate('AppointmentArchive')
+                    }}
                 >
                     <Image
                         style={style.category_icon}
@@ -92,6 +93,9 @@ const ServiceScreen = ({route, navigation}) => {
                 <TouchableOpacity
                     activeOpacity={0.8}
                     style={style.category_item}
+                    onPress={() => {
+                        navigation.navigate('NurseryStack')
+                    }}
                 >
                     <Image
                         style={style.category_icon}

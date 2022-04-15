@@ -235,20 +235,20 @@ const HomeScreen = ({ navigation }) => {
             <Text style={style.menu_title}>{strings.diagnosis}</Text>
           </TouchableOpacity>
 
-          {/* Tìm kiếm thông tin */}
+          {/* Dịch vụ */}
           <TouchableOpacity
-            activeOpacity={0.7}
-            style={style.menu_box}
-            onPress={() => {
-              navigation.navigate("NurseryStack")
-            }}
+              activeOpacity={0.7}
+              style={style.menu_box}
+              onPress={() => {
+                  navigation.navigate('Service')
+              }}
           >
-            <Image
-              source={require("../assets/icons/ic_search_fl.png")}
-              style={style.menu_icon}
-            />
+              <Image
+                  source={require('../assets/icons/ic_treat.png')}
+                  style={style.menu_icon}
+              />
 
-            <Text style={style.menu_title}>{strings.search_info}</Text>
+              <Text style={style.menu_title}>{strings.service_label}</Text>
           </TouchableOpacity>
         </View>
       </View>

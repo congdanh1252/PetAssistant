@@ -188,7 +188,10 @@ export function ProductScreen() {
           </View>
         </View>
         {products.map((p) => {
-          return <Product product={p} />
+          return 
+            <View key={p.title}>
+              <Product product={p}/>
+            </View>
         })}
       </View>
 
