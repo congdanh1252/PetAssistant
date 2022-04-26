@@ -129,13 +129,13 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
         let color = '';
 
         switch (appointment.status_code) {
-            case '0':
+            case 0:
                 color = COLORS.yellow;
                 break;
-            case '1':
+            case 1:
                 color = COLORS.blue;
                 break;
-            case '2':
+            case 2:
                 color = COLORS.success;
                 break;
             default:
@@ -149,23 +149,35 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
         )
     }
 
+    const formatTime = (time) => {
+        return time.getHours().toString() + ":" + String(time.getMinutes()).padStart(2, '0');
+    }
+
+    const formatDate = (date) => {
+        return (
+            String(date.getDate()).padStart(2, '0') + "/" +
+            String(date.getMonth() + 1).padStart(2, '0') + "/" +
+            date.getFullYear().toString()
+        )
+    }
+
     const Items = () => {
         return (
             <ScrollView horizontal={false} showsVerticalScrollIndicator={false}>
                 <View style={style.item_list_container} >    
                 {
-                    data.map((item) => {
+                    items.map((item) => {
                         const Status = () => {
                             let color = '';
 
                             switch (item.status_code) {
-                                case '0':
+                                case 0:
                                     color = COLORS.yellow;
                                     break;
-                                case '1':
+                                case 1:
                                     color = COLORS.blue;
                                     break;
-                                case '2':
+                                case 2:
                                     color = COLORS.success;
                                     break;
                                 default:
@@ -202,16 +214,41 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                         style={[style.info_icon, {tintColor: '#000'}]}
                                     />
 
-                                    <Text style={style.info_text}>{item.appointment_time} - {item.appointment_date}</Text>
+                                    <Text style={style.info_text}>{formatTime(item.appointment_time)} - {formatDate(item.appointment_date)}</Text>
                                 </View>
 
                                 <View style={style.item_info_holder}>
                                     <Image
-                                        source={require('../assets/icons/ic_calendar.png')}
+                                        source={require('../assets/icons/ic_menu.png')}
                                         style={[style.info_icon, {tintColor: '#000'}]}
                                     />
 
-                                    <Text style={style.info_text} numberOfLines={2}>{item.service}</Text>
+                                    <Text style={style.info_text} numberOfLines={2}>
+                                        {
+                                            item.service.map((element, index) => {
+                                                return (
+                                                    index < item.service.length - 1 ?
+                                                    (
+                                                        <Text
+                                                            key={element}
+                                                            style={[style.info_text, {fontWeight: 'normal'}]}
+                                                        >
+                                                            {element}, {' '}
+                                                        </Text>
+                                                    )
+                                                    :
+                                                    (
+                                                        <Text
+                                                            key={element}
+                                                            style={[style.info_text, {fontWeight: 'normal'}]}
+                                                        >
+                                                            {element}
+                                                        </Text>
+                                                    )
+                                                )
+                                            })
+                                        }
+                                    </Text>
                                 </View>
 
                                 <Status/>
@@ -224,24 +261,27 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
         )
     }
 
-    //load pet list
+    //load appointment list
     useEffect(() => {
-        // const subscriber = firestore()
-        // .collection('thirdParty')
-        // .where('category', '==', category)
-        // .onSnapshot(querySnapshot => {
-        //     var list = new Array();
-        //     querySnapshot.forEach(documentSnapshot => {
-        //         var item = new thirdParty();
-        //         item.update(documentSnapshot.data());
-        //         item._id = documentSnapshot.id;
-        //         list.push(item);
-        //     })
-        //     setItems(list);
-        //     setDataList(list);
-        // })
+        const subscriber = firestore()
+        .collection('appointment')
+        .where('customer_id', '==', auth().currentUser.uid)
+        .onSnapshot(querySnapshot => {
+            var list = new Array();
+            querySnapshot.forEach(documentSnapshot => {
+                var item = new Appointment();
+                item.update(documentSnapshot.data());
+                item._id = documentSnapshot.id;
+                item.appointment_date = new Date(documentSnapshot.data().appointment_date.toDate());
+                item.appointment_time = new Date(documentSnapshot.data().appointment_time.toDate());
+                item.created_at = new Date(documentSnapshot.data().createdAt.toDate());
+                list.push(item);
+            })
+            setItems(list);
+            setDataList(list);
+        })
 
-        //return () => subscriber();
+        return () => subscriber();
     }, []);
 
     //Main 
@@ -350,7 +390,7 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                         </Text>
 
                                         <Text style={style.info_text}>
-                                            {appointment.appointment_time} ngày {appointment.appointment_date}
+                                            {formatTime(appointment.appointment_time)} ngày {formatDate(appointment.appointment_date)}
                                         </Text>
                                     </View>
 
@@ -361,7 +401,7 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                         </Text>
 
                                         <Text style={style.info_text}>
-                                            {appointment.created_at}
+                                            {formatTime(appointment.created_at)} ngày {formatDate(appointment.created_at)}
                                         </Text>
                                     </View>
 
@@ -369,9 +409,30 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                     <View style={style.detail_info_holder}>
                                         <Text style={style.detail_info_bold}>
                                             Nội dung dịch vụ: {' '}
-                                            <Text style={[style.info_text, {fontWeight: 'normal'}]}>
-                                                {appointment.service}
-                                            </Text>
+                                            {
+                                                appointment.service.map((element, index) => {
+                                                    return (
+                                                        index < appointment.service.length - 1 ?
+                                                        (
+                                                            <Text
+                                                                key={element}
+                                                                style={[style.info_text, {fontWeight: 'normal'}]}
+                                                            >
+                                                                {element}, {' '}
+                                                            </Text>
+                                                        )
+                                                        :
+                                                        (
+                                                            <Text
+                                                                key={element}
+                                                                style={[style.info_text, {fontWeight: 'normal'}]}
+                                                            >
+                                                                {element}
+                                                            </Text>
+                                                        )
+                                                    )
+                                                })
+                                            }
                                         </Text>
                                     </View>
 

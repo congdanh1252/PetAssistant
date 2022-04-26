@@ -168,6 +168,12 @@ export default strings = {
     make_appointment_label: "Đặt lịch hẹn",
     customer_label: "Khách hàng",
     appointment_date_label: "Ngày hẹn",
+    msg_upload_appointment_success: "Đã đặt lịch hẹn thành công! 👐",
+    msg_upload_appointment_fail: "Đã xảy ra lỗi. Vui lòng thủ lại!",
+    information_management_label: "Quản lý thông tin",
+    work_label: "Công việc",
+    taken_feedback_label: "Phản hồi đã nhận",
+    address_label: "Địa chỉ",
     
 
     back: "Trở lại",

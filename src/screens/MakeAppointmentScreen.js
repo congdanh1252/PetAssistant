@@ -8,11 +8,14 @@ import { Button } from "react-native-elements/dist/buttons/Button";
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Toast from "react-native-toast-message";
+import firestore from '@react-native-firebase/firestore';
 
+import { addNewAppointment } from "../api/ThirdPartyAPI";
 import COLORS from '../theme/colors';
 import strings from "../data/strings";
 import BackButton from "../components/BackButton";
 import Appointment from "../models/appointment";
+import thirdParty from '../models/thirdParty';
 
 const MakeAppointmentScreen = ({route, navigation}) => {
     var appointment = new Appointment();
@@ -24,48 +27,59 @@ const MakeAppointmentScreen = ({route, navigation}) => {
             'Kham tong quat'
         ]
     };
-    const action = 'add'; //route.params;
+    const { action, thirdPartyID, currentService } = route.params;
+    const [tpName, setTPName] = useState('');
+    const [tpThumbnail, setTPThumbnail] = useState('');
+    const [tpAddress, setTPAddress] = useState('');
     const [name, setName] = useState(action=='add' ? '' : apmObj.name);
     const [phoneNumber, setPhoneNumber] = useState(action=='add' ? '' : apmObj.phone_number);
-    const [date, setDate] = useState(action=='add' ? new Date() : apmObj.appointment_date);
+    const [date, setDate] = useState(action=='add' ? '' : apmObj.appointment_date);
     const [time, setTime] = useState(action=='add' ? '' : apmObj.appointment_time);
     const [timeDisplay, setTimeDisplay] = useState('');
-    const [service, setService] = useState(action=='add' ? [
-        'Tiem ngua',
-        'Truyen nuoc bien',
-        'Kham tong quat'
-    ] : apmObj.service);
+    const [services, setServices] = useState([]);
+    const [choseService, setChoseService] = useState(action=='add' ? [currentService] : apmObj.service);
     const [note, setNote] = useState(action=='add' ? '' : apmObj.note);
     const [isUploading, setUploading] = useState(false);
 
     const [show, setShow] = useState(false);
+    const [showDate, setShowDate] = useState(false);
+    const [choseDate, setChoseDate] = useState(false);
 
     const onChangeTime = (event, selectedTime) => {
         setShow(false)
         if (selectedTime != null) {
-            const val = new Date(selectedTime);
-            setTime(val)
+            const val = new Date(selectedTime)
+            setTime(selectedTime)
             setTimeDisplay(val.getHours().toString() + ":" + String(val.getMinutes()).padStart(2, '0'))
         }
     };
 
+    const onChangeDate = (event, selectedDate) => {
+        setShowDate(false)
+        if (selectedDate != null) {
+            setDate(selectedDate)
+        }
+        setChoseDate(true)
+    };
+
     const initAppointmentData = () => {
-        pet.name = name;
-        pet.kind = kind;
-        pet.gender = gender;
-        pet.species = species;
-        pet.photo = urlArr[0];
-        pet.additional_photos = urlArr.splice(1);
-        pet.height = parseFloat(height);
-        pet.weight = parseFloat(weight);
-        pet.price = parseInt(price);
-        pet.discount_price = parseInt(discountPrice);
-        pet.description = description;
-        //action === 'edit' ? pet._id = petObj._id : null;
+        appointment.third_party_id = thirdPartyID;
+        appointment.third_party_name = tpName;
+        appointment.third_party_thumbnail = tpThumbnail;
+        appointment.third_party_address = tpAddress;
+        appointment.customer_name = name;
+        appointment.customer_phone_number = phoneNumber;
+        appointment.service = choseService;
+        appointment.appointment_date = date;
+        appointment.appointment_time = time;
+        appointment.note = note;
+        appointment.status = 'Chờ xác nhận';
+        appointment.status_code = 0;
     }
 
     const checkSubmitFields = () => {
-        if (name=='' || phoneNumber=='' || date=='' || time=='' || service.length < 1) {
+        console.log(name)
+        if (name=='' || phoneNumber=='' || date=='' || time=='' || choseService.length < 1) {
             Alert.alert(
                 strings.fail,
                 strings.err_check_inputs,
@@ -81,7 +95,8 @@ const MakeAppointmentScreen = ({route, navigation}) => {
             setUploading(true);
 
             if (action==='add') {
-                
+                initAppointmentData();
+                addNewAppointment(appointment, handleAppointmentAdded)
             }
         }
     }
@@ -130,18 +145,18 @@ const MakeAppointmentScreen = ({route, navigation}) => {
             Toast.show({
                 type: 'success',
                 text1: strings.success,
-                text2: action==='add' ? strings.msg_upload_sell_pet_success : strings.msg_update_sell_pet_success,
+                text2: action==='add' ? strings.msg_upload_appointment_success : '',
                 position: 'top',
                 autoHide: true,
             });
 
-            action==='add' ? console.log('Sell pet uploaded!') : console.log('Updated sell pet!');
+            action==='add' ? console.log('Appointment uploaded!') : console.log('!');
         }
         else {
             Toast.show({
                 type: 'error',
                 text1: strings.fail,
-                text2: strings.msg_add_pet_fail,
+                text2: strings.msg_upload_appointment_fail,
                 position: 'top',
                 autoHide: true,
             });
@@ -162,38 +177,47 @@ const MakeAppointmentScreen = ({route, navigation}) => {
     const updateServices = (element) => {
         let newList = [];
 
-        for (let i = 0; i < service.length; i++) {
-            newList.push(service[i]);
+        for (let i = 0; i < choseService.length; i++) {
+            newList.push(choseService[i]);
         }
         if (!newList.includes(element)) {
             newList.push(element);
 
-            setService(newList);
+            setChoseService(newList);
         }
     }
 
     const removeItemOnClick = (item) => {
-        let listItem = [];
+        if (item != currentService) {
+            let listItem = [];
 
-        for (let i = 0; i < service.length; i++) {
-            if (service[i] != item) {
-                listItem.push(service[i])
+            for (let i = 0; i < choseService.length; i++) {
+                if (choseService[i] != item) {
+                    listItem.push(choseService[i])
+                }
             }
-        }
 
-        setService(listItem)
+            setChoseService(listItem)
+        }
     }
 
-    //get species list
+    //load list items
     useEffect(() => {
-        let isMounted = true;
-        if (isMounted) {
-            // const getSpecies = getSpeciesList(handleSpeciesList); 
-        }
+        const subscriber = firestore()
+        .collection('thirdParty')
+        .doc(thirdPartyID)
+        .onSnapshot(documentSnapshot => {
+            var item = new thirdParty();
+            item.update(documentSnapshot.data());
+            item._id = documentSnapshot.id;
 
-        return () => {
-            isMounted = false;
-        }
+            setServices(item.service);
+            setTPName(item.name);
+            setTPThumbnail(item.thumbnail);
+            setTPAddress(item.address);
+        })
+
+        return () => subscriber();
     }, [])
 
     return (
@@ -240,9 +264,9 @@ const MakeAppointmentScreen = ({route, navigation}) => {
                                             placeholderTextColor={'#898989'}
                                             placeholder={strings.name}
                                             onChangeText={value => {
-                                               
+                                               setName(value)
                                             }}
-                                            value={date}
+                                            value={name}
                                         />
                                     </TouchableOpacity>
                                 </View>
@@ -261,9 +285,9 @@ const MakeAppointmentScreen = ({route, navigation}) => {
                                             placeholderTextColor={'#898989'}
                                             placeholder={strings.phone}
                                             onChangeText={value => {
-                                               
+                                               setPhoneNumber(value)
                                             }}
-                                            value={date}
+                                            value={phoneNumber}
                                         />
                                     </TouchableOpacity>
                                 </View>
@@ -275,18 +299,26 @@ const MakeAppointmentScreen = ({route, navigation}) => {
                                 <View style={styles.input_holder_small}>
                                     <Text style={styles.label}>{strings.appointment_date_label}</Text>
 
-                                    <TextInput
-                                        style={styles.input}
-                                        editable={false}
-                                        keyboardType={'default'}
-                                        placeholderTextColor={'#898989'}
-                                        placeholder={strings.appointment_date_label}
-                                        value={
-                                            String(date.getDate()).padStart(2, '0') + "-" +
-                                            String(date.getMonth() + 1).padStart(2, '0') + "-" +
-                                            date.getFullYear().toString()
-                                        }
-                                    />
+                                    <TouchableOpacity
+                                        activeOpacity={0.7}
+                                        onPress={() => {
+                                            setShowDate(true)
+                                        }}
+                                    >
+                                        <TextInput
+                                            style={styles.input}
+                                            editable={false}
+                                            placeholderTextColor={'#898989'}
+                                            placeholder={strings.appointment_date_label}
+                                            value={
+                                                choseDate ?
+                                                String(date.getDate()).padStart(2, '0') + "-" +
+                                                String(date.getMonth() + 1).padStart(2, '0') + "-" +
+                                                date.getFullYear().toString()
+                                                : (null)
+                                            }
+                                        />
+                                    </TouchableOpacity>
                                 </View>
 
                                 {/* Time */}
@@ -318,7 +350,7 @@ const MakeAppointmentScreen = ({route, navigation}) => {
                                 <View style={styles.services_add_holder}>
                                     <View style={styles.services}>
                                         {
-                                            service.map((item) => {
+                                            choseService.map((item) => {
                                                 return (
                                                     <View style={styles.service_item_holder} key={item}>
                                                         <TextInput
@@ -360,14 +392,17 @@ const MakeAppointmentScreen = ({route, navigation}) => {
 
                                         <Picker
                                             style={[styles.plus_icon, {marginTop: -44, marginLeft: 5, opacity: 0, backgroundColor: COLORS.green}]}
-                                            selectedValue={"Doctor"}
+                                            selectedValue={currentService}
                                             onValueChange={(itemValue, itemIndex) => {
                                                 updateServices(itemValue)
                                             }}>
-                                            <Picker.Item label="Tiêm ngừa" value="Vaccine" />
-                                            <Picker.Item label="Khám bệnh" value="Doctor" />
-                                            <Picker.Item label="Mua sắm" value="Stuff" />
-                                            <Picker.Item label="Tắm" value="Shower" />
+                                                {
+                                                    services.map((element) => {
+                                                        return (
+                                                            <Picker.Item label={element.detail} value={element.detail} key={element.description}/>
+                                                        )
+                                                    })
+                                                }
                                         </Picker>
                                     </TouchableOpacity>
                                 </View>
@@ -413,6 +448,20 @@ const MakeAppointmentScreen = ({route, navigation}) => {
                 </TouchableWithoutFeedback>
             </KeyboardAwareScrollView>
 
+            {/* Date Picker */}
+            {
+                showDate ? (
+                    <DateTimePicker
+                        testID="dateTimePicker"
+                        value={new Date()}
+                        mode={'date'}
+                        is24Hour={true}
+                        display="spinner"
+                        onChange={onChangeDate}
+                    />
+                ) : null
+            }
+
             {/* Time Picker */}
             {
                 show ? (
@@ -452,6 +501,7 @@ const styles = StyleSheet.create({
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
+        backgroundColor: COLORS.white
     },
     container: {
         marginTop: 0,

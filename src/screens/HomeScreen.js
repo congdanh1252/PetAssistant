@@ -222,7 +222,7 @@ const HomeScreen = ({ navigation }) => {
           {/* Chuẩn đoán bệnh */}
           <TouchableOpacity
             activeOpacity={0.7}
-            style={style.menu_box}
+            style={[style.menu_box, {marginRight: 8}]}
             onPress={() => {
               navigation.navigate("PredictStack")
             }}
@@ -238,7 +238,7 @@ const HomeScreen = ({ navigation }) => {
           {/* Dịch vụ */}
           <TouchableOpacity
               activeOpacity={0.7}
-              style={style.menu_box}
+              style={[style.menu_box, {marginLeft: 8}]}
               onPress={() => {
                   navigation.navigate('Service')
               }}
@@ -285,6 +285,31 @@ const HomeScreen = ({ navigation }) => {
 
                   <Text style={style.dropdown_option_text}>
                     {strings.feedback_n_report_label}
+                  </Text>
+                </View>
+              </TouchableHighlight>
+
+              {/* Đăng xuất */}
+              <TouchableHighlight
+                key={2}
+                activeOpacity={0.7}
+                underlayColor='#EEEEEE'
+                style={style.dropdown_option}
+                onPress={() => {
+                    auth()
+                    .signOut()
+                    .then(() => console.log('User signed out!'));
+                    navigation.navigate('Login')
+                }}
+              >
+                <View style={style.dropdown_detail}>
+                  <Image
+                      style={style.dropdown_option_icon}
+                      source={require('../assets/icons/ic_logout.png')}
+                  />
+
+                  <Text style={style.dropdown_option_text}>
+                      {strings.logout_label}
                   </Text>
                 </View>
               </TouchableHighlight>

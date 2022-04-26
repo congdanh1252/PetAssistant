@@ -164,11 +164,13 @@ export const addSellPetToFirestore = (pet, handlePetAdded) => {
         height: pet.height,
         weight: pet.weight,
         photo: pet.photo,
+        age: firestore.Timestamp.fromDate(pet.age),
         price: pet.price,
         discount_price: pet.discount_price,
         description: pet.description,
         additional_photos: pet.additional_photos,
-        seller_id: auth().currentUser.uid
+        seller_id: auth().currentUser.uid,
+        province: "Long An"
     })
     .then(() => {
         handlePetAdded('Success');
