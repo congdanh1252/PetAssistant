@@ -259,7 +259,6 @@ export function ScheduleEvent ({route, navigation}) {
         });
     }
 
-
     useEffect(() => {
         let isCancelled = false;
         const { reminder_id } = route.params
