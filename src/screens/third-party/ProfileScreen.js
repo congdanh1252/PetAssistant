@@ -6,18 +6,13 @@ import Carousel, { Pagination } from 'react-native-snap-carousel';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import firestore from '@react-native-firebase/firestore';
 
-import ServiceItemListTab from './ServiceItemListTab';
-import ServiceFeedbackListTab from './ServiceFeedbackListTab';
-import {
-    getSavedThirdParties,
-    addThirdPartyToSavedList,
-    deleteThirdPartyFromSavedList
-} from '../api/ThirdPartyAPI';
-import thirdParty from '../models/thirdParty';
-import COLORS from '../theme/colors';
-import strings from '../data/strings';
-import BackButton from '../components/BackButton';
-import { windowWidth, windowHeight } from '../models/common/Dimensions'
+import ServiceItemListTab from '.././ServiceItemListTab';
+import ServiceFeedbackListTab from '.././ServiceFeedbackListTab';
+import thirdParty from '../../models/thirdParty';
+import COLORS from '../../theme/colors';
+import strings from '../../data/strings';
+import BackButton from '../../components/BackButton';
+import { windowWidth, windowHeight } from '../../models/common/Dimensions'
 
 LogBox.ignoreLogs([
     'Non-serializable values were found in the navigation state',
@@ -51,7 +46,7 @@ const MyTabs = (props) => {
             component={ServiceItemListTab}
             initialParams={{
                 obj_id: props.itemId,
-                role: 'user'
+                role: 'third-party' 
             }}
           />
           <Tab.Screen
@@ -65,43 +60,12 @@ const MyTabs = (props) => {
     );
 }
 
-const CategoryItemProfileScreen = ({route, navigation}) => {
+const ProfileScreen = ({route, navigation}) => {
     const { item_id } = route.params;
     const [obj, setObj] = useState(new thirdParty());
     const [activeIndex, setActiveIndex] = useState(0);
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = useMemo(() => ['39%', '100%'], []);
-    
-    const handleSaveButton = () => {
-        if (isSaved) {
-            deleteThirdPartyFromSavedList(item_id, (res) => {
-                if (res == 'Success') {
-                    Toast.show({
-                        type: 'success',
-                        text1: strings.success,
-                        text2: 'Đã bỏ lưu dịch vụ! 🖐',
-                        position: 'top',
-                        autoHide: true,
-                    });
-                    setIsSaved(false);
-                }
-            })
-        }
-        else {
-            addThirdPartyToSavedList(item_id, (res) => {
-                if (res == 'Success') {
-                    Toast.show({
-                        type: 'success',
-                        text1: strings.success,
-                        text2: 'Đã lưu dịch vụ! 👋',
-                        position: 'top',
-                        autoHide: true,
-                    });
-                    setIsSaved(true);
-                }
-            })
-        }
-    }
 
     const RenderItem = ({item, index}) => {
         return (
@@ -112,20 +76,6 @@ const CategoryItemProfileScreen = ({route, navigation}) => {
             />
         );
     }
-
-    //check is item saved
-    useEffect(() => {
-        let isMounted = true;
-        if (isMounted) {
-            const subscribe = getSavedThirdParties((list) => {
-                if (list.includes(item_id)) {
-                    setIsSaved(true);
-                }
-            })
-        }
-        
-        return () => isMounted = false;
-    }, []),
 
     //get pet data
     useEffect(() => {
@@ -138,6 +88,7 @@ const CategoryItemProfileScreen = ({route, navigation}) => {
             item._id = documentSnapshot.id;
 
             setObj(item);
+            console.log(item)
         })
 
         return () => subscriber();
@@ -182,6 +133,24 @@ const CategoryItemProfileScreen = ({route, navigation}) => {
                         container={'black'}
                         navigation={navigation}
                     />
+
+                    <Text style={style.preview_label}>XEM TRƯỚC</Text>
+
+                    <TouchableOpacity
+                        activeOpacity={0.7}
+                        style={style.edit_icon_holder}
+                        onPress={() => {
+                            navigation.navigate('EditProfile', {
+                                action: 'edit',
+                                paramObj: obj
+                            })
+                        }}
+                    >
+                        <Image
+                            style={style.edit_icon}
+                            source={require('../../assets/icons/ic_edit.png')}
+                        />
+                    </TouchableOpacity>
                 </View>
             </View>
 
@@ -202,7 +171,7 @@ const CategoryItemProfileScreen = ({route, navigation}) => {
                         <View style={style.info_line_holder}>
                             <Image
                                 style={style.info_line_icon}
-                                source={require('../assets/icons/ic_maker.png')}    
+                                source={require('../../assets/icons/ic_maker.png')}    
                             />
 
                             <Text
@@ -217,7 +186,7 @@ const CategoryItemProfileScreen = ({route, navigation}) => {
                         <View style={style.info_line_holder}>
                             <Image
                                 style={style.info_line_icon}
-                                source={require('../assets/icons/ic_phone.png')}    
+                                source={require('../../assets/icons/ic_phone.png')}    
                             />
 
                             <Text
@@ -234,17 +203,11 @@ const CategoryItemProfileScreen = ({route, navigation}) => {
                         <TouchableOpacity
                             activeOpacity={0.7}
                             style={[style.box_holder, {backgroundColor: COLORS.pet_green}]}
-                            onPress={() => {
-                                navigation.navigate('ChatScreen', {
-                                    obj_id: item_id,
-                                    obj_name: obj.name,
-                                    obj_avt: obj.thumbnail
-                                })
-                            }}
+                            onPress={() => {}}
                         >
                             <Image
                                 style={style.box_icon}
-                                source={require('../assets/icons/ic_chat_grey.png')}
+                                source={require('../../assets/icons/ic_chat_grey.png')}
                             />
 
                             <Text style={style.section_title}>
@@ -256,17 +219,15 @@ const CategoryItemProfileScreen = ({route, navigation}) => {
                         <TouchableOpacity
                             activeOpacity={0.7}
                             style={[style.box_holder, {backgroundColor: COLORS.pet_blue}]}
-                            onPress={() => {
-                                handleSaveButton()
-                            }}
+                            onPress={() => {}}
                         >
                             <Image
                                 style={style.box_icon}
-                                source={require('../assets/icons/ic_save_grey.png')}
+                                source={require('../../assets/icons/ic_save_grey.png')}
                             />
 
                             <Text style={style.section_title}>
-                                {isSaved ? strings.unsave : strings.save}
+                                {strings.save}
                             </Text>
                         </TouchableOpacity>
 
@@ -293,7 +254,7 @@ const CategoryItemProfileScreen = ({route, navigation}) => {
     );
 }
 
-export default CategoryItemProfileScreen;
+export default ProfileScreen;
 
 const style = StyleSheet.create({
     container: {
@@ -391,6 +352,27 @@ const style = StyleSheet.create({
     tabs_container: {
         height: windowHeight / 2 + 90,
         marginTop: 36,
+    },
+    edit_icon: {
+        tintColor: '#fff',
+        width: 26,
+        height: 26
+    },
+    edit_icon_holder: {
+        height: 48,
+        width: 48,
+        backgroundColor: COLORS.black,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    preview_label: {
+        color: '#fff',
+        fontSize: 18,
+        padding: 12,
+        opacity: 0.7,
+        borderRadius: 10,
+        backgroundColor: COLORS.black
     },
     overlay: {
         width: '100%',

@@ -43,6 +43,8 @@ const SellPetScreen = ({route, navigation}) => {
     const [isUploading, setUploading] = useState(false);
 
     const [show, setShow] = useState(false);
+    const [date, setDate] = useState(action=='add' ? new Date(2020, 12, 12) : petObj.age);
+    const [choseDate, setChoseDate] = useState(action=='add' ? false : true);
 
     const snapPoints = useMemo(() => ['100%', '100%'], []);
 
@@ -54,6 +56,22 @@ const SellPetScreen = ({route, navigation}) => {
     });
     const [species_choice_base, setSpeciesChoiceBase] = useState([]);
 
+    const onChangeDate = (event, selectedDate) => {
+        const currentDate = selectedDate || date;
+        setShow(false);
+
+        var today = new Date();
+
+        if (selectedDate!=null && currentDate < today) {
+            setDate(currentDate);
+            setChoseDate(true);
+            console.log(selectedDate);
+        }
+        else {
+            console.log("INVALID DATE");
+        }
+    };
+
     const handleSpeciesList = (list) => {
         setSpeciesOpt(list);
     }
@@ -64,6 +82,7 @@ const SellPetScreen = ({route, navigation}) => {
         pet.gender = gender;
         pet.species = species;
         pet.photo = urlArr[0];
+        pet.age = date;
         pet.additional_photos = urlArr.splice(1);
         pet.height = parseFloat(height);
         pet.weight = parseFloat(weight);
@@ -636,6 +655,43 @@ const SellPetScreen = ({route, navigation}) => {
                                 </View>
                             </View>
 
+                            {/* Birthday */}
+                            <View style={styles.two_on_row}>
+                                <View style={styles.input_holder_small}>
+                                    <Text style={styles.label}>{strings.birthday}</Text>
+
+                                    <TextInput
+                                        editable={false}
+                                        style={styles.input}
+                                        placeholderTextColor={'#898989'}
+                                        placeholder={strings.birthday}
+                                        value={
+                                            choseDate
+                                            ?
+                                            (
+                                                String(date.getDate()).padStart(2, '0') + "-" +
+                                                String(date.getMonth() + 1).padStart(2, '0') + "-" +
+                                                date.getFullYear()
+                                            ) : (null)
+                                        }
+                                    />
+                                </View>
+
+                                {/* Calendar icon */}
+                                <View style={[styles.input_holder_small, {alignItems: 'center'}]}>
+                                    <TouchableOpacity
+                                        style={{width: '36%', alignItems: 'center', marginTop: 40,}}
+                                        activeOpacity={0.6}
+                                        onPress={() => setShow(true)}
+                                    >
+                                        <Image
+                                            source={require('../assets/icons/ic_calendar.png')}
+                                            style={styles.plus_icon}
+                                        />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+
                             {/* Price + Discount price */}
                             <View style={styles.two_on_row}>
                                 {/* Price */}
@@ -755,6 +811,19 @@ const SellPetScreen = ({route, navigation}) => {
                         <DropDownOptions/>
                     </BottomSheet>
             }
+
+            {/* Date Picker */}
+            {show && (
+                <DateTimePicker
+                    testID="dateTimePicker"
+                    value={date}
+                    mode={'date'}
+                    is24Hour={true}
+                    display="spinner"
+                    dateFormat="day month year"
+                    onChange={onChangeDate}
+                />
+            )}
 
             {/* Overlay */}
             {isUploading ?

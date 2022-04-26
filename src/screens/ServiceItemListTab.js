@@ -8,7 +8,7 @@ import strings from '../data/strings';
 import { windowHeight } from '../models/common/Dimensions';
 
 const ServiceItemListTab = ({route, navigation}) => {
-    const { obj_id } = route.params;
+    const { obj_id, role } = route.params;
     const [expand, setExpand] = useState([0,0,0,0,0,0,0,0]);
     const [list, setList] = useState([]);
 
@@ -28,7 +28,7 @@ const ServiceItemListTab = ({route, navigation}) => {
             item.update(documentSnapshot.data());
             item._id = documentSnapshot.id;
 
-            setList(item.service);
+            item.service ? setList(item.service) : null;
         })
 
         return () => subscriber();
@@ -98,11 +98,13 @@ const ServiceItemListTab = ({route, navigation}) => {
                                                     activeOpacity={0.7}
                                                     style={style.book_button}
                                                     onPress={() => {
-                                                        navigation.navigate('MakeAppointment', {
-                                                            action: 'add',
-                                                            thirdPartyID: obj_id,
-                                                            currentService: item.detail
-                                                        })
+                                                        role == 'user' ?
+                                                            navigation.navigate('MakeAppointment', {
+                                                                action: 'add',
+                                                                thirdPartyID: obj_id,
+                                                                currentService: item.detail
+                                                            })
+                                                        : null
                                                     }}
                                                 >
                                                     <Text style={style.button_text}>{strings.book_service_label}</Text>
@@ -131,7 +133,7 @@ export default ServiceItemListTab;
 const style = StyleSheet.create({
     screen: {
         flex: 1,
-        height: windowHeight / 2 + 90,
+        height: windowHeight,
         backgroundColor: COLORS.white
     },
     list_container: {

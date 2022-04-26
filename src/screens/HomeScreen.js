@@ -222,7 +222,7 @@ const HomeScreen = ({ navigation }) => {
           {/* Chuẩn đoán bệnh */}
           <TouchableOpacity
             activeOpacity={0.7}
-            style={style.menu_box}
+            style={[style.menu_box, {marginRight: 8}]}
             onPress={() => {
               navigation.navigate("PredictStack")
             }}
@@ -238,7 +238,7 @@ const HomeScreen = ({ navigation }) => {
           {/* Dịch vụ */}
           <TouchableOpacity
               activeOpacity={0.7}
-              style={style.menu_box}
+              style={[style.menu_box, {marginLeft: 8}]}
               onPress={() => {
                   navigation.navigate('Service')
               }}

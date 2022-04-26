@@ -20,7 +20,7 @@ import {
 
 import COLORS from '../theme/colors'
 import strings from '../data/strings';
-
+import { getUserInfo } from '../api/UserAPI';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -39,7 +39,14 @@ export function LoginScreen({navigation}) {
   function onAuthStateChanged(user) {
     setUser(user);
     if (user) {
-      navigation.navigate('MainStack')
+      getUserInfo(auth().currentUser.uid, (usr) => {
+        if (usr.role == 'user') {
+          navigation.navigate('MainStack')
+        } else {
+          navigation.navigate('3rdMainStack')
+        }
+      })
+      // navigation.navigate('MainStack')
     }
     if (initializing) setInitializing(false);
   }
@@ -57,7 +64,14 @@ export function LoginScreen({navigation}) {
       .signInWithEmailAndPassword(username, password)
       .then(() => {
         console.log('Signed in!');
-        navigation.navigate('MainStack')
+        getUserInfo(auth().currentUser.uid, (usr) => {
+          if (usr.role == 'user') {
+            navigation.navigate('MainStack')
+          } else {
+            navigation.navigate('3rdMainStack')
+          }
+        })
+        // navigation.navigate('MainStack')
       })
       .catch(error => {
         console.log(error);
