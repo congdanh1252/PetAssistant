@@ -192,7 +192,7 @@ const HomeScreen = ({ navigation }) => {
                         activeOpacity={0.7}
                         style={[style.menu_box, { marginRight: 8 }]}
                         onPress={() => {
-                            // navigation.navigate("SchedulesStack")
+                            navigation.navigate("Schedule")
                         }}
                     >
                         <Image

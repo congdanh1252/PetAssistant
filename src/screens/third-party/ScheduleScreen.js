@@ -8,6 +8,67 @@ import CalendarStrip from "react-native-calendar-strip"
 import moment from "moment"
 
 import COLORS from "../../theme/colors"
+import {
+  getDateReminder,
+  getPetsReminder,
+  getMonthReminderDate,
+} from "../../api/third-party/ReminderAPI"
+
+import {
+  WaitIcon,
+  DoctorIcon,
+  FoodIcon,
+  StuffIcon,
+  ShowerIcon,
+  QuestionIcon,
+  VaccineIcon,
+  WalkIcon,
+  HairBrushIcon,
+  SandIcon,
+} from "../../assets/icons/index"
+
+LocaleConfig.locales["vi"] = {
+  monthNames: [
+    "Tháng 1",
+    "Tháng 2",
+    "Tháng 3",
+    "Tháng 4",
+    "Tháng 5",
+    "Tháng 6",
+    "Tháng 7",
+    "Tháng 8",
+    "Tháng 9",
+    "Tháng 10",
+    "Tháng 11",
+    "Tháng 12",
+  ],
+  monthNamesShort: [
+    "Tha.1",
+    "Tha.2",
+    "Tha.3",
+    "Tha.4",
+    "Tha.5",
+    "Tha.6",
+    "Tha.7",
+    "Tha.8",
+    "Tha.9",
+    "Tha.10",
+    "Tha.11",
+    "Tha.12",
+  ],
+  dayNames: [
+    "Thứ hai",
+    "Thứ ba",
+    "Thứ tư",
+    "Thứ năm",
+    "Thứ sáu",
+    "Thứ bảy",
+    "Chủ nhật",
+  ],
+  dayNamesShort: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
+  today: "Hôm nay",
+}
+LocaleConfig.defaultLocale = "vi"
 
 export default function ScheduleScreen() {
   const bottomSheetRef = useRef < BottomSheet > null
@@ -19,6 +80,151 @@ export default function ScheduleScreen() {
   const [oldReminderList, setOldReminderList] = useState([])
   const [dates, setDates] = useState([])
   const [monthData, setMonthData] = useState(JSON)
+
+  useEffect(() => {
+    let isCancelled = false
+    getDateReminder(selectedDate, (reminderList, oldReminderList) => {
+      try {
+        if (!isCancelled) {
+          // console.log(reminderList);
+          // console.log(oldReminderList);
+          setReminderList(reminderList)
+          setOldReminderList(oldReminderList)
+        }
+      } catch (error) {
+        if (!isCancelled) throw error
+      }
+    })
+    return () => {
+      isCancelled = true
+    }
+  }, [selectedDate])
+
+  useEffect(() => {
+    let isCancelled = false
+    getMonthReminderDate(selectedDate, (dates) => {
+      try {
+        if (!isCancelled) {
+          // console.log(dates);
+          var today = new Date()
+          var dates_s = ""
+          let data = "{"
+          for (var i = 0; i < dates.length; i++) {
+            if (dates[i] < 9) {
+              dates_s = "0" + dates[i].toString()
+              // console.log(dates_s)
+            } else dates_s = dates[i]
+            data +=
+              '"' +
+              moment(selectedDate).format("YYYY-MM") +
+              "-" +
+              dates_s +
+              '"' +
+              ': {"marked": true}'
+            if (i != dates.length - 1) {
+              data += ","
+            }
+          }
+          data += "}"
+          // console.log(data);
+          setMonthData(JSON.parse(data))
+        }
+      } catch (error) {
+        if (!isCancelled) throw error
+      }
+    })
+    return () => {
+      isCancelled = true
+    }
+  }, [selectedDate])
+
+  const CalendarEvent = (props) => {
+    console.log(props.reminder.type)
+    switch (props.reminder.type) {
+      case "Food":
+        imgSource = FoodIcon
+        break
+      case "Stuff":
+        imgSource = StuffIcon
+        break
+      case "HairBrush":
+        imgSource = HairBrushIcon
+        break
+      case "Walk":
+        imgSource = WalkIcon
+        break
+      case "Doctor":
+        imgSource = DoctorIcon
+        break
+      case "Vaccine":
+        imgSource = VaccineIco
+        break
+      case "Shower":
+        imgSource = ShowerIcon
+        break
+      case "Sand":
+        imgSource = SandIcon
+        break
+      default:
+        imgSource = QuestionIcon
+        break
+    }
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          navigation.navigate("ScheduleEvent", {
+            reminder_id: props.reminder._id,
+          })
+        }}
+        style={[
+          styles.eventContainer,
+          props.reminder.type == "Doctor"
+            ? styles.yellowBackground
+            : props.reminder.type == "Stuff"
+            ? styles.pinkBackground
+            : styles.greenBackground,
+        ]}
+      >
+        <View style={styles.eventTitle}>
+          <Image source={imgSource} />
+          <Text
+            style={{
+              fontFamily: "RedHatText-Bold",
+              fontSize: 16,
+              marginLeft: 8,
+            }}
+          >
+            {props.reminder.title}
+          </Text>
+
+          <Text
+            style={{
+              fontFamily: "RedHatText-Regular",
+              position: "absolute",
+              right: 0,
+              top: 4,
+              fontSize: 12,
+            }}
+          >
+            {moment(props.reminder.datetime).fromNow()}
+          </Text>
+        </View>
+
+        {/* <PetsName pets={props.reminder.pets} /> */}
+
+        <View style={styles.eventTime}>
+          <Image
+            style={{
+              marginRight: 4,
+            }}
+            source={require("../../assets/icons/Clock.png")}
+          />
+
+          <Text>{moment(props.reminder.datetime).format("HH:mm")}</Text>
+        </View>
+      </TouchableOpacity>
+    )
+  }
 
   const renderFooter = useCallback(
     (props) => (
