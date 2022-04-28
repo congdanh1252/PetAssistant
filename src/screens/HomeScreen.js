@@ -190,7 +190,9 @@ const HomeScreen = ({ navigation }) => {
             activeOpacity={0.7}
             style={[style.menu_box, { marginRight: 8 }]}
             onPress={() => {
-              navigation.navigate("ExpenditureStack")
+              navigation.navigate("ExpenditureStack", {
+                type: "user",
+              })
             }}
           >
             <Image
@@ -222,7 +224,7 @@ const HomeScreen = ({ navigation }) => {
           {/* Chuẩn đoán bệnh */}
           <TouchableOpacity
             activeOpacity={0.7}
-            style={[style.menu_box, {marginRight: 8}]}
+            style={[style.menu_box, { marginRight: 8 }]}
             onPress={() => {
               navigation.navigate("PredictStack")
             }}
@@ -237,18 +239,18 @@ const HomeScreen = ({ navigation }) => {
 
           {/* Dịch vụ */}
           <TouchableOpacity
-              activeOpacity={0.7}
-              style={[style.menu_box, {marginLeft: 8}]}
-              onPress={() => {
-                  navigation.navigate('Service')
-              }}
+            activeOpacity={0.7}
+            style={[style.menu_box, { marginLeft: 8 }]}
+            onPress={() => {
+              navigation.navigate("Service")
+            }}
           >
-              <Image
-                  source={require('../assets/icons/ic_treat.png')}
-                  style={style.menu_icon}
-              />
+            <Image
+              source={require("../assets/icons/ic_treat.png")}
+              style={style.menu_icon}
+            />
 
-              <Text style={style.menu_title}>{strings.service_label}</Text>
+            <Text style={style.menu_title}>{strings.service_label}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -293,23 +295,23 @@ const HomeScreen = ({ navigation }) => {
               <TouchableHighlight
                 key={2}
                 activeOpacity={0.7}
-                underlayColor='#EEEEEE'
+                underlayColor="#EEEEEE"
                 style={style.dropdown_option}
                 onPress={() => {
-                    auth()
+                  auth()
                     .signOut()
-                    .then(() => console.log('User signed out!'));
-                    navigation.navigate('Login')
+                    .then(() => console.log("User signed out!"))
+                  navigation.navigate("Login")
                 }}
               >
                 <View style={style.dropdown_detail}>
                   <Image
-                      style={style.dropdown_option_icon}
-                      source={require('../assets/icons/ic_logout.png')}
+                    style={style.dropdown_option_icon}
+                    source={require("../assets/icons/ic_logout.png")}
                   />
 
                   <Text style={style.dropdown_option_text}>
-                      {strings.logout_label}
+                    {strings.logout_label}
                   </Text>
                 </View>
               </TouchableHighlight>

@@ -1,15 +1,10 @@
-import React, { useEffect, useState, useCallback } from "react"
 import { View, Text, StyleSheet, TextInput, Image, Button } from "react-native"
-import { windowHeight, windowWidth } from "../models/common/Dimensions"
+import React, { useEffect, useState, useCallback } from "react"
 import moment from "moment"
 import { ScrollView, TouchableOpacity } from "react-native-gesture-handler"
 import DateTimePicker from "@react-native-community/datetimepicker"
 import { Picker } from "@react-native-picker/picker"
 import MonthPicker from "react-native-month-year-picker"
-
-import COLORS from "../theme/colors"
-import { moneyFormat } from "../models/common/moneyStringFormat"
-import { checkDateAfterToday } from "../models/common/validateFunctions"
 import Dialog from "react-native-dialog"
 import Animated, {
   FadeInRight,
@@ -18,26 +13,11 @@ import Animated, {
   withSpring,
   FadeOutRight,
 } from "react-native-reanimated"
-import strings from "../data/strings"
-import Expenditure from "../models/expenditure"
-import {
-  getExpenditures,
-  getAllDate,
-  getMonthTotal,
-  findDateByKeyword,
-  getMonthLimit,
-  getMonthAverage,
-  addExpenditure,
-  updateExpenditure,
-  deleteExpenditure,
-} from "../api/ExpenditureAPI"
-import {
-  getAllDateTP,
-  getIncome,
-  addIncome,
-  updateIncome,
-  deleteIncome,
-} from "../api/third-party/StatisticAPI"
+
+import { windowHeight, windowWidth } from "../../models/common/Dimensions"
+import COLORS from "../../theme/colors"
+import { moneyFormat } from "../../models/common/moneyStringFormat"
+import { checkDateAfterToday } from "../../models/common/validateFunctions"
 import {
   QuestionIcon,
   DoctorIcon,
@@ -46,12 +26,22 @@ import {
   PenIcon,
   ServiceIcon,
   SettingIcon,
-} from "../assets/icons/index"
+} from "../../assets/icons/index"
+import strings from "../../data/strings"
+import Income from "../../models/income"
+import {
+  getIncome,
+  getAllDate,
+  getMonthTotal,
+  findDateByKeyword,
+  addIncome,
+  updateIncome,
+  deleteIncome,
+} from "../../api/third-party/StatisticAPI"
 
-export default function ExpenditureScreen({ route, navigation }) {
+const IncomeScreen = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date())
   const [datesList, setDatesList] = useState([])
-  const { type } = route.params
 
   const setMonthChange = (month) => {
     setSelectedMonth(month)
@@ -60,7 +50,6 @@ export default function ExpenditureScreen({ route, navigation }) {
   const SearchBar = () => {
     const [searchKeyword, setSearchKeyword] = useState("")
     const [showDatePicker, setShowDatePicker] = useState(false)
-
     const onFinishPicker = (event, selectedDate) => {
       const currentDate = selectedDate || selectedMonth
       setShowDatePicker(false)
@@ -90,7 +79,7 @@ export default function ExpenditureScreen({ route, navigation }) {
                 width: 20,
                 height: 20,
               }}
-              source={require("../assets/icons/Search.png")}
+              source={require("../../assets/icons/Search.png")}
             />
           </TouchableOpacity>
         </View>
@@ -137,32 +126,26 @@ export default function ExpenditureScreen({ route, navigation }) {
       [selectedMonth, showPicker]
     )
 
-    useEffect(() => {
-      if (type == "user") {
-        const total = getMonthTotal(selectedMonth, handleTotalCallback)
-        return () => {
-          total
-        }
-      }
-    }, [selectedMonth])
+    // useEffect(() => {
+    //   const total = getMonthTotal(selectedMonth, handleTotalCallback)
+    //   return () => {
+    //     total
+    //   }
+    // }, [selectedMonth])
 
-    useEffect(() => {
-      if (type == "user") {
-        const limit = getMonthLimit(handleMonthLimitCallback)
-        return () => {
-          limit
-        }
-      }
-    }, [selectedMonth])
+    // useEffect(() => {
+    //   const limit = getMonthLimit(handleMonthLimitCallback)
+    //   return () => {
+    //     limit
+    //   }
+    // }, [selectedMonth])
 
-    useEffect(() => {
-      if (type == "user") {
-        const avg = getMonthAverage(selectedMonth, handleMonthAvgCallback)
-        return () => {
-          avg
-        }
-      }
-    }, [selectedMonth])
+    // useEffect(() => {
+    //   const avg = getMonthAverage(selectedMonth, handleMonthAvgCallback)
+    //   return () => {
+    //     avg
+    //   }
+    // }, [selectedMonth])
 
     return (
       <View style={styles.headerContainer}>
@@ -265,34 +248,20 @@ export default function ExpenditureScreen({ route, navigation }) {
         setIsShowDialog(false)
         expenditure.title = expenditureTitle
         expenditure.amount = expenditureAmount
-        if (type == "user") {
-          updateExpenditure(expenditure, () => {
-            setSelectedMonth(expenditure.date)
-            console.log("success")
-          })
-        } else {
-          updateIncome(expenditure, () => {
-            setSelectedMonth(expenditure.date)
-            console.log("success")
-          })
-        }
+        updateExpenditure(expenditure, () => {
+          setSelectedMonth(expenditure.date)
+          console.log("success")
+        })
       } else {
         console.log("invalid")
       }
     }
     const handleDelete = () => {
       setIsShowDialog(false)
-      if (type == "user") {
-        deleteExpenditure(expenditure, () => {
-          setSelectedMonth(expenditure.date)
-          console.log("success")
-        })
-      } else {
-        deleteIncome(expenditure, () => {
-          setSelectedMonth(expenditure.date)
-          console.log("success")
-        })
-      }
+      deleteExpenditure(expenditure, () => {
+        setSelectedMonth(expenditure.date)
+        console.log("success")
+      })
     }
     const onFinishDatePicker = (event, selectedDate) => {
       const currentDate = selectedDate || expenditure.date
@@ -362,13 +331,13 @@ export default function ExpenditureScreen({ route, navigation }) {
             {strings.editExpenditure}
           </Dialog.Title>
           {/* <Dialog.Description
-                            style={{
-                                fontFamily: 'Roboto-Medium',
-                                fontSize: 14,
-                            }}
-                        >
-                            {strings.addExpenditureInformation}
-                    </Dialog.Description> */}
+                        style={{
+                            fontFamily: 'Roboto-Medium',
+                            fontSize: 14,
+                        }}
+                    >
+                        {strings.addExpenditureInformation}
+                </Dialog.Description> */}
           {/* Title */}
           <Text
             style={{
@@ -490,44 +459,23 @@ export default function ExpenditureScreen({ route, navigation }) {
     })
 
     useEffect(() => {
-      if (type == "user") {
-        let isCancelled = false
-        getExpenditures(date, (ExpenditureList) => {
-          try {
-            if (!isCancelled) {
-              var total = 0
-              ExpenditureList.forEach((expenditure) => {
-                total += parseInt(expenditure.amount)
-              })
-              setTotal(total)
-              setExpenditureList(ExpenditureList)
-            }
-          } catch (error) {
-            if (!isCancelled) throw error
+      let isCancelled = false
+      getExpenditures(date, (ExpenditureList) => {
+        try {
+          if (!isCancelled) {
+            var total = 0
+            ExpenditureList.forEach((expenditure) => {
+              total += parseInt(expenditure.amount)
+            })
+            setTotal(total)
+            setExpenditureList(ExpenditureList)
           }
-        })
-        return () => {
-          isCancelled = true
+        } catch (error) {
+          if (!isCancelled) throw error
         }
-      } else {
-        let isCancelled = false
-        getIncome(date, (incomeList) => {
-          try {
-            if (!isCancelled) {
-              var total = 0
-              incomeList.forEach((expenditure) => {
-                total += parseInt(expenditure.amount)
-              })
-              setTotal(total)
-              setExpenditureList(incomeList)
-            }
-          } catch (error) {
-            if (!isCancelled) throw error
-          }
-        })
-        return () => {
-          isCancelled = true
-        }
+      })
+      return () => {
+        isCancelled = true
       }
     }, [])
 
@@ -622,7 +570,7 @@ export default function ExpenditureScreen({ route, navigation }) {
                     : (rotation.value = withSpring(-90))
                 }}
               >
-                <Image source={require("../assets/icons/Back_black.png")} />
+                <Image source={require("../../assets/icons/Back_black.png")} />
               </TouchableOpacity>
             </Animated.View>
           </View>
@@ -658,15 +606,9 @@ export default function ExpenditureScreen({ route, navigation }) {
     }
     const handelAdd = () => {
       expenditure.amount = expenditureAmount
-      if (type == "user") {
-        addExpenditure(expenditure, () => {
-          setSelectedMonth(new Date(expenditure.date))
-        })
-      } else {
-        addIncome(expenditure, () => {
-          setSelectedMonth(new Date(expenditure.date))
-        })
-      }
+      addExpenditure(expenditure, () => {
+        setSelectedMonth(new Date(expenditure.date))
+      })
     }
     const onFinishDatePicker = (event, selectedDate) => {
       const currentDate = selectedDate || expenditure.date
@@ -685,17 +627,15 @@ export default function ExpenditureScreen({ route, navigation }) {
               height: 30,
               width: 30,
             }}
-            source={require("../assets/icons/BackArrow.png")}
+            source={require("../../assets/icons/BackArrow.png")}
           />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setIsShowDialog(true)}>
-          <Image source={require("../assets/icons/Add.png")} />
+          <Image source={require("../../assets/icons/Add.png")} />
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
-            navigation.navigate("Statiscic", {
-              type: type
-            })
+            navigation.navigate("Statistic")
           }}
         >
           <Image
@@ -703,7 +643,7 @@ export default function ExpenditureScreen({ route, navigation }) {
               height: 30,
               width: 30,
             }}
-            source={require("../assets/icons/Chart.png")}
+            source={require("../../assets/icons/Chart.png")}
           />
         </TouchableOpacity>
 
@@ -831,35 +771,19 @@ export default function ExpenditureScreen({ route, navigation }) {
   }
 
   useEffect(() => {
-    if (type == "user") {
-      let isCancelled = false
-      getAllDate(selectedMonth, (datesList) => {
-        try {
-          if (!isCancelled) {
-            setDatesList(datesList)
-          }
-        } catch (error) {
-          if (!isCancelled) throw error
-        }
-      })
-      return () => {
-        isCancelled = true
-      }
-    } else {
-      let isCancelled = false
-      getAllDateTP(selectedMonth, (datesList) => {
-        try {
-          if (!isCancelled) {
-            setDatesList(datesList)
-          }
-        } catch (error) {
-          if (!isCancelled) throw error
-        }
-      })
-      return () => {
-        isCancelled = true
-      }
-    }
+    // let isCancelled = false
+    // getAllDate(selectedMonth, (datesList) => {
+    //   try {
+    //     if (!isCancelled) {
+    //       setDatesList(datesList)
+    //     }
+    //   } catch (error) {
+    //     if (!isCancelled) throw error
+    //   }
+    // })
+    // return () => {
+    //   isCancelled = true
+    // }
   }, [])
 
   return (
@@ -903,6 +827,8 @@ export default function ExpenditureScreen({ route, navigation }) {
     </View>
   )
 }
+
+export default IncomeScreen
 
 const styles = StyleSheet.create({
   container: {

@@ -8,8 +8,8 @@ import EditProfileScreen from "../screens/third-party/EditProfileScreen"
 
 import ScheduleScreen from "../screens/third-party/ScheduleScreen"
 import ScheduleEvent from "../screens/third-party/ScheduleEvent"
-import { StatisticScreen } from "../screens/StatisticScreen"
-
+import ExpenditureScreen from "../screens/ExpenditureScreen"
+import StatisticScreen from "../screens/StatisticScreen"
 import FeedbackScreen from "../screens/FeedbackScreen"
 import SettingScreen from "../screens/SettingScreen"
 
@@ -58,6 +58,16 @@ const ThirdPartyMainStack = () => {
         <Stack.Screen
           name="ScheduleEvent"
           component={ScheduleEvent}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Expenditure"
+          component={ExpenditureScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Statiscic"
+          component={StatisticScreen}
           options={{ headerShown: false }}
         />
         <Stack.Screen
