@@ -1,5 +1,19 @@
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
+import ThirdParty from '../models/thirdParty';
+
+export const getThirdPartyInfo = (id, handleCallback) => {
+    firestore()
+      .collection("thirdParty")
+      .doc(id)
+      .get()
+      .then((documentSnapshot) => {
+        var item = new ThirdParty()
+        item.update(documentSnapshot.data())
+        item._id = documentSnapshot.id
+        handleCallback(item)
+      })
+  }
 
 export const getSavedThirdParties = (handleCallback) => {
     firestore()
@@ -73,6 +87,40 @@ export const addNewAppointment = (apm, handleCallback) => {
         createdAt: firestore.Timestamp.fromDate(new Date()),
         status: 'Chờ xác nhận',
         status_code: 0,
+        has_feedback: false
+    })
+    .then(() => {
+        handleCallback('Success');
+    })
+    .catch((e) => {
+        handleCallback(e);
+    });
+};
+
+export const addFeedbackToAppointment = (id, apmFb, handleCallback) => {
+    firestore()
+    .collection('appointment')
+    .doc(id)
+    .update({
+        has_feedback: true,
+        feedback: apmFb
+    })
+    .then(() => {
+        handleCallback('Success');
+    })
+    .catch((e) => {
+        handleCallback(e);
+    });
+};
+
+export const updateFeedbackInThirdPartyProfile = (id, thirdParty, newRt, handleCallback) => {
+    firestore()
+    .collection('thirdParty')
+    .doc(id)
+    .update({
+        feedback: thirdParty.feedback,
+        rating: (Math.round(((parseFloat(thirdParty.rating) * parseInt(thirdParty.rating_count) + parseInt(newRt)) / (parseInt(thirdParty.rating_count) + 1)) * 10) / 10).toString(),
+        rating_count: (parseInt(thirdParty.rating_count) + 1).toString(),
     })
     .then(() => {
         handleCallback('Success');

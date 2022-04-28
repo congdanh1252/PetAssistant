@@ -6,7 +6,14 @@ import { Button } from "react-native-elements/dist/buttons/Button";
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import BottomSheet from '@gorhom/bottom-sheet';
+import Dialog from "react-native-dialog";
+import Toast from "react-native-toast-message";
 
+import {
+    addFeedbackToAppointment,
+    getThirdPartyInfo,
+    updateFeedbackInThirdPartyProfile
+} from '../api/ThirdPartyAPI';
 import { windowWidth, windowHeight } from '../models/common/Dimensions';
 
 import COLORS from '../theme/colors';
@@ -83,6 +90,9 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
     const [items, setItems] = useState([]);
     const [dataList, setDataList] = useState([]);
     const [filter, setFilter] = useState('');
+    const [dialogShow, setDialogShow] = useState(false);
+    const [rating, setRating] = useState('');
+    const [ratingDetail, setRatingDetail] = useState('');
 
     const snapPoints = useMemo(() => ['62%', '62%'], []);
     const filterSnapPoints = useMemo(() => ['34%', '34%'], []);
@@ -117,6 +127,31 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
         // });
         // setItems(newList);
         // input == "" ? setFilter('') : setFilter(filter);
+    }
+
+    const showResultToast = (result) => {
+        if (result == 'Success') {
+            Toast.show({
+                type: 'success',
+                text1: strings.success,
+                text2: strings.msg_send_feedback_success,
+                position: 'top',
+                autoHide: true,
+            });
+
+            console.log('feedback added!')
+        }
+        else {
+            Toast.show({
+                type: 'error',
+                text1: strings.fail,
+                text2: strings.msg_save_guide_fail,
+                position: 'top',
+                autoHide: true,
+            });
+
+            console.log('Add to firestore error => ' + result)
+        }
     }
 
     const initAppointmentDetailData = (item) => {
@@ -199,6 +234,8 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                 onPress={() => {
                                     initAppointmentDetailData(item)
                                     setShowDetail(true)
+                                    setRating('')
+                                    setRatingDetail('')
                                 }}
                             >
                                 <Image
@@ -469,10 +506,128 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                             </Button>
                                         : null
                                     }
+
+                                    {
+                                        parseInt(appointment.status_code) == 2 ?
+                                            <Button
+                                                title={
+                                                    appointment.has_feedback ?
+                                                    strings.feedback_label + ' của bạn'
+                                                    : strings.feedback_label
+                                                }
+                                                titleStyle={style.button_title}
+                                                buttonStyle={
+                                                    appointment.has_feedback ?
+                                                    [style.button, {width: 148}]
+                                                    : style.button
+                                                }
+                                                onPress={() => {
+                                                    setDialogShow(true)
+                                                }}
+                                            >
+                                            </Button>
+                                        : null
+                                    }
                                 </View>
                             </BottomSheet>
                         </View>
                     </TouchableWithoutFeedback>
+            }
+
+            {
+                dialogShow ?
+                <Dialog.Container
+                    visible={true}
+                    contentStyle={{
+                        maxWidth: '64%'
+                    }}
+                >
+                    <Dialog.Title
+                        style={{
+                            fontSize: 18,
+                            fontFamily: 'Roboto-Bold',
+                        }}
+                    >
+                        {strings.feedback_label}
+                    </Dialog.Title>
+
+                    {/* Stars */}
+                    <View style={style.input_holder}>
+                        <Text style={style.label}>⭐</Text>
+
+                        <TextInput
+                            style={[style.input, {width: 60, textAlign: 'center'}]}
+                            placeholderTextColor={'#898989'}
+                            placeholder={'1-5'}
+                            value={appointment.has_feedback ? appointment.feedback.rating :  rating}
+                            editable={!appointment.has_feedback}
+                            keyboardType={'numeric'}
+                            onChangeText={value => {
+                                (value.length > 1 || parseInt(value) > 5 || parseInt(value) < 1)
+                                ? null : setRating(value)
+                            }}
+                        />
+                    </View>
+
+                    {/* Detail */}
+                    <View style={style.input_holder}>
+                        <Text style={style.label}>{strings.detail}</Text>
+
+                        <TextInput
+                            style={[style.input, {height: 122}]}
+                            placeholderTextColor={'#898989'}
+                            placeholder={strings.detail}
+                            value={appointment.has_feedback ? appointment.feedback.detail : ratingDetail}
+                            editable={!appointment.has_feedback}
+                            multiline={true}
+                            onChangeText={value => {
+                               setRatingDetail(value)
+                            }}
+                        />
+                    </View>
+
+                    <Dialog.Button
+                        style={{color: COLORS.black, marginTop: 8}}
+                        label={strings.cancel}
+                        onPress={() => {
+                            setDialogShow(false)
+                        }}
+                    />
+
+                    {
+                        !appointment.has_feedback ?
+                        <Dialog.Button
+                            style={{color: COLORS.black, marginTop: 8, marginLeft: 8}}
+                            label={'OK'}
+                            onPress={() => {
+                                addFeedbackToAppointment(appointment._id, {
+                                    rating: rating,
+                                    detail: ratingDetail
+                                }, (result) => {
+                                    setDialogShow(false)
+                                    showResultToast(result)
+
+                                    if (result == 'Success') {
+                                        getThirdPartyInfo(appointment.third_party_id, (obj) => {
+                                            obj.feedback.push({
+                                                rating: rating,
+                                                detail: ratingDetail,
+                                                username: appointment.customer_name,
+                                                createdAt: formatDate(new Date())
+                                            })
+                                            updateFeedbackInThirdPartyProfile(obj._id, obj, rating, (res) => {
+                                                res == 'Success' ?
+                                                console.log('update third party feedback OK!')
+                                                : console.log('update third party failed!')
+                                            })
+                                        })
+                                    }
+                                })
+                            }}
+                        /> : null
+                    }              
+                </Dialog.Container>
+                : null
             }
 
             {/* BottomSheet Filter */}
@@ -626,6 +781,13 @@ const style = StyleSheet.create({
         marginTop: 16,
         color: COLORS.white,
     },
+    label: {
+        fontSize: 16,
+        fontFamily: 'Roboto-Bold',
+        color: COLORS.black,
+        opacity: 0.7,
+        marginBottom: 10,
+    },
     input: {
         width: '100%',
         height: 46,
@@ -759,6 +921,10 @@ const style = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Roboto-Bold',
         color: COLORS.white,
+    },
+    input_holder: {
+        width: '100%',
+        marginBottom: 20,
     },
     overlay: {
         width: '100%',

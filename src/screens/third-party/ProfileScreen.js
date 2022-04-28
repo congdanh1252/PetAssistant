@@ -370,7 +370,7 @@ const style = StyleSheet.create({
         color: '#fff',
         fontSize: 18,
         padding: 12,
-        opacity: 0.7,
+        opacity: 0.8,
         borderRadius: 10,
         backgroundColor: COLORS.black
     },

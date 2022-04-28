@@ -9,53 +9,36 @@ import { launchImageLibrary } from "react-native-image-picker";
 import Dialog from "react-native-dialog";
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import Toast from "react-native-toast-message";
+import firestore from '@react-native-firebase/firestore';
 
 import COLORS from '../../theme/colors';
 import strings from "../../data/strings";
 import BackButton from "../../components/BackButton";
 import thirdParty from "../../models/thirdParty";
+import ServiceItem from "../../models/serviceItem";
 
 const EditProfileScreen = ({route, navigation}) => {
     var tp = new thirdParty();
-    const list = [
-        {
-            detail: 'Tiêm ngừa',
-            price: '50000',
-            description: 'zzzzzz'
-        },
-        {
-            detail: 'Tẩy giun',
-            price: '50000',
-            description: 'Các ca phẫu thuật chỉnh hình liên quan đến mổ xương chó mèo, ghép xương chó mèo, bó xương chó mèo từ đơn giản đến phức tạp nhất Các ca phẫu thuật chỉnh hình liên quan đến mổ xương chó mèo, ghép xương chó mèo, bó xương chó mèo từ đơn giản đến phức tạp nhất'
-        }
-    ];
-
-    const mergePhotos = (thumbnail, photoArr) => {
-        let newArr = new Array();
-        newArr.push(thumbnail);
-        photoArr.forEach(element => {
-            newArr.push(element)
-        });
-
-        return newArr;
-    }
-
     const { action, paramObj } = route.params;
-    const [photoUri, setPhotoUri] = useState(action=='add' ? [] : mergePhotos(paramObj.thumbnail, paramObj.img));
+    const [thumbnail, setThumbnail] = useState(action=='add' ? '' : paramObj.thumbnail);
+    const [oldPhotos, setOldPhotos] = useState(action=='add' ? [] : paramObj.img);
+    const [newPhotos, setNewPhotos] = useState([]);
+    const [photoUri, setPhotoUri] = useState([]);
     const [photoFileName, setPhotoFileName] = useState([]);
     const [name, setName] = useState(action=='add' ? '' : paramObj.name);
     const [address, setAddress] = useState(action=='add' ? '' : paramObj.address);
     const [category, setCategory] = useState(action=='add' ? '' : paramObj.category);
     const [phone_number, setPhoneNumber] = useState(action=='add' ? '' : paramObj.phone_number);
-    const [services, setServices] = useState(action=='add' ? [] : paramObj.services);
+    const [services, setServices] = useState([]);
     const [dropdown, setDropdown] = useState('');
-    const [itemAction, setItemAction] = useState('');
     const [dialogShow, setDialogShow] = useState(false);
     const [dialogAction, setDialogAction] = useState('');
     const [expand, setExpand] = useState([0,0,0,0,0,0,0,0]);
     const [dialogItemName, setDialogItemName] = useState('');
     const [dialogItemDescription, setDialogItemDescription] = useState('');
     const [dialogItemPrice, setDialogItemPrice] = useState(0);
+    const [thumbnailFileName, setThumbnailFileName] = useState('');
+    const [hasChangeOldPhoto, setHasChangeOldPhoto] = useState(false);
     const [isUploading, setUploading] = useState(false);
 
     const snapPoints = useMemo(() => ['27%', '27%'], []);
@@ -83,7 +66,7 @@ const EditProfileScreen = ({route, navigation}) => {
     }
 
     const checkSubmitFields = () => {
-        if (photoUri.length < 1 || name=='' || address=='' || category=='' || phone_number==''
+        if ((photoUri.length + oldPhotos.length) < 1 || name=='' || address=='' || category=='' || phone_number==''
             || services.length < 1) {
             Alert.alert(
                 strings.fail,
@@ -199,9 +182,6 @@ const EditProfileScreen = ({route, navigation}) => {
 
         response.forEach(item => {
             listUri.push(item.uri);
-        });
-
-        response.forEach(item => {
             listFilename.push(item.fileName);
         });
 
@@ -224,6 +204,26 @@ const EditProfileScreen = ({route, navigation}) => {
             }
             else {
                 updatePhotoUris(response.assets)
+            }
+        })
+    }
+
+    const pickThumbnailPhoto = () => {
+        let options = {
+            selectionLimit: 1,
+            mediaType: 'photo',
+        }
+
+        launchImageLibrary(options, (response) => {
+            if (response.didCancel) {
+                console.log('User cancelled image picker');
+            }
+            else if (response.errorCode == 'permission') {
+                console.log(strings.err_photo_picker_permission);
+            }
+            else {
+                setThumbnail(response.assets[0].uri)
+                setThumbnailFileName(response.assets[0].fileName)
             }
         })
     }
@@ -277,37 +277,39 @@ const EditProfileScreen = ({route, navigation}) => {
         )
     }
 
-    const removePhotoOnClick = (uri) => {
-        let listUri = [];
-        let listFilename = [];
-        let removeIndex = 0;
+    const removePhotoOnClick = (item, index) => {
+        let old = [];
+        let newlyP = [];
+        let newlyF = [];
 
-        for (let i = 0; i < photoUri.length; i++) {
-            if (photoUri[i] != uri) {
-                listUri.push(photoUri[i])
-            }
-            if (photoUri[i] == uri) {
-                removeIndex = i;
-            }
+        if (index < oldPhotos.length) {
+            oldPhotos.forEach(element => {
+                element != item ? old.push(element) : null
+            })
+            setOldPhotos(old)
+            setHasChangeOldPhoto(true)
+        } else {
+            index -= oldPhotos.length;
+
+            photoUri.forEach(element => {
+                element != item ? newlyP.push(element) : null
+            })
+            photoFileName.forEach((element, idx) => {
+                idx != index ? newlyF.push(element) : null
+            })
+            
+            setPhotoUri(newlyP)
+            setPhotoFileName(newlyF)
         }
-
-        for (let i = 0; i < photoFileName.length; i++) {
-            if (i != removeIndex) {
-                listFilename.push(photoFileName[i])
-            }
-        }
-
-        setPhotoUri(listUri)
-        setPhotoFileName(listFilename)
     }
 
     const AdditionalPhotos = () => {
-        let photos = photoUri.slice(1);
+        let photos = oldPhotos.concat(photoUri);
 
         return (
             <View style={styles.additional_photos_holder}>
                 {
-                    photos.map((item) => {
+                    photos.map((item, index) => {
                         return (
                             <View
                                 key={item}
@@ -329,7 +331,7 @@ const EditProfileScreen = ({route, navigation}) => {
                                     activeOpacity={0.7}
                                     style={styles.remove_photo_icon}
                                     onPress={() => {
-                                        removePhotoOnClick(item)
+                                        removePhotoOnClick(item, index)
                                     }}
                                 >
                                     <Text style={{fontSize: 22, color: '#fff'}}>-</Text>
@@ -341,6 +343,38 @@ const EditProfileScreen = ({route, navigation}) => {
             </View>
         )
     }
+
+    const handleAddServiceButton = () => {
+        let arr = services;
+        let item = new ServiceItem();
+        item._id = dialogItemName + dialogItemPrice;
+        item.price = dialogItemPrice;
+        item.detail = dialogItemName;
+        item.description = dialogItemDescription;
+        arr.push(item)
+
+        setServices(arr)
+        setDialogShow(false)
+    }
+
+    useEffect(() => {
+        const subscriber = firestore()
+        .collection('thirdParty/0kMVPpP8sf3f3iRZuhCY/service')
+        .onSnapshot(querySnapshot => {
+            var list = new Array();
+            querySnapshot.forEach(documentSnapshot => {
+                var item = new ServiceItem();
+                item.update(documentSnapshot.data());
+                item._id = documentSnapshot.id;
+
+                list.push(item)
+            })
+
+            setServices(list)
+        })
+
+        return () => subscriber();
+    }, [])
 
     return (
         <View style={styles.screen}>
@@ -380,9 +414,9 @@ const EditProfileScreen = ({route, navigation}) => {
                                 <TouchableOpacity
                                     style={styles.photo_picker}
                                     activeOpacity={0.7}
-                                    onPress={() => addItemPhoto()}
+                                    onPress={() => pickThumbnailPhoto()}
                                 >
-                                    {(photoUri.length < 1 ? 
+                                    {(action=='add' ? 
                                         <View style={styles.plus_icon}>
                                             <Image
                                                 source={require('../../assets/icons/Add.png')}
@@ -392,7 +426,7 @@ const EditProfileScreen = ({route, navigation}) => {
                                         : 
                                         <View style={styles.pet_photo}>
                                             <Image
-                                                source={{uri: photoUri[0]}}
+                                                source={{uri: thumbnail}}
                                                 style={styles.pet_photo}
                                             />
                                         </View>
@@ -400,13 +434,32 @@ const EditProfileScreen = ({route, navigation}) => {
                                 </TouchableOpacity>
                             </View>
 
-                            {/* Additional photos */}
-                            {
-                                photoUri.length > 1 ?
-                                <AdditionalPhotos/>
-                                : null
-                            }
+                            {/* Additional photos and add icon */}
+                            <View
+                                style={{
+                                    width: '100%',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                {
+                                    (photoUri.length + oldPhotos.length) >= 1 ? <AdditionalPhotos/> : null
+                                }
 
+                                <TouchableOpacity
+                                    style={{marginTop: 16}}
+                                    activeOpacity={0.7}
+                                    onPress={() => addItemPhoto()}
+                                >
+                                    <View style={styles.plus_icon}>
+                                        <Image
+                                            source={require('../../assets/icons/Add.png')}
+                                            style={styles.plus_icon}
+                                        />
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                            
                             {/* Name */}
                             <View style={styles.input_holder}>
                                 <Text style={styles.label}>{strings.name}</Text>
@@ -501,6 +554,9 @@ const EditProfileScreen = ({route, navigation}) => {
                                         onPress={() => {
                                             setDialogAction('add')
                                             setDialogShow(true)
+                                            setDialogItemName('')
+                                            setDialogItemPrice('')
+                                            setDialogItemDescription('')
                                         }}
                                     >
                                         <Image
@@ -514,10 +570,10 @@ const EditProfileScreen = ({route, navigation}) => {
                                 </View>
                                 
                                 {
-                                    list.map((item, index) => {
+                                    services.map((item, index) => {
                                         return (
                                             <TouchableOpacity
-                                                key={item.detail}
+                                                key={item._id}
                                                 style={{marginTop: 4, marginBottom: 4}}
                                                 activeOpacity={0.7}
                                                 onPress={() => {
@@ -714,7 +770,7 @@ const EditProfileScreen = ({route, navigation}) => {
                                     style={{color: COLORS.black, marginTop: 8, marginLeft: 8}}
                                     label={'OK'}
                                     onPress={() => {
-                                        
+                                        handleAddServiceButton()
                                     }}
                                 />                      
                             </Dialog.Container>
