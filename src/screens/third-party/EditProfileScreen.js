@@ -9,53 +9,46 @@ import { launchImageLibrary } from "react-native-image-picker";
 import Dialog from "react-native-dialog";
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import Toast from "react-native-toast-message";
+import firestore from '@react-native-firebase/firestore';
 
+import { 
+    updateThirdPartyInformation,
+    updateMultipleServices
+} from "../../api/ThirdPartyAPI";
+import {
+    uploadImageToStorage,
+    uploadMultipleImagesToStorage
+} from "../../api/PetAPI";
 import COLORS from '../../theme/colors';
 import strings from "../../data/strings";
 import BackButton from "../../components/BackButton";
 import thirdParty from "../../models/thirdParty";
+import ServiceItem from "../../models/serviceItem";
 
 const EditProfileScreen = ({route, navigation}) => {
     var tp = new thirdParty();
-    const list = [
-        {
-            detail: 'Tiêm ngừa',
-            price: '50000',
-            description: 'zzzzzz'
-        },
-        {
-            detail: 'Tẩy giun',
-            price: '50000',
-            description: 'Các ca phẫu thuật chỉnh hình liên quan đến mổ xương chó mèo, ghép xương chó mèo, bó xương chó mèo từ đơn giản đến phức tạp nhất Các ca phẫu thuật chỉnh hình liên quan đến mổ xương chó mèo, ghép xương chó mèo, bó xương chó mèo từ đơn giản đến phức tạp nhất'
-        }
-    ];
-
-    const mergePhotos = (thumbnail, photoArr) => {
-        let newArr = new Array();
-        newArr.push(thumbnail);
-        photoArr.forEach(element => {
-            newArr.push(element)
-        });
-
-        return newArr;
-    }
-
     const { action, paramObj } = route.params;
-    const [photoUri, setPhotoUri] = useState(action=='add' ? [] : mergePhotos(paramObj.thumbnail, paramObj.img));
+    const [thumbnail, setThumbnail] = useState(action=='add' ? '' : paramObj.thumbnail);
+    const [oldPhotos, setOldPhotos] = useState(action=='add' ? [] : paramObj.img);
+    const [photoUri, setPhotoUri] = useState([]);
     const [photoFileName, setPhotoFileName] = useState([]);
     const [name, setName] = useState(action=='add' ? '' : paramObj.name);
     const [address, setAddress] = useState(action=='add' ? '' : paramObj.address);
     const [category, setCategory] = useState(action=='add' ? '' : paramObj.category);
     const [phone_number, setPhoneNumber] = useState(action=='add' ? '' : paramObj.phone_number);
-    const [services, setServices] = useState(action=='add' ? [] : paramObj.services);
+    const [editIndex, setEditIndex] = useState(0);
+    const [services, setServices] = useState([]);
+    const [displayServices, setDisplayServices] = useState([]);
+    const [serviceAction, setServiceAction] = useState([]);
     const [dropdown, setDropdown] = useState('');
-    const [itemAction, setItemAction] = useState('');
     const [dialogShow, setDialogShow] = useState(false);
     const [dialogAction, setDialogAction] = useState('');
     const [expand, setExpand] = useState([0,0,0,0,0,0,0,0]);
     const [dialogItemName, setDialogItemName] = useState('');
     const [dialogItemDescription, setDialogItemDescription] = useState('');
     const [dialogItemPrice, setDialogItemPrice] = useState(0);
+    const [thumbnailFileName, setThumbnailFileName] = useState('');
+    const [hasChangeOldPhoto, setHasChangeOldPhoto] = useState(false);
     const [isUploading, setUploading] = useState(false);
 
     const snapPoints = useMemo(() => ['27%', '27%'], []);
@@ -67,23 +60,112 @@ const EditProfileScreen = ({route, navigation}) => {
     }
 
     const initThirdPartyData = (urlArr) => {
-        // pet.name = name;
-        // pet.kind = kind;
-        // pet.gender = gender;
-        // pet.species = species;
-        // pet.photo = urlArr[0];
-        // pet.age = date;
-        // pet.additional_photos = urlArr.splice(1);
-        // pet.height = parseFloat(height);
-        // pet.weight = parseFloat(weight);
-        // pet.price = parseInt(price);
-        // pet.discount_price = parseInt(discountPrice);
-        // pet.description = description;
-        //action === 'edit' ? pet._id = petObj._id : null;
+        tp.name = name;
+        tp.address = address;
+        tp.category = category;
+        tp.phone_number = phone_number;
+        tp.service = services;
+        tp.thumbnail = thumbnail;
+        const photos = oldPhotos.concat(urlArr);
+        tp.img = oldPhotos.concat(urlArr);
+        action === 'edit' ? tp._id = paramObj._id : null;
+    }
+
+    const editPhotoTask = () => {
+        var newPhotoUrlArr = new Array();
+        // Không thao tác tới ảnh -> không update ảnh
+        if (thumbnailFileName==='' && photoFileName.length==0 && !hasChangeOldPhoto) {
+            initThirdPartyData(newPhotoUrlArr)
+            editInformationTask()
+        } else {
+            // Chỉ đổi thumbnail -> add storage thumbnail, update 1
+            if (thumbnailFileName!='' && photoFileName.length==0 && !hasChangeOldPhoto) {
+                uploadImageToStorage(thumbnail, thumbnailFileName, (url) => {
+                    setThumbnail(url)
+                    initThirdPartyData(newPhotoUrlArr)
+                    editInformationTask()
+                })
+            }
+            // Đổi thumbnail và xóa photo cũ -> add storage thumbnail, update 2
+            if (thumbnailFileName!='' && photoFileName.length==0 && hasChangeOldPhoto) {
+                uploadImageToStorage(thumbnail, thumbnailFileName, (url) => {
+                    setThumbnail(url)
+                    initThirdPartyData(newPhotoUrlArr)
+                    editInformationTask()
+                })
+            }
+            // Đổi thumbnail và thêm photo mới -> add storage thumbnail và photo mới, update 2 
+            if (thumbnailFileName!='' && photoFileName.length>0 && !hasChangeOldPhoto) {
+                uploadImageToStorage(thumbnail, thumbnailFileName, (url) => {
+                    setThumbnail(url)
+                    uploadMultipleImagesToStorage(photoUri, photoFileName, (urlArr) => {
+                        newPhotoUrlArr = urlArr;
+                        initThirdPartyData(newPhotoUrlArr)
+                        editInformationTask()
+                    })
+                })
+            }
+            // Edit cả 3 -> add storage thumbnail và photo mới, update 2
+            if (thumbnailFileName!='' && photoFileName.length>0 && hasChangeOldPhoto) {
+                uploadImageToStorage(thumbnail, thumbnailFileName, (url) => {
+                    setThumbnail(url)
+                    uploadMultipleImagesToStorage(photoUri, photoFileName, (urlArr) => {
+                        newPhotoUrlArr = urlArr;
+                        initThirdPartyData(newPhotoUrlArr)
+                        editInformationTask()
+                    })
+                })
+            }
+            // Chỉ xóa photo cũ -> update 1
+            if (thumbnailFileName=='' && photoFileName.length==0 && hasChangeOldPhoto) {
+
+            }
+            // Chỉ thêm photo mới -> update 1
+            if (thumbnailFileName=='' && photoFileName.length>0 && !hasChangeOldPhoto) {
+                uploadMultipleImagesToStorage(photoUri, photoFileName, (urlArr) => {
+                    newPhotoUrlArr = urlArr;
+                    initThirdPartyData(newPhotoUrlArr)
+                    editInformationTask()
+                })
+            }
+            // Xóa photo cũ và thêm photo mới -> add storage photo mới, update 1
+            if (thumbnailFileName=='' && photoFileName.length>0 && hasChangeOldPhoto) {
+                uploadMultipleImagesToStorage(photoUri, photoFileName, (urlArr) => {
+                    newPhotoUrlArr = urlArr;
+                    initThirdPartyData(newPhotoUrlArr)
+                    editInformationTask()
+                })
+            }
+        }
+    }
+
+    const editInformationTask = () => {
+        updateThirdPartyInformation(paramObj._id, tp, (res) => {
+            res=='Success' ? console.log('Update information OK!') : 'Update info failed!';
+            editServiceTask(res)
+        })
+    }
+
+    const editServiceTask = (res) => {
+        var isIntact = true;
+        serviceAction.forEach(element => {
+            element != 'none' ? isIntact=false : null;
+        });
+        console.log(isIntact)
+
+        if (!isIntact) {
+            updateMultipleServices(tp, serviceAction, (res) => {
+                showResultToast(res)
+                navigation.goBack()
+            })
+        } else {
+            showResultToast(res)
+            navigation.goBack()
+        }
     }
 
     const checkSubmitFields = () => {
-        if (photoUri.length < 1 || name=='' || address=='' || category=='' || phone_number==''
+        if ((photoUri.length + oldPhotos.length) < 1 || name=='' || address=='' || category=='' || phone_number==''
             || services.length < 1) {
             Alert.alert(
                 strings.fail,
@@ -102,15 +184,9 @@ const EditProfileScreen = ({route, navigation}) => {
             if (action==='add') {
                 //uploadMultipleImagesToStorage(photoUri, photoFileName, handleImageUrl);
             }
-            // else {
-            //     if (photoFileName==='') {
-            //         initPetData(petObj.photo);
-            //         updatePetInFirestore(pet, handlePetUpdated);
-            //     } else {
-            //         uploadImageToStorage(photoUri, photoFileName, handleImageUrl);
-            //         deleteImageFromStorage(petObj.photo);
-            //     }
-            // }
+            else {
+                editPhotoTask()
+            }
         }
     }
 
@@ -149,40 +225,24 @@ const EditProfileScreen = ({route, navigation}) => {
         );
     }
 
-    const handleImageUrl = (urlArr) => {
-        if (urlArr.length == photoUri.length) {
-            console.log(urlArr)
-            initThirdPartyData(urlArr);
-            //addSellPetToFirestore(pet, handlePetAdded);
-        } else {
-            console.log('Not enough download urls!');
-        }
-    }
-
     const showResultToast = (result) => {
         if (result == 'Success') {
             Toast.show({
                 type: 'success',
                 text1: strings.success,
-                text2: action==='add' ? strings.msg_upload_sell_pet_success : strings.msg_update_sell_pet_success,
+                text2: action==='add' ? strings.update_info_success_msg : strings.update_info_success_msg,
                 position: 'top',
                 autoHide: true,
             });
-
-            action==='add' ? console.log('Sell pet uploaded!') : console.log('Updated sell pet!');
         }
         else {
             Toast.show({
                 type: 'error',
                 text1: strings.fail,
-                text2: strings.msg_add_pet_fail,
+                text2: strings.update_info_fail_msg,
                 position: 'top',
                 autoHide: true,
             });
-
-            action==='add' ?
-            console.log('Add to firestore error => ' + result) :
-            console.log('Update to firestore error => ' + result);
         }
     }
 
@@ -199,9 +259,6 @@ const EditProfileScreen = ({route, navigation}) => {
 
         response.forEach(item => {
             listUri.push(item.uri);
-        });
-
-        response.forEach(item => {
             listFilename.push(item.fileName);
         });
 
@@ -224,6 +281,26 @@ const EditProfileScreen = ({route, navigation}) => {
             }
             else {
                 updatePhotoUris(response.assets)
+            }
+        })
+    }
+
+    const pickThumbnailPhoto = () => {
+        let options = {
+            selectionLimit: 1,
+            mediaType: 'photo',
+        }
+
+        launchImageLibrary(options, (response) => {
+            if (response.didCancel) {
+                console.log('User cancelled image picker');
+            }
+            else if (response.errorCode == 'permission') {
+                console.log(strings.err_photo_picker_permission);
+            }
+            else {
+                setThumbnail(response.assets[0].uri)
+                setThumbnailFileName(response.assets[0].fileName)
             }
         })
     }
@@ -277,37 +354,39 @@ const EditProfileScreen = ({route, navigation}) => {
         )
     }
 
-    const removePhotoOnClick = (uri) => {
-        let listUri = [];
-        let listFilename = [];
-        let removeIndex = 0;
+    const removePhotoOnClick = (item, index) => {
+        let old = [];
+        let newlyP = [];
+        let newlyF = [];
 
-        for (let i = 0; i < photoUri.length; i++) {
-            if (photoUri[i] != uri) {
-                listUri.push(photoUri[i])
-            }
-            if (photoUri[i] == uri) {
-                removeIndex = i;
-            }
+        if (index < oldPhotos.length) {
+            oldPhotos.forEach(element => {
+                element != item ? old.push(element) : null
+            })
+            setOldPhotos(old)
+            setHasChangeOldPhoto(true)
+        } else {
+            index -= oldPhotos.length;
+
+            photoUri.forEach(element => {
+                element != item ? newlyP.push(element) : null
+            })
+            photoFileName.forEach((element, idx) => {
+                idx != index ? newlyF.push(element) : null
+            })
+            
+            setPhotoUri(newlyP)
+            setPhotoFileName(newlyF)
         }
-
-        for (let i = 0; i < photoFileName.length; i++) {
-            if (i != removeIndex) {
-                listFilename.push(photoFileName[i])
-            }
-        }
-
-        setPhotoUri(listUri)
-        setPhotoFileName(listFilename)
     }
 
     const AdditionalPhotos = () => {
-        let photos = photoUri.slice(1);
+        let photos = oldPhotos.concat(photoUri);
 
         return (
             <View style={styles.additional_photos_holder}>
                 {
-                    photos.map((item) => {
+                    photos.map((item, index) => {
                         return (
                             <View
                                 key={item}
@@ -329,7 +408,7 @@ const EditProfileScreen = ({route, navigation}) => {
                                     activeOpacity={0.7}
                                     style={styles.remove_photo_icon}
                                     onPress={() => {
-                                        removePhotoOnClick(item)
+                                        removePhotoOnClick(item, index)
                                     }}
                                 >
                                     <Text style={{fontSize: 22, color: '#fff'}}>-</Text>
@@ -341,6 +420,82 @@ const EditProfileScreen = ({route, navigation}) => {
             </View>
         )
     }
+
+    const handleDialogOKButton = () => {
+        if (dialogAction=='add') {
+            let arr = services;
+            let item = new ServiceItem();
+            item._id = dialogItemName + dialogItemPrice;
+            item.price = dialogItemPrice==369258147 ? '?' : dialogItemPrice;
+            item.detail = dialogItemName;
+            item.description = dialogItemDescription;
+            arr.push(item)
+
+            setServices(arr)
+            setDisplayServices(arr)
+            setDialogShow(false)
+
+            let actions = new Array();
+            serviceAction.forEach(element => {
+                actions.push(element)
+            });
+            actions.push('add');
+            setServiceAction(actions);
+        } else {
+            let newArr = new Array();
+            let editItem = new ServiceItem();
+            editItem._id = services[editIndex]._id;
+            editItem.active = true;
+            editItem.detail = dialogItemName;
+            editItem.price = dialogItemPrice==369258147 ? '?' : dialogItemPrice;
+            editItem.description = dialogItemDescription;
+
+            services.forEach((element, index) => {
+                if (index != editIndex) {
+                    newArr.push(element)
+                } else {
+                    newArr.push(editItem)
+                }
+            });
+
+            setServices(newArr)
+            setDisplayServices(newArr)
+            setDialogShow(false)
+
+            let actions = new Array();
+            serviceAction.forEach((element, index) => {
+                if (index != editIndex) {
+                    actions.push(element)
+                } else {
+                    actions.push('edit')
+                }
+            });
+            setServiceAction(actions);
+        }
+    }
+
+    useEffect(() => {
+        const subscriber = firestore()
+        .collection('thirdParty/' + paramObj._id + '/service')
+        .onSnapshot(querySnapshot => {
+            var list = new Array();
+            var action = new Array();
+            querySnapshot.forEach(documentSnapshot => {
+                var item = new ServiceItem();
+                item.update(documentSnapshot.data());
+                item._id = documentSnapshot.id;
+
+                list.push(item)
+                action.push('none')
+            })
+
+            setServices(list)
+            setDisplayServices(list)
+            setServiceAction(action)
+        })
+
+        return () => subscriber();
+    }, [])
 
     return (
         <View style={styles.screen}>
@@ -380,9 +535,9 @@ const EditProfileScreen = ({route, navigation}) => {
                                 <TouchableOpacity
                                     style={styles.photo_picker}
                                     activeOpacity={0.7}
-                                    onPress={() => addItemPhoto()}
+                                    onPress={() => pickThumbnailPhoto()}
                                 >
-                                    {(photoUri.length < 1 ? 
+                                    {(action=='add' ? 
                                         <View style={styles.plus_icon}>
                                             <Image
                                                 source={require('../../assets/icons/Add.png')}
@@ -392,7 +547,7 @@ const EditProfileScreen = ({route, navigation}) => {
                                         : 
                                         <View style={styles.pet_photo}>
                                             <Image
-                                                source={{uri: photoUri[0]}}
+                                                source={{uri: thumbnail}}
                                                 style={styles.pet_photo}
                                             />
                                         </View>
@@ -400,13 +555,32 @@ const EditProfileScreen = ({route, navigation}) => {
                                 </TouchableOpacity>
                             </View>
 
-                            {/* Additional photos */}
-                            {
-                                photoUri.length > 1 ?
-                                <AdditionalPhotos/>
-                                : null
-                            }
+                            {/* Additional photos and add icon */}
+                            <View
+                                style={{
+                                    width: '100%',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                {
+                                    (photoUri.length + oldPhotos.length) >= 1 ? <AdditionalPhotos/> : null
+                                }
 
+                                <TouchableOpacity
+                                    style={{marginTop: 16}}
+                                    activeOpacity={0.7}
+                                    onPress={() => addItemPhoto()}
+                                >
+                                    <View style={styles.plus_icon}>
+                                        <Image
+                                            source={require('../../assets/icons/Add.png')}
+                                            style={styles.plus_icon}
+                                        />
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                            
                             {/* Name */}
                             <View style={styles.input_holder}>
                                 <Text style={styles.label}>{strings.name}</Text>
@@ -501,6 +675,9 @@ const EditProfileScreen = ({route, navigation}) => {
                                         onPress={() => {
                                             setDialogAction('add')
                                             setDialogShow(true)
+                                            setDialogItemName('')
+                                            setDialogItemPrice('')
+                                            setDialogItemDescription('')
                                         }}
                                     >
                                         <Image
@@ -514,10 +691,10 @@ const EditProfileScreen = ({route, navigation}) => {
                                 </View>
                                 
                                 {
-                                    list.map((item, index) => {
+                                    displayServices.map((item, index) => {
                                         return (
                                             <TouchableOpacity
-                                                key={item.detail}
+                                                key={item._id}
                                                 style={{marginTop: 4, marginBottom: 4}}
                                                 activeOpacity={0.7}
                                                 onPress={() => {
@@ -555,11 +732,12 @@ const EditProfileScreen = ({route, navigation}) => {
                                                             activeOpacity={0.7}
                                                             style={styles.edit_item_icon}
                                                             onPress={() => {
+                                                                setEditIndex(index)
                                                                 setDialogShow(true)
                                                                 setDialogAction('edit')
                                                                 setDialogItemName(item.detail)
                                                                 setDialogItemDescription(item.description)
-                                                                setDialogItemPrice(parseInt(item.price))
+                                                                setDialogItemPrice(item.price!='?' ? parseInt(item.price) : 369258147)
                                                             }}
                                                         >
                                                             <Image
@@ -672,7 +850,9 @@ const EditProfileScreen = ({route, navigation}) => {
                                             style={styles.input}
                                             placeholderTextColor={'#898989'}
                                             placeholder={'Giá tiền'}
-                                            value={dialogItemPrice.toString()}
+                                            value={
+                                                isNaN(dialogItemPrice) ? '' : dialogItemPrice.toString()
+                                            }
                                             keyboardType={'numeric'}
                                             onChangeText={value => {
                                                 setDialogItemPrice(parseInt(value))
@@ -690,6 +870,7 @@ const EditProfileScreen = ({route, navigation}) => {
                                         VNĐ
                                     </Text>
                                 </View>
+                                <Text style={{marginTop: 4}}>* Nếu giá không thể báo trước, vui lòng nhập '369258147'</Text>
 
                                 <Dialog.Button
                                     style={{color: COLORS.black, marginTop: 8}}
@@ -705,7 +886,25 @@ const EditProfileScreen = ({route, navigation}) => {
                                         style={{color: COLORS.black, marginTop: 8, marginLeft: 8}}
                                         label={strings.delete}
                                         onPress={() => {
-                                            
+                                            let actions = new Array();
+                                            let svs = new Array();
+
+                                            services.forEach((element, index) => {
+                                                if (index != editIndex) {
+                                                    svs.push(element)
+                                                }
+                                            });
+
+                                            serviceAction.forEach((element, index) => {
+                                                if (index != editIndex) {
+                                                    actions.push(element)
+                                                } else {
+                                                    actions.push('remove')
+                                                }
+                                            });
+                                            setDisplayServices(svs)
+                                            setServiceAction(actions);
+                                            setDialogShow(false)
                                         }}
                                     /> : null
                                 }
@@ -714,7 +913,7 @@ const EditProfileScreen = ({route, navigation}) => {
                                     style={{color: COLORS.black, marginTop: 8, marginLeft: 8}}
                                     label={'OK'}
                                     onPress={() => {
-                                        
+                                        handleDialogOKButton()
                                     }}
                                 />                      
                             </Dialog.Container>

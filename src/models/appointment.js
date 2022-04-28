@@ -15,6 +15,8 @@ export default class Appointment {
       this.note = '';
       this.status = '';
       this.status_code = 0;
+      this.has_feedback = false;
+      this.feedback = '';
     }
 
     update(data) {
@@ -33,6 +35,8 @@ export default class Appointment {
         this.note = data.note || '';
         this.status = data.status || '';
         this.status_code = data.status_code || 0;
+        this.has_feedback = data.has_feedback || false;
+        this.feedback = data.feedback || '';
     }
 
     static clone(data) {

@@ -3,6 +3,7 @@ import { Image, StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'rea
 import firestore from '@react-native-firebase/firestore';
 
 import thirdParty from '../models/thirdParty';
+import ServiceItem from '../models/serviceItem';
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import { windowHeight } from '../models/common/Dimensions';
@@ -19,16 +20,34 @@ const ServiceItemListTab = ({route, navigation}) => {
     }
 
     //load list items
+    // useEffect(() => {
+    //     const subscriber = firestore()
+    //     .collection('thirdParty')
+    //     .doc(obj_id)
+    //     .onSnapshot(documentSnapshot => {
+    //         var item = new thirdParty();
+    //         item.update(documentSnapshot.data());
+    //         item._id = documentSnapshot.id;
+
+    //         item.service ? setList(item.service) : null;
+    //     })
+
+    //     return () => subscriber();
+    // }, [])
+
     useEffect(() => {
         const subscriber = firestore()
-        .collection('thirdParty')
-        .doc(obj_id)
-        .onSnapshot(documentSnapshot => {
-            var item = new thirdParty();
-            item.update(documentSnapshot.data());
-            item._id = documentSnapshot.id;
-
-            item.service ? setList(item.service) : null;
+        .collection('thirdParty/' + obj_id + '/service')
+        .onSnapshot(querySnapshot => {
+            var services = new Array();
+            querySnapshot.forEach(documentSnapshot => {
+                var item = new ServiceItem();
+                item.update(documentSnapshot.data());
+                item._id = documentSnapshot.id;
+                item.active ? services.push(item) : null;
+            });
+            
+            setList(services)
         })
 
         return () => subscriber();

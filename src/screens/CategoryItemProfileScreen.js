@@ -69,6 +69,7 @@ const CategoryItemProfileScreen = ({route, navigation}) => {
     const { item_id } = route.params;
     const [obj, setObj] = useState(new thirdParty());
     const [activeIndex, setActiveIndex] = useState(0);
+    const [isSaved, setIsSaved] = useState(false);
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = useMemo(() => ['39%', '100%'], []);
     

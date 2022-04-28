@@ -174,6 +174,8 @@ export default strings = {
     work_label: "Công việc",
     taken_feedback_label: "Phản hồi đã nhận",
     address_label: "Địa chỉ",
+    update_info_success_msg: "Đã cập nhật thông tin của bạn! 👐",
+    update_info_fail_msg: "Đã xảy ra lỗi trong quá trình thực hiện! 😔",
     
 
     back: "Trở lại",

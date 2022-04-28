@@ -1,5 +1,19 @@
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
+import ThirdParty from '../models/thirdParty';
+
+export const getThirdPartyInfo = (id, handleCallback) => {
+    firestore()
+      .collection("thirdParty")
+      .doc(id)
+      .get()
+      .then((documentSnapshot) => {
+        var item = new ThirdParty()
+        item.update(documentSnapshot.data())
+        item._id = documentSnapshot.id
+        handleCallback(item)
+      })
+  }
 
 export const getSavedThirdParties = (handleCallback) => {
     firestore()
@@ -73,6 +87,7 @@ export const addNewAppointment = (apm, handleCallback) => {
         createdAt: firestore.Timestamp.fromDate(new Date()),
         status: 'Chờ xác nhận',
         status_code: 0,
+        has_feedback: false
     })
     .then(() => {
         handleCallback('Success');
@@ -81,3 +96,124 @@ export const addNewAppointment = (apm, handleCallback) => {
         handleCallback(e);
     });
 };
+
+export const addFeedbackToAppointment = (id, apmFb, handleCallback) => {
+    firestore()
+    .collection('appointment')
+    .doc(id)
+    .update({
+        has_feedback: true,
+        feedback: apmFb
+    })
+    .then(() => {
+        handleCallback('Success');
+    })
+    .catch((e) => {
+        handleCallback(e);
+    });
+};
+
+export const updateFeedbackInThirdPartyProfile = (id, thirdParty, newRt, handleCallback) => {
+    firestore()
+    .collection('thirdParty')
+    .doc(id)
+    .update({
+        feedback: thirdParty.feedback,
+        rating: (Math.round(((parseFloat(thirdParty.rating) * parseInt(thirdParty.rating_count) + parseInt(newRt)) / (parseInt(thirdParty.rating_count) + 1)) * 10) / 10).toString(),
+        rating_count: (parseInt(thirdParty.rating_count) + 1).toString(),
+    })
+    .then(() => {
+        handleCallback('Success');
+    })
+    .catch((e) => {
+        handleCallback(e);
+    });
+};
+
+export const updateThirdPartyInformation = (id, thirdParty, handleCallback) => {
+    firestore()
+    .collection('thirdParty')
+    .doc(id)
+    .update({
+        name: thirdParty.name,
+        address: thirdParty.address,
+        category: thirdParty.category,
+        phone_number: thirdParty.phone_number,
+        thumbnail: thirdParty.thumbnail,
+        img: thirdParty.img
+    })
+    .then(() => {
+        handleCallback('Success');
+    })
+    .catch((e) => {
+        handleCallback(e);
+    });
+};
+
+export const updateMultipleServices = async (thirdParty, actions, handleCallback) => {
+    var sum = 0;
+
+    for (let i = 0; i < thirdParty.service.length; i++) {
+        switch (actions[i]) {
+            case 'none':
+                break;
+            case 'add':
+                firestore()
+                .collection('thirdParty/' + thirdParty._id + '/service')
+                .add({
+                    active: true,
+                    detail: thirdParty.service[i].detail,
+                    price: thirdParty.service[i].price,
+                    description: thirdParty.service[i].description
+                })
+                .then(() => {
+                    sum++;
+                    console.log('Add service ok!')
+                    if (i==thirdParty.service.length - 1) {
+                        handleCallback('Success')
+                    }
+                })
+                .catch((e) => {
+                    handleCallback(e);
+                });
+                break;
+            case 'remove':
+                firestore()
+                .collection('thirdParty/' + thirdParty._id + '/service')
+                .doc(thirdParty.service[i]._id)
+                .update({
+                    active: false,
+                })
+                .then(() => {
+                    sum++;
+                    console.log('Remove service ok!')
+                    if (i==thirdParty.service.length - 1) {
+                        handleCallback('Success')
+                    }
+                })
+                .catch((e) => {
+                    handleCallback(e);
+                });
+                break;
+            default:
+                firestore()
+                .collection('thirdParty/' + thirdParty._id + '/service')
+                .doc(thirdParty.service[i]._id)
+                .update({
+                    detail: thirdParty.service[i].detail,
+                    price: thirdParty.service[i].price,
+                    description: thirdParty.service[i].description
+                })
+                .then(() => {
+                    sum++;
+                    console.log('Edit service ok!')
+                    if (i==thirdParty.service.length - 1) {
+                        handleCallback('Success')
+                    }
+                })
+                .catch((e) => {
+                    handleCallback(e);
+                });
+        }
+    }
+}
