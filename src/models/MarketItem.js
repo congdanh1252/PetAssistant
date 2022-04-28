@@ -32,7 +32,7 @@ export default class MarketItem {
     this.province = "" || data.province
     this.discount_price = "" || data.discount_price
     this.photo = "" || data.photo
-    this.photos = new Array() || data.additional_photos
+    this.photos = data.additional_photos || new Array()
   }
 
   static clone(data) {

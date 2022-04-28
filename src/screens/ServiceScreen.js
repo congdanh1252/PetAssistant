@@ -30,20 +30,38 @@ const ServiceScreen = ({ route, navigation }) => {
         >
             {/* Phòng khám */}
             <TouchableOpacity
-            activeOpacity={0.8}
-            style={style.category_item}
-            onPress={() => {
-                navigation.navigate("ServiceList", {
-                category: "Phòng khám",
-                })
-            }}
-            >
-            <Image
-                style={style.category_icon}
-                source={require("../assets/icons/ic_doctor_fl.png")}
-            />
+                activeOpacity={0.8}
+                style={style.category_item}
+                onPress={() => {
+                    navigation.navigate("ServiceList", {
+                    category: "Phòng khám",
+                    })
+                }}
+                >
+                <Image
+                    style={style.category_icon}
+                    source={require("../assets/icons/ic_doctor_fl.png")}
+                />
 
-            <Text style={style.item_title}>{strings.clinic_label}</Text>
+                <Text style={style.item_title}>{strings.clinic_label}</Text>
+            </TouchableOpacity>
+
+            {/* Spa chăm sóc */}
+            <TouchableOpacity
+                activeOpacity={0.8}
+                style={style.category_item}
+                onPress={() => {
+                    navigation.navigate("ServiceList", {
+                    category: "Spa chăm sóc",
+                    })
+                }}
+                >
+                <Image
+                    style={style.category_icon}
+                    source={require("../assets/icons/ic_shampoo.png")}
+                />
+
+                <Text style={style.item_title}>{strings.spa_label}</Text>
             </TouchableOpacity>
 
             {/* Buôn bán */}

@@ -7,7 +7,7 @@ import CategoryItemProfileScreen from '../screens/CategoryItemProfileScreen';
 import ChatListScreen from '../screens/ChatListScreen';
 import ChatScreen from '../screens/ChatScreen';
 import SavedServiceListScreen from '../screens/SavedServiceListScreen';
-import SellPetScreen from '../screens/SellPetScreen';
+import MakeAppointmentScreen from '../screens/MakeAppointmentScreen';
 import AppointmentArchivedScreen from '../screens/AppointmentArchivedScreen';
 import NurseryStack from './NurseryStack';
 import ProductStack from './ProductStack';
@@ -26,6 +26,7 @@ const ServiceStack = () => {
         <Stack.Screen name="CategoryItem" component={CategoryItemProfileScreen} options={{headerShown: false}}/>
         <Stack.Screen name="ChatList" component={ChatListScreen} options={{headerShown: false}}/>
         <Stack.Screen name="ChatScreen" component={ChatScreen} options={{headerShown: false}}/>
+        <Stack.Screen name="MakeAppointment" component={MakeAppointmentScreen} options={{headerShown: false}}/>
         <Stack.Screen name="ProductStack" component={ProductStack} options={{headerShown: false}}/>
         {/* <Stack.Screen name="SellPet" component={SellPetScreen} options={{headerShown: false}}/> */}
         <Stack.Screen name="NurseryStack" component={NurseryStack} options={{headerShown: false}}/>

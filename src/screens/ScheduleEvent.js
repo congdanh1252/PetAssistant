@@ -259,7 +259,6 @@ export function ScheduleEvent ({route, navigation}) {
         });
     }
 
-
     useEffect(() => {
         let isCancelled = false;
         const { reminder_id } = route.params
@@ -420,6 +419,8 @@ export function ScheduleEvent ({route, navigation}) {
                                     style={styles.detail}
                                 >
                                     {
+           
+           
                                         selectedFrequency == "daily"
                                         ? "Hằng ngày"
                                         : selectedFrequency == "weekly"

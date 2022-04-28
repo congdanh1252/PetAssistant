@@ -7,13 +7,13 @@ import { ScrollView, TouchableOpacity } from "react-native-gesture-handler"
 import CalendarStrip from "react-native-calendar-strip"
 import moment from "moment"
 
-import COLORS from "../theme/colors"
-import { windowHeight, windowWidth } from "../models/common/Dimensions"
+import COLORS from "../../theme/colors"
 import {
   getDateReminder,
   getPetsReminder,
   getMonthReminderDate,
-} from "../api/ReminderAPI"
+} from "../../api/third-party/ReminderAPI"
+
 import {
   WaitIcon,
   DoctorIcon,
@@ -25,7 +25,7 @@ import {
   WalkIcon,
   HairBrushIcon,
   SandIcon,
-} from "../assets/icons/index"
+} from "../../assets/icons/index"
 
 LocaleConfig.locales["vi"] = {
   monthNames: [
@@ -70,7 +70,7 @@ LocaleConfig.locales["vi"] = {
 }
 LocaleConfig.defaultLocale = "vi"
 
-export function Schedules({ navigation }) {
+export default function ScheduleScreen({ navigation }) {
   const bottomSheetRef = useRef < BottomSheet > null
   // variables
   const snapPoints = useMemo(() => ["50%", "80%"], [])
@@ -81,54 +81,13 @@ export function Schedules({ navigation }) {
   const [dates, setDates] = useState([])
   const [monthData, setMonthData] = useState(JSON)
 
-  const PetsName = (props) => {
-    const [pets, setPets] = useState([])
-
-    useEffect(() => {
-      let isCancelled = false
-      getPetsReminder(props.pets, (existPets, addingPets) => {
-        try {
-          if (!isCancelled) {
-            setPets(existPets)
-          }
-        } catch (error) {
-          if (!isCancelled) throw error
-        }
-      })
-      return () => {
-        isCancelled = true
-      }
-    }, [])
-    return (
-      <View style={styles.petsContainer}>
-        {pets[0] != null ? (
-          <View style={styles.petName}>
-            <Text>{pets[0].name}</Text>
-          </View>
-        ) : null}
-
-        {pets[1] != null ? (
-          <View style={styles.petName}>
-            <Text>{pets[1].name}</Text>
-          </View>
-        ) : null}
-
-        {pets.length > 2 ? (
-          <View style={styles.petName}>
-            <Text>{"+" + (pets.length - 2)}</Text>
-          </View>
-        ) : null}
-      </View>
-    )
-  }
-
   useEffect(() => {
+    setReminderList([])
+    setOldReminderList([])
     let isCancelled = false
     getDateReminder(selectedDate, (reminderList, oldReminderList) => {
       try {
         if (!isCancelled) {
-          // console.log(reminderList);
-          // console.log(oldReminderList);
           setReminderList(reminderList)
           setOldReminderList(oldReminderList)
         }
@@ -146,14 +105,12 @@ export function Schedules({ navigation }) {
     getMonthReminderDate(selectedDate, (dates) => {
       try {
         if (!isCancelled) {
-          // console.log(dates);
           var today = new Date()
           var dates_s = ""
           let data = "{"
           for (var i = 0; i < dates.length; i++) {
             if (dates[i] < 9) {
               dates_s = "0" + dates[i].toString()
-              // console.log(dates_s)
             } else dates_s = dates[i]
             data +=
               '"' +
@@ -167,7 +124,6 @@ export function Schedules({ navigation }) {
             }
           }
           data += "}"
-          // console.log(data);
           setMonthData(JSON.parse(data))
         }
       } catch (error) {
@@ -180,7 +136,6 @@ export function Schedules({ navigation }) {
   }, [selectedDate])
 
   const CalendarEvent = (props) => {
-    console.log(props.reminder.type)
     switch (props.reminder.type) {
       case "Food":
         imgSource = FoodIcon
@@ -213,6 +168,8 @@ export function Schedules({ navigation }) {
     return (
       <TouchableOpacity
         onPress={() => {
+          console.log(props.reminder._id)
+
           navigation.navigate("ScheduleEvent", {
             reminder_id: props.reminder._id,
           })
@@ -251,15 +208,29 @@ export function Schedules({ navigation }) {
           </Text>
         </View>
 
-        {/* <PetsName pets={props.reminder.pets} /> */}
+        <View style={{ padding: 4, marginTop: 4 }}>
+          <Text>
+            {" "}
+            Khách hàng:{" "}
+            <Text style={{ fontFamily: "Roboto-Bold" }}>
+              {props.reminder.user.name}
+            </Text>
+          </Text>
+          <Text>
+            {" "}
+            Trạng thái:{" "}
+            <Text style={{ fontFamily: "Roboto-Bold" }}>
+              {props.reminder.user.name}
+            </Text>
+          </Text>
+        </View>
 
-        
         <View style={styles.eventTime}>
           <Image
             style={{
               marginRight: 4,
             }}
-            source={require("../assets/icons/Clock.png")}
+            source={require("../../assets/icons/Clock.png")}
           />
 
           <Text>{moment(props.reminder.datetime).format("HH:mm")}</Text>
@@ -277,17 +248,17 @@ export function Schedules({ navigation }) {
               navigation.goBack()
             }}
           >
-            <Image source={require("../assets/icons/BackArrow.png")} />
+            <Image source={require("../../assets/icons/BackArrow.png")} />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
               navigation.navigate("AddScheduleScreen")
             }}
           >
-            <Image source={require("../assets/icons/Add.png")} />
+            <Image source={require("../../assets/icons/Add.png")} />
           </TouchableOpacity>
           <TouchableOpacity>
-            <Image source={require("../assets/icons/Settings.png")} />
+            <Image source={require("../../assets/icons/Settings.png")} />
           </TouchableOpacity>
         </View>
       </BottomSheetFooter>
@@ -348,6 +319,7 @@ export function Schedules({ navigation }) {
           selectedDate={selectedDate}
         />
       )}
+
       <BottomSheet
         useRef={bottomSheetRef}
         index={1}
@@ -435,7 +407,7 @@ const styles = StyleSheet.create({
     position: "relative",
     width: "90%",
     alignSelf: "center",
-    height: 100,
+    height: 110,
     borderRadius: 15,
     padding: 12,
     marginTop: 12,

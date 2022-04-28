@@ -12,12 +12,12 @@ import {
 import auth from "@react-native-firebase/auth"
 import BottomSheet from "@gorhom/bottom-sheet"
 
-import COLORS from "../theme/colors"
-import strings from "../data/strings"
-import User from "../models/user"
-import { getUserName } from "../api/UserAPI"
-import { getDateReminder } from "../api/ReminderAPI"
-import { getMonthTotal } from "../api/ExpenditureAPI"
+import COLORS from "../../theme/colors"
+import strings from "../../data/strings"
+import User from "../../models/user"
+import { getUserName } from "../../api/UserAPI"
+import { getDateReminder } from "../../api/ReminderAPI"
+import { getMonthTotal } from "../../api/ExpenditureAPI"
 
 const HomeScreen = ({ navigation }) => {
   const [show, setShow] = useState(false)
@@ -38,26 +38,26 @@ const HomeScreen = ({ navigation }) => {
     }
   }, [])
 
-  useEffect(() => {
-    let isCancelled = false
-    getDateReminder(new Date(), (reminders, oldReminder) => {
-      console.log(reminders)
-      setAmountReminder(reminders.length)
-    })
-    return () => {
-      isCancelled = true
-    }
-  }, [])
+  //   useEffect(() => {
+  //     let isCancelled = false
+  //     getDateReminder(new Date(), (reminders, oldReminder) => {
+  //       console.log(reminders)
+  //       setAmountReminder(reminders.length)
+  //     })
+  //     return () => {
+  //       isCancelled = true
+  //     }
+  //   }, [])
 
-  useEffect(() => {
-    let isCancelled = false
-    getMonthTotal(new Date(), (total) => {
-      setTotal(total)
-    })
-    return () => {
-      isCancelled = true
-    }
-  }, [])
+  // useEffect(() => {
+  //     let isCancelled = false
+  //         getMonthTotal(new Date(), (total) => {
+  //         setTotal(total)
+  //     })
+  //     return () => {
+  //         isCancelled = true
+  //     }
+  // }, [])
 
   // useEffect(() => {
   //     let isCancelled = false
@@ -85,7 +85,7 @@ const HomeScreen = ({ navigation }) => {
         <TouchableOpacity activeOpacity={0.6} onPress={() => setShow(true)}>
           <Image
             style={[style.saved_button, { tintColor: COLORS.black }]}
-            source={require("../assets/icons/Hamburger.png")}
+            source={require("../../assets/icons/Hamburger.png")}
           />
         </TouchableOpacity>
 
@@ -120,11 +120,11 @@ const HomeScreen = ({ navigation }) => {
 
         <TouchableOpacity
           onPress={() => {
-            navigation.navigate("Profile")
+            // navigation.navigate("Profile")
           }}
         >
           <Image
-            source={require("../assets/icons/Logo.png")}
+            source={require("../../assets/icons/Logo.png")}
             style={style.logo}
           />
         </TouchableOpacity>
@@ -153,104 +153,106 @@ const HomeScreen = ({ navigation }) => {
         </View>
 
         <View style={style.menu}>
-          {/* Quản lý thú cưng */}
+          {/* Quản lý thông tin */}
           <TouchableOpacity
             style={[style.menu_box, { marginRight: 8 }]}
             activeOpacity={0.7}
             onPress={() => {
-              navigation.navigate("MyPets")
-            }}
-          >
-            <Image
-              source={require("../assets/icons/ic_cat_fl.png")}
-              style={style.menu_icon}
-            />
-
-            <Text style={style.menu_title}>{strings.pet_management}</Text>
-          </TouchableOpacity>
-
-          {/* Thời gian biểu */}
-          <TouchableOpacity
-            style={[style.menu_box, { marginLeft: 8 }]}
-            activeOpacity={0.7}
-            onPress={() => {
-              navigation.navigate("ScheduleStack")
-            }}
-          >
-            <Image
-              source={require("../assets/icons/ic_schedules_fl.png")}
-              style={style.menu_icon}
-            />
-
-            <Text style={style.menu_title}>{strings.schedules}</Text>
-          </TouchableOpacity>
-
-          {/* Quản lý chi tiêu */}
-          <TouchableOpacity
-            activeOpacity={0.7}
-            style={[style.menu_box, { marginRight: 8 }]}
-            onPress={() => {
-              navigation.navigate("ExpenditureStack", {
-                type: "user",
+              navigation.navigate("MyInformation", {
+                item_id: auth().currentUser.uid,
               })
             }}
           >
             <Image
-              source={require("../assets/icons/ic_shopping_fl.png")}
+              source={require("../../assets/icons/ic_cv.png")}
               style={style.menu_icon}
             />
 
             <Text style={style.menu_title}>
-              {strings.expenditure_management}
+              {strings.information_management_label}
             </Text>
           </TouchableOpacity>
 
-          {/* Cẩm nang chăm sóc */}
+          {/* Chat */}
           <TouchableOpacity
-            activeOpacity={0.7}
             style={[style.menu_box, { marginLeft: 8 }]}
+            activeOpacity={0.7}
             onPress={() => {
-              navigation.navigate("Guides")
+              navigation.navigate("ChatList")
             }}
           >
             <Image
-              source={require("../assets/icons/ic_guide_fl.png")}
+              source={require("../../assets/icons/ic_conversation.png")}
               style={style.menu_icon}
             />
 
-            <Text style={style.menu_title}>{strings.care_guide}</Text>
+            <Text style={style.menu_title}>Chat</Text>
           </TouchableOpacity>
 
-          {/* Chuẩn đoán bệnh */}
+          {/* Công việc */}
           <TouchableOpacity
             activeOpacity={0.7}
             style={[style.menu_box, { marginRight: 8 }]}
             onPress={() => {
-              navigation.navigate("PredictStack")
+              navigation.navigate("Schedule")
             }}
           >
             <Image
-              source={require("../assets/icons/ic_doctor_fl.png")}
+              source={require("../../assets/icons/ic_task.png")}
               style={style.menu_icon}
             />
 
-            <Text style={style.menu_title}>{strings.diagnosis}</Text>
+            <Text style={style.menu_title}>{strings.work_label}</Text>
           </TouchableOpacity>
 
-          {/* Dịch vụ */}
+          {/* Thống kê */}
           <TouchableOpacity
             activeOpacity={0.7}
             style={[style.menu_box, { marginLeft: 8 }]}
             onPress={() => {
-              navigation.navigate("Service")
+              navigation.navigate("Expenditure", {
+                type: "thirdParty",
+              })
             }}
           >
             <Image
-              source={require("../assets/icons/ic_treat.png")}
+              source={require("../../assets/icons/ic_pie_chart.png")}
               style={style.menu_icon}
             />
 
-            <Text style={style.menu_title}>{strings.service_label}</Text>
+            <Text style={style.menu_title}>{strings.statistic}</Text>
+          </TouchableOpacity>
+
+          {/* Lưu trữ */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={[style.menu_box, { marginRight: 8 }]}
+            onPress={() => {
+              // navigation.navigate("PredictStack")
+            }}
+          >
+            <Image
+              source={require("../../assets/icons/ic_storage_2.png")}
+              style={style.menu_icon}
+            />
+
+            <Text style={style.menu_title}>{strings.storage_label}</Text>
+          </TouchableOpacity>
+
+          {/* Phản hồi đã nhận */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={[style.menu_box, { marginLeft: 8 }]}
+            onPress={() => {
+              // navigation.navigate('Service')
+            }}
+          >
+            <Image
+              source={require("../../assets/icons/ic_vote.png")}
+              style={style.menu_icon}
+            />
+
+            <Text style={style.menu_title}>{strings.taken_feedback_label}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -282,7 +284,7 @@ const HomeScreen = ({ navigation }) => {
                 <View style={style.dropdown_detail}>
                   <Image
                     style={style.dropdown_option_icon}
-                    source={require("../assets/icons/ic_mail.png")}
+                    source={require("../../assets/icons/ic_mail.png")}
                   />
 
                   <Text style={style.dropdown_option_text}>
@@ -307,7 +309,7 @@ const HomeScreen = ({ navigation }) => {
                 <View style={style.dropdown_detail}>
                   <Image
                     style={style.dropdown_option_icon}
-                    source={require("../assets/icons/ic_logout.png")}
+                    source={require("../../assets/icons/ic_logout.png")}
                   />
 
                   <Text style={style.dropdown_option_text}>

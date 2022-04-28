@@ -8,6 +8,7 @@ export default class PetSell {
       this.species = '';
       this.gender = '';
       this.photo = '';
+      this.age = '';
       this.description = '';
       this.seller_id = '';
       this.price = 0;
@@ -24,6 +25,7 @@ export default class PetSell {
       this.species = data.species || '';
       this.gender = data.gender || '';
       this.photo = data.photo || '';
+      this.photo = data.age || '';
       this.description = data.description || '';
       this.seller_id = data.seller_id || '';
       this.price = data.price || 0;

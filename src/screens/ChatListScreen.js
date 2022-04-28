@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Image, StyleSheet, View, Text, ScrollView, TextInput, TouchableHighlight
 } from 'react-native';
 import moment from 'moment';
+import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
 import Chat from '../models/chat';
@@ -41,7 +42,9 @@ const ChatListScreen = ({route, navigation}) => {
                 chat.user2Name = documentSnapshot.data().user2Name;
                 chat.photoUrl = documentSnapshot.data().user2Image;
 
-                list.push(chat);
+                if (chat.user1 == auth().currentUser.uid || chat.user2 == auth().currentUser.uid) {
+                    list.push(chat);
+                }
             });
             setChats(list);
             setDataList(list);

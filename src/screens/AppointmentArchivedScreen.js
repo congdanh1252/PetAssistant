@@ -6,7 +6,14 @@ import { Button } from "react-native-elements/dist/buttons/Button";
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import BottomSheet from '@gorhom/bottom-sheet';
+import Dialog from "react-native-dialog";
+import Toast from "react-native-toast-message";
 
+import {
+    addFeedbackToAppointment,
+    getThirdPartyInfo,
+    updateFeedbackInThirdPartyProfile
+} from '../api/ThirdPartyAPI';
 import { windowWidth, windowHeight } from '../models/common/Dimensions';
 
 import COLORS from '../theme/colors';
@@ -83,6 +90,9 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
     const [items, setItems] = useState([]);
     const [dataList, setDataList] = useState([]);
     const [filter, setFilter] = useState('');
+    const [dialogShow, setDialogShow] = useState(false);
+    const [rating, setRating] = useState('');
+    const [ratingDetail, setRatingDetail] = useState('');
 
     const snapPoints = useMemo(() => ['62%', '62%'], []);
     const filterSnapPoints = useMemo(() => ['34%', '34%'], []);
@@ -119,6 +129,31 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
         // input == "" ? setFilter('') : setFilter(filter);
     }
 
+    const showResultToast = (result) => {
+        if (result == 'Success') {
+            Toast.show({
+                type: 'success',
+                text1: strings.success,
+                text2: strings.msg_send_feedback_success,
+                position: 'top',
+                autoHide: true,
+            });
+
+            console.log('feedback added!')
+        }
+        else {
+            Toast.show({
+                type: 'error',
+                text1: strings.fail,
+                text2: strings.msg_save_guide_fail,
+                position: 'top',
+                autoHide: true,
+            });
+
+            console.log('Add to firestore error => ' + result)
+        }
+    }
+
     const initAppointmentDetailData = (item) => {
         let data = new Appointment();
         data.update(item)
@@ -129,13 +164,13 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
         let color = '';
 
         switch (appointment.status_code) {
-            case '0':
+            case 0:
                 color = COLORS.yellow;
                 break;
-            case '1':
+            case 1:
                 color = COLORS.blue;
                 break;
-            case '2':
+            case 2:
                 color = COLORS.success;
                 break;
             default:
@@ -149,23 +184,35 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
         )
     }
 
+    const formatTime = (time) => {
+        return time.getHours().toString() + ":" + String(time.getMinutes()).padStart(2, '0');
+    }
+
+    const formatDate = (date) => {
+        return (
+            String(date.getDate()).padStart(2, '0') + "/" +
+            String(date.getMonth() + 1).padStart(2, '0') + "/" +
+            date.getFullYear().toString()
+        )
+    }
+
     const Items = () => {
         return (
             <ScrollView horizontal={false} showsVerticalScrollIndicator={false}>
                 <View style={style.item_list_container} >    
                 {
-                    data.map((item) => {
+                    items.map((item) => {
                         const Status = () => {
                             let color = '';
 
                             switch (item.status_code) {
-                                case '0':
+                                case 0:
                                     color = COLORS.yellow;
                                     break;
-                                case '1':
+                                case 1:
                                     color = COLORS.blue;
                                     break;
-                                case '2':
+                                case 2:
                                     color = COLORS.success;
                                     break;
                                 default:
@@ -187,6 +234,8 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                 onPress={() => {
                                     initAppointmentDetailData(item)
                                     setShowDetail(true)
+                                    setRating('')
+                                    setRatingDetail('')
                                 }}
                             >
                                 <Image
@@ -202,16 +251,41 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                         style={[style.info_icon, {tintColor: '#000'}]}
                                     />
 
-                                    <Text style={style.info_text}>{item.appointment_time} - {item.appointment_date}</Text>
+                                    <Text style={style.info_text}>{formatTime(item.appointment_time)} - {formatDate(item.appointment_date)}</Text>
                                 </View>
 
                                 <View style={style.item_info_holder}>
                                     <Image
-                                        source={require('../assets/icons/ic_calendar.png')}
+                                        source={require('../assets/icons/ic_menu.png')}
                                         style={[style.info_icon, {tintColor: '#000'}]}
                                     />
 
-                                    <Text style={style.info_text} numberOfLines={2}>{item.service}</Text>
+                                    <Text style={style.info_text} numberOfLines={2}>
+                                        {
+                                            item.service.map((element, index) => {
+                                                return (
+                                                    index < item.service.length - 1 ?
+                                                    (
+                                                        <Text
+                                                            key={element}
+                                                            style={[style.info_text, {fontWeight: 'normal'}]}
+                                                        >
+                                                            {element}, {' '}
+                                                        </Text>
+                                                    )
+                                                    :
+                                                    (
+                                                        <Text
+                                                            key={element}
+                                                            style={[style.info_text, {fontWeight: 'normal'}]}
+                                                        >
+                                                            {element}
+                                                        </Text>
+                                                    )
+                                                )
+                                            })
+                                        }
+                                    </Text>
                                 </View>
 
                                 <Status/>
@@ -224,24 +298,27 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
         )
     }
 
-    //load pet list
+    //load appointment list
     useEffect(() => {
-        // const subscriber = firestore()
-        // .collection('thirdParty')
-        // .where('category', '==', category)
-        // .onSnapshot(querySnapshot => {
-        //     var list = new Array();
-        //     querySnapshot.forEach(documentSnapshot => {
-        //         var item = new thirdParty();
-        //         item.update(documentSnapshot.data());
-        //         item._id = documentSnapshot.id;
-        //         list.push(item);
-        //     })
-        //     setItems(list);
-        //     setDataList(list);
-        // })
+        const subscriber = firestore()
+        .collection('appointment')
+        .where('customer_id', '==', auth().currentUser.uid)
+        .onSnapshot(querySnapshot => {
+            var list = new Array();
+            querySnapshot.forEach(documentSnapshot => {
+                var item = new Appointment();
+                item.update(documentSnapshot.data());
+                item._id = documentSnapshot.id;
+                item.appointment_date = new Date(documentSnapshot.data().appointment_date.toDate());
+                item.appointment_time = new Date(documentSnapshot.data().appointment_time.toDate());
+                item.created_at = new Date(documentSnapshot.data().createdAt.toDate());
+                list.push(item);
+            })
+            setItems(list);
+            setDataList(list);
+        })
 
-        //return () => subscriber();
+        return () => subscriber();
     }, []);
 
     //Main 
@@ -350,7 +427,7 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                         </Text>
 
                                         <Text style={style.info_text}>
-                                            {appointment.appointment_time} ngày {appointment.appointment_date}
+                                            {formatTime(appointment.appointment_time)} ngày {formatDate(appointment.appointment_date)}
                                         </Text>
                                     </View>
 
@@ -361,7 +438,7 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                         </Text>
 
                                         <Text style={style.info_text}>
-                                            {appointment.created_at}
+                                            {formatTime(appointment.created_at)} ngày {formatDate(appointment.created_at)}
                                         </Text>
                                     </View>
 
@@ -369,9 +446,30 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                     <View style={style.detail_info_holder}>
                                         <Text style={style.detail_info_bold}>
                                             Nội dung dịch vụ: {' '}
-                                            <Text style={[style.info_text, {fontWeight: 'normal'}]}>
-                                                {appointment.service}
-                                            </Text>
+                                            {
+                                                appointment.service.map((element, index) => {
+                                                    return (
+                                                        index < appointment.service.length - 1 ?
+                                                        (
+                                                            <Text
+                                                                key={element}
+                                                                style={[style.info_text, {fontWeight: 'normal'}]}
+                                                            >
+                                                                {element}, {' '}
+                                                            </Text>
+                                                        )
+                                                        :
+                                                        (
+                                                            <Text
+                                                                key={element}
+                                                                style={[style.info_text, {fontWeight: 'normal'}]}
+                                                            >
+                                                                {element}
+                                                            </Text>
+                                                        )
+                                                    )
+                                                })
+                                            }
                                         </Text>
                                     </View>
 
@@ -408,10 +506,128 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                             </Button>
                                         : null
                                     }
+
+                                    {
+                                        parseInt(appointment.status_code) == 2 ?
+                                            <Button
+                                                title={
+                                                    appointment.has_feedback ?
+                                                    strings.feedback_label + ' của bạn'
+                                                    : strings.feedback_label
+                                                }
+                                                titleStyle={style.button_title}
+                                                buttonStyle={
+                                                    appointment.has_feedback ?
+                                                    [style.button, {width: 148}]
+                                                    : style.button
+                                                }
+                                                onPress={() => {
+                                                    setDialogShow(true)
+                                                }}
+                                            >
+                                            </Button>
+                                        : null
+                                    }
                                 </View>
                             </BottomSheet>
                         </View>
                     </TouchableWithoutFeedback>
+            }
+
+            {
+                dialogShow ?
+                <Dialog.Container
+                    visible={true}
+                    contentStyle={{
+                        maxWidth: '64%'
+                    }}
+                >
+                    <Dialog.Title
+                        style={{
+                            fontSize: 18,
+                            fontFamily: 'Roboto-Bold',
+                        }}
+                    >
+                        {strings.feedback_label}
+                    </Dialog.Title>
+
+                    {/* Stars */}
+                    <View style={style.input_holder}>
+                        <Text style={style.label}>⭐</Text>
+
+                        <TextInput
+                            style={[style.input, {width: 60, textAlign: 'center'}]}
+                            placeholderTextColor={'#898989'}
+                            placeholder={'1-5'}
+                            value={appointment.has_feedback ? appointment.feedback.rating :  rating}
+                            editable={!appointment.has_feedback}
+                            keyboardType={'numeric'}
+                            onChangeText={value => {
+                                (value.length > 1 || parseInt(value) > 5 || parseInt(value) < 1)
+                                ? null : setRating(value)
+                            }}
+                        />
+                    </View>
+
+                    {/* Detail */}
+                    <View style={style.input_holder}>
+                        <Text style={style.label}>{strings.detail}</Text>
+
+                        <TextInput
+                            style={[style.input, {height: 122}]}
+                            placeholderTextColor={'#898989'}
+                            placeholder={strings.detail}
+                            value={appointment.has_feedback ? appointment.feedback.detail : ratingDetail}
+                            editable={!appointment.has_feedback}
+                            multiline={true}
+                            onChangeText={value => {
+                               setRatingDetail(value)
+                            }}
+                        />
+                    </View>
+
+                    <Dialog.Button
+                        style={{color: COLORS.black, marginTop: 8}}
+                        label={strings.cancel}
+                        onPress={() => {
+                            setDialogShow(false)
+                        }}
+                    />
+
+                    {
+                        !appointment.has_feedback ?
+                        <Dialog.Button
+                            style={{color: COLORS.black, marginTop: 8, marginLeft: 8}}
+                            label={'OK'}
+                            onPress={() => {
+                                addFeedbackToAppointment(appointment._id, {
+                                    rating: rating,
+                                    detail: ratingDetail
+                                }, (result) => {
+                                    setDialogShow(false)
+                                    showResultToast(result)
+
+                                    if (result == 'Success') {
+                                        getThirdPartyInfo(appointment.third_party_id, (obj) => {
+                                            obj.feedback.push({
+                                                rating: rating,
+                                                detail: ratingDetail,
+                                                username: appointment.customer_name,
+                                                createdAt: formatDate(new Date())
+                                            })
+                                            updateFeedbackInThirdPartyProfile(obj._id, obj, rating, (res) => {
+                                                res == 'Success' ?
+                                                console.log('update third party feedback OK!')
+                                                : console.log('update third party failed!')
+                                            })
+                                        })
+                                    }
+                                })
+                            }}
+                        /> : null
+                    }              
+                </Dialog.Container>
+                : null
             }
 
             {/* BottomSheet Filter */}
@@ -565,6 +781,13 @@ const style = StyleSheet.create({
         marginTop: 16,
         color: COLORS.white,
     },
+    label: {
+        fontSize: 16,
+        fontFamily: 'Roboto-Bold',
+        color: COLORS.black,
+        opacity: 0.7,
+        marginBottom: 10,
+    },
     input: {
         width: '100%',
         height: 46,
@@ -698,6 +921,10 @@ const style = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Roboto-Bold',
         color: COLORS.white,
+    },
+    input_holder: {
+        width: '100%',
+        marginBottom: 20,
     },
     overlay: {
         width: '100%',

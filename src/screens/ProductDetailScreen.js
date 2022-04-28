@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, Image, ScrollView } from "react-native"
 import React, { useState, useRef, useMemo, useCallback, useEffect } from "react"
 import { TextInput, TouchableOpacity } from "react-native-gesture-handler"
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet"
+import Carousel, { Pagination } from 'react-native-snap-carousel';
 import { Linking } from "react-native"
 import COLORS from "../theme/colors"
 import strings from "../data/strings"
@@ -20,13 +21,29 @@ export function ProductDetailScreen({ route, navigation }) {
   }, [])
   const [item, setItem] = useState(new MarketItem())
   const [seller, setSeller] = useState(new User())
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [photos, setPhotos] = useState([])
+
+  const RenderItem = ({item, index}) => {
+    return (
+        <Image
+            source={{uri: item}}
+            resizeMode='cover'
+            style={styles.item_img}
+        />
+    );
+  }
 
   useEffect(() => {
     const { item_id } = route.params
     let isCancelled = false
     getMarketItem(item_id, (item) => {
       if (item != "error") {
+        let img = item.photos;
+        img.push(item.photo)
         setItem(item)
+        setPhotos(img)
+
         let temp = new User()
         temp._id = item.seller_id
         console.log(item.photo)
@@ -74,21 +91,54 @@ export function ProductDetailScreen({ route, navigation }) {
         <TouchableOpacity></TouchableOpacity>
       </View>
 
-      <Image
+      {/* <Image
         source={{ uri: item.photo }}
         style={{
           width: 200,
           borderRadius: 10,
         }}
-      />
+      /> */}
+
+      <View style={styles.item_img_container}>
+        <Carousel
+          layout='default'
+          inactiveSlideOpacity={1}
+          data={item.photos}
+          sliderWidth={windowWidth}
+          itemWidth={windowWidth}
+          renderItem={RenderItem}
+          showsHorizontalScrollIndicator={false}
+          enableSnap={true}
+          onSnapToItem = {index => setActiveIndex(index)}
+        />
+
+        <Pagination
+          dotsLength={item.photos.length}
+          activeDotIndex={activeIndex}
+          dotStyle={{
+              width: 12,
+              height: 12,
+              borderRadius: 6,
+              marginHorizontal: 5,
+              backgroundColor: COLORS.white
+          }}
+          inactiveDotStyle={{
+              backgroundColor: '#000000'
+          }}
+          inactiveDotOpacity={0.5}
+          inactiveDotScale={0.7}
+          containerStyle={{marginTop: -95}}
+        />
+      </View>
 
       <BottomSheet
         ref={bottomSheetRef}
         index={1}
         snapPoints={snapPoints}
+        enableOverDrag={false}
         onChange={handleSheetChanges}
       >
-        <BottomSheetScrollView style={styles.contentContainer}>
+        <BottomSheetScrollView style={styles.contentContainer} showsVerticalScrollIndicator={false}>
           <View>
             <View style={styles.sectionContainer}>
               <Text style={styles.headerText}>{item.name}</Text>
@@ -262,7 +312,7 @@ export function ProductDetailScreen({ route, navigation }) {
               styles.button,
             ]}
           >
-            <Text>Gọi điện</Text>
+            <Text style={{color: '#000'}}>Gọi điện</Text>
           </TouchableOpacity>
         </View>
 
@@ -274,8 +324,15 @@ export function ProductDetailScreen({ route, navigation }) {
               },
               styles.button,
             ]}
+            onPress={() => {
+              navigation.navigate('ChatScreen', {
+                obj_id: item.seller_id,
+                obj_name: seller.name,
+                obj_avt: 'https://topbestviet.com/media/base/person.png',
+              })
+            }}
           >
-            <Text>Nhắn tin</Text>
+            <Text style={{color: '#000'}}>Nhắn tin</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -294,6 +351,12 @@ const styles = StyleSheet.create({
     flex: 4,
     justifyContent: "center",
     alignItems: "center",
+  },
+  item_img_container: {
+    height: '32%',
+  },
+  item_img: {
+    height: '100%',
   },
   headerText: {
     fontFamily: "Roboto-Bold",
