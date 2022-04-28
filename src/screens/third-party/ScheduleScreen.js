@@ -70,7 +70,7 @@ LocaleConfig.locales["vi"] = {
 }
 LocaleConfig.defaultLocale = "vi"
 
-export default function ScheduleScreen() {
+export default function ScheduleScreen({ navigation }) {
   const bottomSheetRef = useRef < BottomSheet > null
   // variables
   const snapPoints = useMemo(() => ["50%", "80%"], [])
@@ -82,12 +82,12 @@ export default function ScheduleScreen() {
   const [monthData, setMonthData] = useState(JSON)
 
   useEffect(() => {
+    setReminderList([])
+    setOldReminderList([])
     let isCancelled = false
     getDateReminder(selectedDate, (reminderList, oldReminderList) => {
       try {
         if (!isCancelled) {
-          // console.log(reminderList);
-          // console.log(oldReminderList);
           setReminderList(reminderList)
           setOldReminderList(oldReminderList)
         }
@@ -105,14 +105,12 @@ export default function ScheduleScreen() {
     getMonthReminderDate(selectedDate, (dates) => {
       try {
         if (!isCancelled) {
-          // console.log(dates);
           var today = new Date()
           var dates_s = ""
           let data = "{"
           for (var i = 0; i < dates.length; i++) {
             if (dates[i] < 9) {
               dates_s = "0" + dates[i].toString()
-              // console.log(dates_s)
             } else dates_s = dates[i]
             data +=
               '"' +
@@ -126,7 +124,6 @@ export default function ScheduleScreen() {
             }
           }
           data += "}"
-          // console.log(data);
           setMonthData(JSON.parse(data))
         }
       } catch (error) {
@@ -139,7 +136,6 @@ export default function ScheduleScreen() {
   }, [selectedDate])
 
   const CalendarEvent = (props) => {
-    console.log(props.reminder.type)
     switch (props.reminder.type) {
       case "Food":
         imgSource = FoodIcon
@@ -172,6 +168,8 @@ export default function ScheduleScreen() {
     return (
       <TouchableOpacity
         onPress={() => {
+          console.log(props.reminder._id)
+
           navigation.navigate("ScheduleEvent", {
             reminder_id: props.reminder._id,
           })
@@ -210,7 +208,22 @@ export default function ScheduleScreen() {
           </Text>
         </View>
 
-        {/* <PetsName pets={props.reminder.pets} /> */}
+        <View style={{ padding: 4, marginTop: 4 }}>
+          <Text>
+            {" "}
+            Khách hàng:{" "}
+            <Text style={{ fontFamily: "Roboto-Bold" }}>
+              {props.reminder.user.name}
+            </Text>
+          </Text>
+          <Text>
+            {" "}
+            Trạng thái:{" "}
+            <Text style={{ fontFamily: "Roboto-Bold" }}>
+              {props.reminder.user.name}
+            </Text>
+          </Text>
+        </View>
 
         <View style={styles.eventTime}>
           <Image
@@ -394,7 +407,7 @@ const styles = StyleSheet.create({
     position: "relative",
     width: "90%",
     alignSelf: "center",
-    height: 100,
+    height: 110,
     borderRadius: 15,
     padding: 12,
     marginTop: 12,

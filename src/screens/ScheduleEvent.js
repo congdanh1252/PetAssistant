@@ -419,6 +419,8 @@ export function ScheduleEvent ({route, navigation}) {
                                     style={styles.detail}
                                 >
                                     {
+           
+           
                                         selectedFrequency == "daily"
                                         ? "Hằng ngày"
                                         : selectedFrequency == "weekly"

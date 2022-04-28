@@ -14,6 +14,7 @@ export default class Reminder {
     this.enable = false
     this.frequency = ""
     this.user = new User()
+    this.service = new Array()
     this.notificationId = Math.floor(Math.random() * 1000000) + 1
   }
 
@@ -28,7 +29,8 @@ export default class Reminder {
     this.reminderType = data.reminderType || ""
     this.enable = data.enable || false
     this.frequency = data.frequency || ""
-    this.user._id = data.user || ""
+    this.user._id = data.customer || ""
+    this.service = data.service || new Array()
     this.notificationId =
       data.notificationId || Math.floor(Math.random() * 1000000) + 1
   }

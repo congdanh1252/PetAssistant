@@ -1,6 +1,7 @@
 import firestore from "@react-native-firebase/firestore"
 import Reminder from "../../models/reminder"
 import Pet from "../../models/pet"
+import ServiceItem from "../../models/serviceItem"
 import auth from "@react-native-firebase/auth"
 
 function onError(error) {
@@ -28,17 +29,32 @@ export const getReminder = (reminderID, handleReminder) => {
       reminder.update(documentSnapshot.data())
       reminder.datetime = documentSnapshot.data().datetime.toDate()
 
-      firestore()
-      .collection("users")
-      .doc(reminder.user._id)
-      .onSnapshot((documentSnapshot) => {
-        reminder.user.update(documentSnapshot.data())
-        reminder.user._id = documentSnapshot.id
-  
-        handleReminder(reminder)
-      }, onError)
+      console.log(reminder.service)
 
-      handleReminder(reminder)
+      firestore()
+        .collection("users")
+        .doc(reminder.user._id)
+        .onSnapshot((documentSnapshot) => {
+          reminder.user.update(documentSnapshot.data())
+
+          var services = new Array()
+          for (let i = 0; i < reminder.service.length; i++) {
+            firestore()
+              .collection("thirdParty/NbPlzxROMlRyZ02vdVZf/service")
+              .doc(reminder.service[i])
+              .onSnapshot((documentSnapshot) => {
+                var service = new ServiceItem()
+                service.update(documentSnapshot.data())
+                service._id = documentSnapshot.id
+                services.push(service)
+
+                reminder.service = services
+                if (i == reminder.service.length - 1) {
+                  handleReminder(reminder)
+                }
+              }, onError)
+          }
+        }, onError)
     }, onError)
 }
 
@@ -75,7 +91,8 @@ export const updateReminder = (reminder) => {
       datetime: firestore.Timestamp.fromDate(new Date(reminder.datetime)),
       description: reminder.description,
       month: reminder.datetime.getMonth() + 1,
-      pets: reminder.pets,
+      customer: reminder.user._id,
+      service: reminder.service,
       title: reminder.title,
       type: reminder.type,
       year: reminder.datetime.getFullYear(),
@@ -98,13 +115,24 @@ export const getDateReminder = (date, handleCallback) => {
       querySnapshot.forEach((documentSnapshot) => {
         var reminder = new Reminder()
         reminder.update(documentSnapshot.data())
-        if (reminder.datetime > new Date()) {
-          remindersList.push(reminder)
-        } else {
-          oldRemindersList.push(reminder)
-        }
+        reminder._id = documentSnapshot.id
+
+        firestore()
+          .collection("users")
+          .doc(reminder.user._id)
+          .onSnapshot((documentSnapshot) => {
+            reminder.user.update(documentSnapshot.data())
+
+            if (reminder.datetime > new Date()) {
+              remindersList.push(reminder)
+            } else {
+              oldRemindersList.push(reminder)
+            }
+
+            // console.log(reminder)
+            handleCallback(remindersList, oldRemindersList)
+          }, onError)
       })
-      handleCallback(remindersList, oldRemindersList)
     }, onError)
 }
 

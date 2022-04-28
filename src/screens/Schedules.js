@@ -251,8 +251,9 @@ export function Schedules({ navigation }) {
           </Text>
         </View>
 
-        <PetsName pets={props.reminder.pets} />
+        {/* <PetsName pets={props.reminder.pets} /> */}
 
+        
         <View style={styles.eventTime}>
           <Image
             style={{
