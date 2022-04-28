@@ -129,3 +129,91 @@ export const updateFeedbackInThirdPartyProfile = (id, thirdParty, newRt, handleC
         handleCallback(e);
     });
 };
+
+export const updateThirdPartyInformation = (id, thirdParty, handleCallback) => {
+    firestore()
+    .collection('thirdParty')
+    .doc(id)
+    .update({
+        name: thirdParty.name,
+        address: thirdParty.address,
+        category: thirdParty.category,
+        phone_number: thirdParty.phone_number,
+        thumbnail: thirdParty.thumbnail,
+        img: thirdParty.img
+    })
+    .then(() => {
+        handleCallback('Success');
+    })
+    .catch((e) => {
+        handleCallback(e);
+    });
+};
+
+export const updateMultipleServices = async (thirdParty, actions, handleCallback) => {
+    var sum = 0;
+
+    for (let i = 0; i < thirdParty.service.length; i++) {
+        switch (actions[i]) {
+            case 'none':
+                break;
+            case 'add':
+                firestore()
+                .collection('thirdParty/' + thirdParty._id + '/service')
+                .add({
+                    active: true,
+                    detail: thirdParty.service[i].detail,
+                    price: thirdParty.service[i].price,
+                    description: thirdParty.service[i].description
+                })
+                .then(() => {
+                    sum++;
+                    console.log('Add service ok!')
+                    if (i==thirdParty.service.length - 1) {
+                        handleCallback('Success')
+                    }
+                })
+                .catch((e) => {
+                    handleCallback(e);
+                });
+                break;
+            case 'remove':
+                firestore()
+                .collection('thirdParty/' + thirdParty._id + '/service')
+                .doc(thirdParty.service[i]._id)
+                .update({
+                    active: false,
+                })
+                .then(() => {
+                    sum++;
+                    console.log('Remove service ok!')
+                    if (i==thirdParty.service.length - 1) {
+                        handleCallback('Success')
+                    }
+                })
+                .catch((e) => {
+                    handleCallback(e);
+                });
+                break;
+            default:
+                firestore()
+                .collection('thirdParty/' + thirdParty._id + '/service')
+                .doc(thirdParty.service[i]._id)
+                .update({
+                    detail: thirdParty.service[i].detail,
+                    price: thirdParty.service[i].price,
+                    description: thirdParty.service[i].description
+                })
+                .then(() => {
+                    sum++;
+                    console.log('Edit service ok!')
+                    if (i==thirdParty.service.length - 1) {
+                        handleCallback('Success')
+                    }
+                })
+                .catch((e) => {
+                    handleCallback(e);
+                });
+        }
+    }
+}

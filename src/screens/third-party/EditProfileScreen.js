@@ -11,6 +11,14 @@ import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import Toast from "react-native-toast-message";
 import firestore from '@react-native-firebase/firestore';
 
+import { 
+    updateThirdPartyInformation,
+    updateMultipleServices
+} from "../../api/ThirdPartyAPI";
+import {
+    uploadImageToStorage,
+    uploadMultipleImagesToStorage
+} from "../../api/PetAPI";
 import COLORS from '../../theme/colors';
 import strings from "../../data/strings";
 import BackButton from "../../components/BackButton";
@@ -22,14 +30,16 @@ const EditProfileScreen = ({route, navigation}) => {
     const { action, paramObj } = route.params;
     const [thumbnail, setThumbnail] = useState(action=='add' ? '' : paramObj.thumbnail);
     const [oldPhotos, setOldPhotos] = useState(action=='add' ? [] : paramObj.img);
-    const [newPhotos, setNewPhotos] = useState([]);
     const [photoUri, setPhotoUri] = useState([]);
     const [photoFileName, setPhotoFileName] = useState([]);
     const [name, setName] = useState(action=='add' ? '' : paramObj.name);
     const [address, setAddress] = useState(action=='add' ? '' : paramObj.address);
     const [category, setCategory] = useState(action=='add' ? '' : paramObj.category);
     const [phone_number, setPhoneNumber] = useState(action=='add' ? '' : paramObj.phone_number);
+    const [editIndex, setEditIndex] = useState(0);
     const [services, setServices] = useState([]);
+    const [displayServices, setDisplayServices] = useState([]);
+    const [serviceAction, setServiceAction] = useState([]);
     const [dropdown, setDropdown] = useState('');
     const [dialogShow, setDialogShow] = useState(false);
     const [dialogAction, setDialogAction] = useState('');
@@ -50,19 +60,108 @@ const EditProfileScreen = ({route, navigation}) => {
     }
 
     const initThirdPartyData = (urlArr) => {
-        // pet.name = name;
-        // pet.kind = kind;
-        // pet.gender = gender;
-        // pet.species = species;
-        // pet.photo = urlArr[0];
-        // pet.age = date;
-        // pet.additional_photos = urlArr.splice(1);
-        // pet.height = parseFloat(height);
-        // pet.weight = parseFloat(weight);
-        // pet.price = parseInt(price);
-        // pet.discount_price = parseInt(discountPrice);
-        // pet.description = description;
-        //action === 'edit' ? pet._id = petObj._id : null;
+        tp.name = name;
+        tp.address = address;
+        tp.category = category;
+        tp.phone_number = phone_number;
+        tp.service = services;
+        tp.thumbnail = thumbnail;
+        const photos = oldPhotos.concat(urlArr);
+        tp.img = oldPhotos.concat(urlArr);
+        action === 'edit' ? tp._id = paramObj._id : null;
+    }
+
+    const editPhotoTask = () => {
+        var newPhotoUrlArr = new Array();
+        // Không thao tác tới ảnh -> không update ảnh
+        if (thumbnailFileName==='' && photoFileName.length==0 && !hasChangeOldPhoto) {
+            initThirdPartyData(newPhotoUrlArr)
+            editInformationTask()
+        } else {
+            // Chỉ đổi thumbnail -> add storage thumbnail, update 1
+            if (thumbnailFileName!='' && photoFileName.length==0 && !hasChangeOldPhoto) {
+                uploadImageToStorage(thumbnail, thumbnailFileName, (url) => {
+                    setThumbnail(url)
+                    initThirdPartyData(newPhotoUrlArr)
+                    editInformationTask()
+                })
+            }
+            // Đổi thumbnail và xóa photo cũ -> add storage thumbnail, update 2
+            if (thumbnailFileName!='' && photoFileName.length==0 && hasChangeOldPhoto) {
+                uploadImageToStorage(thumbnail, thumbnailFileName, (url) => {
+                    setThumbnail(url)
+                    initThirdPartyData(newPhotoUrlArr)
+                    editInformationTask()
+                })
+            }
+            // Đổi thumbnail và thêm photo mới -> add storage thumbnail và photo mới, update 2 
+            if (thumbnailFileName!='' && photoFileName.length>0 && !hasChangeOldPhoto) {
+                uploadImageToStorage(thumbnail, thumbnailFileName, (url) => {
+                    setThumbnail(url)
+                    uploadMultipleImagesToStorage(photoUri, photoFileName, (urlArr) => {
+                        newPhotoUrlArr = urlArr;
+                        initThirdPartyData(newPhotoUrlArr)
+                        editInformationTask()
+                    })
+                })
+            }
+            // Edit cả 3 -> add storage thumbnail và photo mới, update 2
+            if (thumbnailFileName!='' && photoFileName.length>0 && hasChangeOldPhoto) {
+                uploadImageToStorage(thumbnail, thumbnailFileName, (url) => {
+                    setThumbnail(url)
+                    uploadMultipleImagesToStorage(photoUri, photoFileName, (urlArr) => {
+                        newPhotoUrlArr = urlArr;
+                        initThirdPartyData(newPhotoUrlArr)
+                        editInformationTask()
+                    })
+                })
+            }
+            // Chỉ xóa photo cũ -> update 1
+            if (thumbnailFileName=='' && photoFileName.length==0 && hasChangeOldPhoto) {
+
+            }
+            // Chỉ thêm photo mới -> update 1
+            if (thumbnailFileName=='' && photoFileName.length>0 && !hasChangeOldPhoto) {
+                uploadMultipleImagesToStorage(photoUri, photoFileName, (urlArr) => {
+                    newPhotoUrlArr = urlArr;
+                    initThirdPartyData(newPhotoUrlArr)
+                    editInformationTask()
+                })
+            }
+            // Xóa photo cũ và thêm photo mới -> add storage photo mới, update 1
+            if (thumbnailFileName=='' && photoFileName.length>0 && hasChangeOldPhoto) {
+                uploadMultipleImagesToStorage(photoUri, photoFileName, (urlArr) => {
+                    newPhotoUrlArr = urlArr;
+                    initThirdPartyData(newPhotoUrlArr)
+                    editInformationTask()
+                })
+            }
+        }
+    }
+
+    const editInformationTask = () => {
+        updateThirdPartyInformation(paramObj._id, tp, (res) => {
+            res=='Success' ? console.log('Update information OK!') : 'Update info failed!';
+            editServiceTask(res)
+        })
+    }
+
+    const editServiceTask = (res) => {
+        var isIntact = true;
+        serviceAction.forEach(element => {
+            element != 'none' ? isIntact=false : null;
+        });
+        console.log(isIntact)
+
+        if (!isIntact) {
+            updateMultipleServices(tp, serviceAction, (res) => {
+                showResultToast(res)
+                navigation.goBack()
+            })
+        } else {
+            showResultToast(res)
+            navigation.goBack()
+        }
     }
 
     const checkSubmitFields = () => {
@@ -85,15 +184,9 @@ const EditProfileScreen = ({route, navigation}) => {
             if (action==='add') {
                 //uploadMultipleImagesToStorage(photoUri, photoFileName, handleImageUrl);
             }
-            // else {
-            //     if (photoFileName==='') {
-            //         initPetData(petObj.photo);
-            //         updatePetInFirestore(pet, handlePetUpdated);
-            //     } else {
-            //         uploadImageToStorage(photoUri, photoFileName, handleImageUrl);
-            //         deleteImageFromStorage(petObj.photo);
-            //     }
-            // }
+            else {
+                editPhotoTask()
+            }
         }
     }
 
@@ -132,40 +225,24 @@ const EditProfileScreen = ({route, navigation}) => {
         );
     }
 
-    const handleImageUrl = (urlArr) => {
-        if (urlArr.length == photoUri.length) {
-            console.log(urlArr)
-            initThirdPartyData(urlArr);
-            //addSellPetToFirestore(pet, handlePetAdded);
-        } else {
-            console.log('Not enough download urls!');
-        }
-    }
-
     const showResultToast = (result) => {
         if (result == 'Success') {
             Toast.show({
                 type: 'success',
                 text1: strings.success,
-                text2: action==='add' ? strings.msg_upload_sell_pet_success : strings.msg_update_sell_pet_success,
+                text2: action==='add' ? strings.update_info_success_msg : strings.update_info_success_msg,
                 position: 'top',
                 autoHide: true,
             });
-
-            action==='add' ? console.log('Sell pet uploaded!') : console.log('Updated sell pet!');
         }
         else {
             Toast.show({
                 type: 'error',
                 text1: strings.fail,
-                text2: strings.msg_add_pet_fail,
+                text2: strings.update_info_fail_msg,
                 position: 'top',
                 autoHide: true,
             });
-
-            action==='add' ?
-            console.log('Add to firestore error => ' + result) :
-            console.log('Update to firestore error => ' + result);
         }
     }
 
@@ -344,33 +421,77 @@ const EditProfileScreen = ({route, navigation}) => {
         )
     }
 
-    const handleAddServiceButton = () => {
-        let arr = services;
-        let item = new ServiceItem();
-        item._id = dialogItemName + dialogItemPrice;
-        item.price = dialogItemPrice;
-        item.detail = dialogItemName;
-        item.description = dialogItemDescription;
-        arr.push(item)
+    const handleDialogOKButton = () => {
+        if (dialogAction=='add') {
+            let arr = services;
+            let item = new ServiceItem();
+            item._id = dialogItemName + dialogItemPrice;
+            item.price = dialogItemPrice==369258147 ? '?' : dialogItemPrice;
+            item.detail = dialogItemName;
+            item.description = dialogItemDescription;
+            arr.push(item)
 
-        setServices(arr)
-        setDialogShow(false)
+            setServices(arr)
+            setDisplayServices(arr)
+            setDialogShow(false)
+
+            let actions = new Array();
+            serviceAction.forEach(element => {
+                actions.push(element)
+            });
+            actions.push('add');
+            setServiceAction(actions);
+        } else {
+            let newArr = new Array();
+            let editItem = new ServiceItem();
+            editItem._id = services[editIndex]._id;
+            editItem.active = true;
+            editItem.detail = dialogItemName;
+            editItem.price = dialogItemPrice==369258147 ? '?' : dialogItemPrice;
+            editItem.description = dialogItemDescription;
+
+            services.forEach((element, index) => {
+                if (index != editIndex) {
+                    newArr.push(element)
+                } else {
+                    newArr.push(editItem)
+                }
+            });
+
+            setServices(newArr)
+            setDisplayServices(newArr)
+            setDialogShow(false)
+
+            let actions = new Array();
+            serviceAction.forEach((element, index) => {
+                if (index != editIndex) {
+                    actions.push(element)
+                } else {
+                    actions.push('edit')
+                }
+            });
+            setServiceAction(actions);
+        }
     }
 
     useEffect(() => {
         const subscriber = firestore()
-        .collection('thirdParty/0kMVPpP8sf3f3iRZuhCY/service')
+        .collection('thirdParty/' + paramObj._id + '/service')
         .onSnapshot(querySnapshot => {
             var list = new Array();
+            var action = new Array();
             querySnapshot.forEach(documentSnapshot => {
                 var item = new ServiceItem();
                 item.update(documentSnapshot.data());
                 item._id = documentSnapshot.id;
 
                 list.push(item)
+                action.push('none')
             })
 
             setServices(list)
+            setDisplayServices(list)
+            setServiceAction(action)
         })
 
         return () => subscriber();
@@ -570,7 +691,7 @@ const EditProfileScreen = ({route, navigation}) => {
                                 </View>
                                 
                                 {
-                                    services.map((item, index) => {
+                                    displayServices.map((item, index) => {
                                         return (
                                             <TouchableOpacity
                                                 key={item._id}
@@ -611,11 +732,12 @@ const EditProfileScreen = ({route, navigation}) => {
                                                             activeOpacity={0.7}
                                                             style={styles.edit_item_icon}
                                                             onPress={() => {
+                                                                setEditIndex(index)
                                                                 setDialogShow(true)
                                                                 setDialogAction('edit')
                                                                 setDialogItemName(item.detail)
                                                                 setDialogItemDescription(item.description)
-                                                                setDialogItemPrice(parseInt(item.price))
+                                                                setDialogItemPrice(item.price!='?' ? parseInt(item.price) : 369258147)
                                                             }}
                                                         >
                                                             <Image
@@ -728,7 +850,9 @@ const EditProfileScreen = ({route, navigation}) => {
                                             style={styles.input}
                                             placeholderTextColor={'#898989'}
                                             placeholder={'Giá tiền'}
-                                            value={dialogItemPrice.toString()}
+                                            value={
+                                                isNaN(dialogItemPrice) ? '' : dialogItemPrice.toString()
+                                            }
                                             keyboardType={'numeric'}
                                             onChangeText={value => {
                                                 setDialogItemPrice(parseInt(value))
@@ -746,6 +870,7 @@ const EditProfileScreen = ({route, navigation}) => {
                                         VNĐ
                                     </Text>
                                 </View>
+                                <Text style={{marginTop: 4}}>* Nếu giá không thể báo trước, vui lòng nhập '369258147'</Text>
 
                                 <Dialog.Button
                                     style={{color: COLORS.black, marginTop: 8}}
@@ -761,7 +886,25 @@ const EditProfileScreen = ({route, navigation}) => {
                                         style={{color: COLORS.black, marginTop: 8, marginLeft: 8}}
                                         label={strings.delete}
                                         onPress={() => {
-                                            
+                                            let actions = new Array();
+                                            let svs = new Array();
+
+                                            services.forEach((element, index) => {
+                                                if (index != editIndex) {
+                                                    svs.push(element)
+                                                }
+                                            });
+
+                                            serviceAction.forEach((element, index) => {
+                                                if (index != editIndex) {
+                                                    actions.push(element)
+                                                } else {
+                                                    actions.push('remove')
+                                                }
+                                            });
+                                            setDisplayServices(svs)
+                                            setServiceAction(actions);
+                                            setDialogShow(false)
                                         }}
                                     /> : null
                                 }
@@ -770,7 +913,7 @@ const EditProfileScreen = ({route, navigation}) => {
                                     style={{color: COLORS.black, marginTop: 8, marginLeft: 8}}
                                     label={'OK'}
                                     onPress={() => {
-                                        handleAddServiceButton()
+                                        handleDialogOKButton()
                                     }}
                                 />                      
                             </Dialog.Container>
