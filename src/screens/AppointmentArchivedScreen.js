@@ -22,68 +22,7 @@ import BackButton from '../components/BackButton';
 import Appointment from '../models/appointment';
 
 const AppointmentArchivedScreen = ({route, navigation}) => {
-    const data = [
-        {
-            _id: 'id1',
-            third_party_thumbnail: 'https://petnhatrang.com/wp-content/uploads/2016/07/1527681338-485.png',
-            third_party_name: 'Phòng khám Thành Nội',
-            third_party_address: '34 Trương Định, Cầu Giấy, Hà Nội',
-            customer_name: 'Mai Công Danh',
-            customer_phone_number: '0909 555 333',
-            appointment_time: '17:00',
-            appointment_date: '09/05/2022',
-            service: [
-                'Khám tổng quát, Tiêm ngừa, Truyền nước biển'
-            ],
-            status: 'Chờ xác nhận',
-            status_code: '0',
-        },
-        {
-            _id: 'id2',
-            third_party_thumbnail: 'https://petnhatrang.com/wp-content/uploads/2016/07/1527681338-485.png',
-            third_party_name: 'Phòng khám Thành Nội',
-            third_party_address: '34 Trương Định, Cầu Giấy, Hà Nội',
-            customer_name: 'Mai Công Danh',
-            customer_phone_number: '0909 555 333',
-            appointment_time: '17:00',
-            appointment_date: '09/05/2022',
-            service: [
-                'Khám tổng quát, Tiêm ngừa, Truyền nước biển'
-            ],
-            status: 'Đã xác nhận',
-            status_code: '1',
-        },
-        {
-            _id: 'id3',
-            third_party_thumbnail: 'https://petnhatrang.com/wp-content/uploads/2016/07/1527681338-485.png',
-            third_party_name: 'Phòng khám Thành Nội',
-            third_party_address: '34 Trương Định, Cầu Giấy, Hà Nội',
-            customer_name: 'Mai Công Danh',
-            customer_phone_number: '0909 555 333',
-            appointment_time: '17:00',
-            appointment_date: '09/05/2022',
-            service: [
-                'Khám tổng quát, Tiêm ngừa, Truyền nước biển'
-            ],
-            status: 'Thành công',
-            status_code: '2',
-        },
-        {
-            _id: 'id4',
-            third_party_thumbnail: 'https://petnhatrang.com/wp-content/uploads/2016/07/1527681338-485.png',
-            third_party_name: 'Phòng khám Thành Nội',
-            third_party_address: '34 Trương Định, Cầu Giấy, Hà Nội',
-            customer_name: 'Mai Công Danh',
-            customer_phone_number: '0909 555 333',
-            appointment_time: '17:00',
-            appointment_date: '09/05/2022',
-            service: [
-                'Khám tổng quát, Tiêm ngừa, Truyền nước biển'
-            ],
-            status: 'Đã hủy',
-            status_code: '3',
-        },
-    ];
+    // const { role } = route.params;
     const [appointment, setAppointment] = useState(new Appointment());
     const [show, setShow] = useState(false);
     const [showDetail, setShowDetail] = useState(false);
@@ -302,7 +241,7 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
     useEffect(() => {
         const subscriber = firestore()
         .collection('appointment')
-        .where('customer_id', '==', auth().currentUser.uid)
+        .where(role=='customer_id', '==', auth().currentUser.uid)
         .onSnapshot(querySnapshot => {
             var list = new Array();
             querySnapshot.forEach(documentSnapshot => {
@@ -851,7 +790,7 @@ const style = StyleSheet.create({
     },
     item_title: {
         color: COLORS.black,
-        fontFamily: 'Roboto-Bold',
+        fontFamily: 'Roboto-Medium',
         fontSize: 16,
         marginTop: 8,
         paddingLeft: 4,
@@ -859,7 +798,7 @@ const style = StyleSheet.create({
     },
     item_status: {
         fontSize: 17,
-        marginTop: 12,
+        marginTop: 8,
         color: COLORS.yellow,
         fontFamily: 'Roboto-Medium',
     },

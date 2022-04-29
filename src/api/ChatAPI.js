@@ -33,7 +33,7 @@ export const addNewMessageToChat = (detail, attachment, chatId, handleCallback) 
         createdAt: firestore.Timestamp.fromDate(new Date())
     })
     .then(() => {
-        updateLastMessage(chatId, detail, (res) => {
+        updateLastMessage(chatId, detail == '' ? '[Ảnh]' : detail, (res) => {
             if (res == 'Success') {
                 handleCallback('Success');
             }
