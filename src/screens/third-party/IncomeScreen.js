@@ -181,7 +181,7 @@ const IncomeScreen = () => {
             >
               {monthSpent / 1000}k
             </Text>
-            <Text>Tổng chi</Text>
+            <Text>Tổng doanh thu</Text>
           </View>
 
           <View style={styles.cardHeader}>
@@ -199,7 +199,7 @@ const IncomeScreen = () => {
                 : monthAverage / 1000 + "k"}
             </Text>
 
-            <Text>Trung bình</Text>
+            <Text>Doanh thu trung bình</Text>
           </View>
           {show && (
             <MonthPicker

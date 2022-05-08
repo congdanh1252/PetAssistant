@@ -1,12 +1,25 @@
 import React, { useState, useEffect, useCallback } from "react"
-import { View, Text, StyleSheet, Dimensions, Image } from "react-native"
+import { View, StyleSheet, Dimensions, Image, Text } from "react-native"
+import { Picker } from "@react-native-picker/picker"
 import { color } from "react-native-elements/dist/helpers"
-import { PieChart } from "react-native-svg-charts"
+import {
+  PieChart,
+  LineChart,
+  YAxis,
+  Grid,
+  XAxis,
+} from "react-native-svg-charts"
+import { CustomChart } from "./third-party/BarChart"
+import { Circle, G, Line, Rect, Text as svgText } from "react-native-svg"
 import moment from "moment"
 import COLORS from "../theme/colors"
 import { moneyFormat } from "../models/common/moneyStringFormat"
 import { getMonthStatistic } from "../api/ExpenditureAPI"
-import { getMonthStatisticTP } from "../api/third-party/StatisticAPI"
+import {
+  getMonthStatisticTP,
+  getMonthStatisticTP2,
+  getYearStatisticTP,
+} from "../api/third-party/StatisticAPI"
 
 import strings from "../data/strings"
 import {
@@ -35,6 +48,9 @@ export default function StatisticScreen({ route, navigation }) {
   ]
   const [month, setMonth] = useState(new Date())
   const [showData, setShowData] = useState(true)
+  const [statisticType, setStatisticType] = useState("year")
+
+  const [data, setData] = useState([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
   useEffect(() => {
     let isCancelled = false
@@ -65,28 +81,40 @@ export default function StatisticScreen({ route, navigation }) {
         isCancelled = true
       }
     } else {
-      getMonthStatisticTP(month, (values, percentage) => {
-        try {
-          if (!isCancelled) {
-            console.log(values)
-            if (
-              values[0] == 0 &&
-              values[1] == 0 &&
-              values[2] == 0 &&
-              values[3] == 0 &&
-              values[4] == 0
-            ) {
-              setShowData(false)
-            } else {
-              setShowData(true)
-              setPercentage(percentage)
-              setValues(values)
+      if (statisticType == "type") {
+        getMonthStatisticTP(month, (values, percentage) => {
+          try {
+            if (!isCancelled) {
+              console.log(values)
+              if (
+                values[0] == 0 &&
+                values[1] == 0 &&
+                values[2] == 0 &&
+                values[3] == 0 &&
+                values[4] == 0
+              ) {
+                setShowData(false)
+              } else {
+                setShowData(true)
+                setPercentage(percentage)
+                setValues(values)
+              }
             }
+          } catch (error) {
+            if (!isCancelled) throw error
           }
-        } catch (error) {
-          if (!isCancelled) throw error
-        }
-      })
+        })
+      } else if (statisticType == "month") {
+        getMonthStatisticTP2(month, (values) => {
+          // setData(values)
+        })
+      } else {
+        console.log("Getting year: ..." + month.getFullYear())
+        getYearStatisticTP(month, (values) => {
+          // setData(values)
+          // console.log(values)
+        })
+      }
       return () => {
         isCancelled = true
       }
@@ -270,6 +298,16 @@ export default function StatisticScreen({ route, navigation }) {
             source={require("../assets/icons/BackArrow.png")}
           />
         </TouchableOpacity>
+
+        <TouchableOpacity>
+          <Image
+            style={{
+              height: 30,
+              width: 30,
+            }}
+            source={require("../assets/icons/BackArrow.png")}
+          />
+        </TouchableOpacity>
       </View>
     )
   }
@@ -281,9 +319,32 @@ export default function StatisticScreen({ route, navigation }) {
 
       {/* Body */}
       <View style={styles.bodyContainer}>
-        <PieChar />
+        {statisticType == "type" ? (
+          <>
+            <PieChar />
 
-        <TypeList />
+            <TypeList />
+          </>
+        ) : (
+          <>
+            <Text>Doanh thu (nghìn đồng)</Text>
+            <CustomChart data={data} />
+            <Text style={{ textAlign: "right" }}>
+              {statisticType == "month" ? "Tháng" : "Năm"}
+            </Text>
+
+            <Picker
+              selectedValue={statisticType}
+              onValueChange={(itemValue, itemIndex) => {
+                setStatisticType(itemValue)
+              }}
+            >
+              <Picker.Item label="Theo thể loại" value="type" />
+              <Picker.Item label="Theo tháng" value="month" />
+              <Picker.Item label="Theo năm" value="year" />
+            </Picker>
+          </>
+        )}
       </View>
 
       {/* Footer */}
@@ -339,7 +400,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     width: "100%",
     flexDirection: "row",
-    justifyContent: "center",
+    justifyContent: "space-between",
     alignItems: "center",
   },
 })

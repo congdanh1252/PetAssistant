@@ -37,6 +37,8 @@ import {
   addIncome,
   updateIncome,
   deleteIncome,
+  getMonthTotalTP,
+  getMonthAverageTP,
 } from "../api/third-party/StatisticAPI"
 import {
   QuestionIcon,
@@ -143,6 +145,11 @@ export default function ExpenditureScreen({ route, navigation }) {
         return () => {
           total
         }
+      } else {
+        const total = getMonthTotalTP(selectedMonth, handleTotalCallback)
+        return () => {
+          total
+        }
       }
     }, [selectedMonth])
 
@@ -158,6 +165,11 @@ export default function ExpenditureScreen({ route, navigation }) {
     useEffect(() => {
       if (type == "user") {
         const avg = getMonthAverage(selectedMonth, handleMonthAvgCallback)
+        return () => {
+          avg
+        }
+      } else {
+        const avg = getMonthAverageTP(selectedMonth, handleMonthAvgCallback)
         return () => {
           avg
         }
@@ -193,12 +205,18 @@ export default function ExpenditureScreen({ route, navigation }) {
           <View style={styles.cardHeader}>
             <Text
               style={
-                monthSpent < monthLimit ? styles.successText : styles.errorText
+                type == "user"
+                  ? monthSpent < monthLimit
+                    ? styles.successText
+                    : styles.errorText
+                  : monthSpent > monthLimit
+                  ? styles.errorText
+                  : styles.successText
               }
             >
               {monthSpent / 1000}k
             </Text>
-            <Text>Tổng chi</Text>
+            <Text>{type == "user" ? "Tổng chi" : "Doanh thu"}</Text>
           </View>
 
           <View style={styles.cardHeader}>
@@ -694,7 +712,7 @@ export default function ExpenditureScreen({ route, navigation }) {
         <TouchableOpacity
           onPress={() => {
             navigation.navigate("Statiscic", {
-              type: type
+              type: type,
             })
           }}
         >

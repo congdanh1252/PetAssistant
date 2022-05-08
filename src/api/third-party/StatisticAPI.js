@@ -59,7 +59,7 @@ export const getAllDateTP = (date, handleDatesCallback) => {
     }, onError)
 }
 
-export const getMonthTotal = (date, handleTotalCallback) => {
+export const getMonthTotalTP = (date, handleTotalCallback) => {
   var total = 0
   firestore()
     .collection("thirdParty/" + auth().currentUser.uid + "/income")
@@ -71,6 +71,21 @@ export const getMonthTotal = (date, handleTotalCallback) => {
         total += parseInt(documentSnapshot.data().amount)
       })
       handleTotalCallback(total)
+    }, onError)
+}
+
+export const getMonthAverageTP = (date, handleMonthAvgCallback) => {
+  var avg = 0
+  var count = 0
+  firestore()
+    .collection("users/" + auth().currentUser.uid + "/expenditures")
+    .get()
+    .then((querySnapshot) => {
+      querySnapshot.forEach((documentSnapshot) => {
+        avg += documentSnapshot.data().amount
+        count++
+      })
+      handleMonthAvgCallback(avg)
     }, onError)
 }
 
@@ -174,5 +189,44 @@ export const getMonthStatisticTP = (date, handleStatisticCallback) => {
         percentage[i] = Math.round((values[i] / total) * 100)
       }
       handleStatisticCallback(values, percentage)
+    }, onError)
+}
+
+export const getYearStatisticTP = (date, handleStatisticCallback) => {
+  let values = new Array(12)
+  firestore()
+    .collection("thirdParty/" + auth().currentUser.uid + "/income")
+    .where("year", "==", date.getFullYear())
+    .get()
+    .then((querySnapshot) => {
+      querySnapshot.forEach((documentSnapshot) => {
+        var month = documentSnapshot.data().month
+        let amount = documentSnapshot.data().amount
+
+        console.log(month + ":" + amount);
+
+        values[month - 1] += amount
+
+      })
+      handleStatisticCallback(values)
+    }, onError)
+}
+
+export const getMonthStatisticTP2 = (date, handleStatisticCallback) => {
+  let values = new Array(31)
+  firestore()
+    .collection("thirdParty/" + auth().currentUser.uid + "/income")
+    .where("year", "==", date.getFullYear())
+    .get()
+    .then((querySnapshot) => {
+      querySnapshot.forEach((documentSnapshot) => {
+        var month = documentSnapshot.data().month
+        let amount = documentSnapshot.data().amount
+
+        console.log(month + ":" + amount);
+        values[month - 1] += amount
+
+      })
+      handleStatisticCallback(values)
     }, onError)
 }
