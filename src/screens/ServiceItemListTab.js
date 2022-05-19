@@ -3,12 +3,13 @@ import { Image, StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'rea
 import firestore from '@react-native-firebase/firestore';
 
 import thirdParty from '../models/thirdParty';
+import ServiceItem from '../models/serviceItem';
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import { windowHeight } from '../models/common/Dimensions';
 
 const ServiceItemListTab = ({route, navigation}) => {
-    const { obj_id } = route.params;
+    const { obj_id, role } = route.params;
     const [expand, setExpand] = useState([0,0,0,0,0,0,0,0]);
     const [list, setList] = useState([]);
 
@@ -19,16 +20,34 @@ const ServiceItemListTab = ({route, navigation}) => {
     }
 
     //load list items
+    // useEffect(() => {
+    //     const subscriber = firestore()
+    //     .collection('thirdParty')
+    //     .doc(obj_id)
+    //     .onSnapshot(documentSnapshot => {
+    //         var item = new thirdParty();
+    //         item.update(documentSnapshot.data());
+    //         item._id = documentSnapshot.id;
+
+    //         item.service ? setList(item.service) : null;
+    //     })
+
+    //     return () => subscriber();
+    // }, [])
+
     useEffect(() => {
         const subscriber = firestore()
-        .collection('thirdParty')
-        .doc(obj_id)
-        .onSnapshot(documentSnapshot => {
-            var item = new thirdParty();
-            item.update(documentSnapshot.data());
-            item._id = documentSnapshot.id;
-
-            setList(item.service);
+        .collection('thirdParty/' + obj_id + '/service')
+        .onSnapshot(querySnapshot => {
+            var services = new Array();
+            querySnapshot.forEach(documentSnapshot => {
+                var item = new ServiceItem();
+                item.update(documentSnapshot.data());
+                item._id = documentSnapshot.id;
+                item.active ? services.push(item) : null;
+            });
+            
+            setList(services)
         })
 
         return () => subscriber();
@@ -97,6 +116,15 @@ const ServiceItemListTab = ({route, navigation}) => {
                                                 <TouchableOpacity
                                                     activeOpacity={0.7}
                                                     style={style.book_button}
+                                                    onPress={() => {
+                                                        role == 'user' ?
+                                                            navigation.navigate('MakeAppointment', {
+                                                                action: 'add',
+                                                                thirdPartyID: obj_id,
+                                                                currentService: item.detail
+                                                            })
+                                                        : null
+                                                    }}
                                                 >
                                                     <Text style={style.button_text}>{strings.book_service_label}</Text>
                                                 </TouchableOpacity>
@@ -124,7 +152,7 @@ export default ServiceItemListTab;
 const style = StyleSheet.create({
     screen: {
         flex: 1,
-        height: windowHeight / 2 + 90,
+        height: windowHeight,
         backgroundColor: COLORS.white
     },
     list_container: {

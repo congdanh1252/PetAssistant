@@ -5,6 +5,7 @@ export default class Appointment {
       this.third_party_name = '';
       this.third_party_thumbnail = '';
       this.third_party_address = '';
+      this.customer_id = '';
       this.customer_name = '';
       this.customer_phone_number = '';
       this.service = new Array();
@@ -14,6 +15,8 @@ export default class Appointment {
       this.note = '';
       this.status = '';
       this.status_code = 0;
+      this.has_feedback = false;
+      this.feedback = '';
     }
 
     update(data) {
@@ -22,6 +25,7 @@ export default class Appointment {
         this.third_party_name = data.third_party_name || '';
         this.third_party_thumbnail = data.third_party_thumbnail || '';
         this.third_party_address = data.third_party_address || '';
+        this.customer_id = data.customer_id || '';
         this.customer_name = data.customer_name || '';
         this.customer_phone_number = data.customer_phone_number || '';
         this.service = data.service || new Array();
@@ -31,6 +35,8 @@ export default class Appointment {
         this.note = data.note || '';
         this.status = data.status || '';
         this.status_code = data.status_code || 0;
+        this.has_feedback = data.has_feedback || false;
+        this.feedback = data.feedback || '';
     }
 
     static clone(data) {

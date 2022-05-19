@@ -21,7 +21,7 @@ const ServiceFeedbackListTab = ({route, navigation}) => {
             item.update(documentSnapshot.data());
             item._id = documentSnapshot.id;
 
-            setList(item.feedback);
+            item.feedback ? setList(item.feedback) : null;
         })
 
         return () => subscriber();
@@ -49,7 +49,7 @@ const ServiceFeedbackListTab = ({route, navigation}) => {
                                     {/* description */}
                                     <View style={style.inline_holder}>
                                         <Text style={style.item_description} numberOfLines={3}>
-                                            {item.detail}
+                                            {item.detail} - {item.createdAt}
                                         </Text>
                                     </View>
                                 </View>
