@@ -29,7 +29,7 @@ import {
   HelpIcon,
   StoreIcon,
 } from "../assets/icons/index"
-import { TouchableOpacity } from "react-native-gesture-handler"
+import { ScrollView, TouchableOpacity } from "react-native-gesture-handler"
 import MonthPicker from "react-native-month-year-picker"
 import { Value } from "react-native-reanimated"
 
@@ -106,20 +106,19 @@ export default function StatisticScreen({ route, navigation }) {
         })
       } else if (statisticType == "month") {
         getMonthStatisticTP2(month, (values) => {
-          // setData(values)
+          setData(values)
         })
       } else {
         console.log("Getting year: ..." + month.getFullYear())
         getYearStatisticTP(month, (values) => {
-          // setData(values)
-          // console.log(values)
+          setData(values)
         })
       }
       return () => {
         isCancelled = true
       }
     }
-  }, [month])
+  }, [month, statisticType])
 
   const Header = () => {
     const [show, setShow] = useState(false)
@@ -283,6 +282,11 @@ export default function StatisticScreen({ route, navigation }) {
   }
 
   const BottomBar = () => {
+    const switchType = () => {
+      if (statisticType == "type") setStatisticType("month")
+      else setStatisticType("type")
+    }
+
     return (
       <View style={styles.bottomBar}>
         <TouchableOpacity
@@ -299,14 +303,24 @@ export default function StatisticScreen({ route, navigation }) {
           />
         </TouchableOpacity>
 
-        <TouchableOpacity>
-          <Image
-            style={{
-              height: 30,
-              width: 30,
-            }}
-            source={require("../assets/icons/BackArrow.png")}
-          />
+        <TouchableOpacity onPress={switchType}>
+          {statisticType == "type" ? (
+            <Image
+              style={{
+                height: 30,
+                width: 30,
+              }}
+              source={require("../assets/icons/BackArrow.png")}
+            />
+          ) : (
+            <Image
+              style={{
+                height: 30,
+                width: 30,
+              }}
+              source={require("../assets/icons/BackArrow.png")}
+            />
+          )}
         </TouchableOpacity>
       </View>
     )
@@ -330,7 +344,7 @@ export default function StatisticScreen({ route, navigation }) {
             <Text>Doanh thu (nghìn đồng)</Text>
             <CustomChart data={data} />
             <Text style={{ textAlign: "right" }}>
-              {statisticType == "month" ? "Tháng" : "Năm"}
+              {statisticType == "month" ? "Ngày" : "Tháng"}
             </Text>
 
             <Picker
@@ -343,6 +357,42 @@ export default function StatisticScreen({ route, navigation }) {
               <Picker.Item label="Theo tháng" value="month" />
               <Picker.Item label="Theo năm" value="year" />
             </Picker>
+
+            {/* {statisticType == "month" ? (
+              <View style={{ padding: 4 }}>
+                <Text style={styles.statisticDetail}>
+                  Trung bình tháng: {"  "}
+                  <Text style={styles.statisticDetail_Bold}>100.000 VNĐ</Text>
+                </Text>
+                <Text style={styles.statisticDetail}>
+                  Ngày cao nhất:{"  "}
+                  <Text style={styles.statisticDetail_Bold}>
+                    5 (100.000 VNĐ)
+                  </Text>
+                </Text>
+                <Text style={styles.statisticDetail}>
+                  Ngày thấp nhất nhất:{"  "}
+                  <Text style={styles.statisticDetail_Bold}>5 (0 VNĐ)</Text>
+                </Text>
+              </View>
+            ) : (
+              <View style={{ padding: 4 }}>
+                <Text style={styles.statisticDetail}>
+                  Trung bình năm: {"  "}
+                  <Text style={styles.statisticDetail_Bold}>100.000 VNĐ</Text>
+                </Text>
+                <Text style={styles.statisticDetail}>
+                  Tháng cao nhất:{"  "}
+                  <Text style={styles.statisticDetail_Bold}>
+                    5 (100.000 VNĐ)
+                  </Text>
+                </Text>
+                <Text style={styles.statisticDetail}>
+                  Tháng thấp nhất nhất:{"  "}
+                  <Text style={styles.statisticDetail_Bold}>5 (0 VNĐ)</Text>
+                </Text>
+              </View>
+            )} */}
           </>
         )}
       </View>
@@ -389,8 +439,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   detail: {
+    color: COLORS.black,
     fontFamily: "Roboto-Bold",
     fontSize: 12,
+  },
+  statisticDetail: {
+    color: COLORS.black,
+    fontFamily: "Roboto-Regular",
+    fontSize: 16,
+  },
+  statisticDetail_Bold: {
+    color: COLORS.black,
+    fontFamily: "Roboto-Bold",
+    fontSize: 16,
   },
   bottomBar: {
     flex: 0.2,

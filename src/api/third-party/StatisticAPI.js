@@ -193,7 +193,7 @@ export const getMonthStatisticTP = (date, handleStatisticCallback) => {
 }
 
 export const getYearStatisticTP = (date, handleStatisticCallback) => {
-  let values = new Array(12)
+  let values = new Array(12).fill(0)
   firestore()
     .collection("thirdParty/" + auth().currentUser.uid + "/income")
     .where("year", "==", date.getFullYear())
@@ -201,31 +201,29 @@ export const getYearStatisticTP = (date, handleStatisticCallback) => {
     .then((querySnapshot) => {
       querySnapshot.forEach((documentSnapshot) => {
         var month = documentSnapshot.data().month
-        let amount = documentSnapshot.data().amount
+        let amount = documentSnapshot.data().amount / 1000
 
-        console.log(month + ":" + amount);
+        console.log(month + ":" + amount)
 
         values[month - 1] += amount
-
       })
       handleStatisticCallback(values)
     }, onError)
 }
 
 export const getMonthStatisticTP2 = (date, handleStatisticCallback) => {
-  let values = new Array(31)
+  let values = new Array(31).fill(0)
   firestore()
     .collection("thirdParty/" + auth().currentUser.uid + "/income")
     .where("year", "==", date.getFullYear())
     .get()
     .then((querySnapshot) => {
       querySnapshot.forEach((documentSnapshot) => {
-        var month = documentSnapshot.data().month
-        let amount = documentSnapshot.data().amount
+        var date = documentSnapshot.data().date.toDate().getDate()
+        let amount = documentSnapshot.data().amount / 1000
 
-        console.log(month + ":" + amount);
-        values[month - 1] += amount
-
+        console.log(date + ":" + amount)
+        values[date - 1] += amount
       })
       handleStatisticCallback(values)
     }, onError)
