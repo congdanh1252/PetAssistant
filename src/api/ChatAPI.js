@@ -1,19 +1,23 @@
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
+import { getUserInfo } from './UserAPI';
 
 export const getChatId = (user2, handleCallback) => {
     firestore()
     .collection('chat')
-    .where('user1', '==', auth().currentUser.uid)
+    // .where('user1', '==', auth().currentUser.uid)
     .get()
     .then(querySnapshot => {
         if (querySnapshot.empty) {
             handleCallback('empty')
         }
         else {
+            const user1 = auth().currentUser.uid
             querySnapshot.forEach(documentSnapshot => {
-                if (documentSnapshot.data().user2 === user2) {
-                    handleCallback(documentSnapshot.id);
+                if (documentSnapshot.data().user2 === user2 || documentSnapshot.data().user2 === user1) {
+                    if (documentSnapshot.data().user1 === user2 || documentSnapshot.data().user1 === user1) {
+                        handleCallback(documentSnapshot.id)
+                    }
                 }
             })
         }
@@ -45,25 +49,29 @@ export const addNewMessageToChat = (detail, attachment, chatId, handleCallback) 
 };
 
 export const addNewChat = (user2, name, img, handleCallback) => {
-    firestore()
-    .collection('chat')
-    .add({
-        user1: auth().currentUser.uid,
-        user2: user2,
-        lastMessage: '',
-        user2Name: name,
-        user2Image: img,
-        updatedAt: firestore.Timestamp.fromDate(new Date()),
-        createdAt: firestore.Timestamp.fromDate(new Date())
-    })
-    .then(() => {
-        getChatId(user2, (res) => {
-            handleCallback(res);
+    getUserInfo(auth().currentUser.uid, (res) => {
+        firestore()
+        .collection('chat')
+        .add({
+            user1: auth().currentUser.uid,
+            user2: user2,
+            lastMessage: '',
+            user1Name: res.name,
+            user2Name: name,
+            user2Image: img,
+            updatedAt: firestore.Timestamp.fromDate(new Date()),
+            createdAt: firestore.Timestamp.fromDate(new Date())
         })
+        .then(() => {
+            getChatId(user2, (res) => {
+                handleCallback(res);
+            })
+            // handleCallback()
+        })
+        .catch((e) => {
+            handleCallback(e);
+        });
     })
-    .catch((e) => {
-        handleCallback(e);
-    });
 };
 
 export const deleteChat = (id, handleCallback) => {

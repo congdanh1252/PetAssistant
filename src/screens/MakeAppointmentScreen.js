@@ -16,6 +16,7 @@ import strings from "../data/strings";
 import BackButton from "../components/BackButton";
 import Appointment from "../models/appointment";
 import thirdParty from '../models/thirdParty';
+import ServiceItem from "../models/serviceItem";
 
 const MakeAppointmentScreen = ({route, navigation}) => {
     var appointment = new Appointment();
@@ -211,13 +212,29 @@ const MakeAppointmentScreen = ({route, navigation}) => {
             item.update(documentSnapshot.data());
             item._id = documentSnapshot.id;
 
-            setServices(item.service);
             setTPName(item.name);
             setTPThumbnail(item.thumbnail);
             setTPAddress(item.address);
         })
 
-        return () => subscriber();
+        const serviceFetching = firestore()
+        .collection('thirdParty/' + thirdPartyID + '/service')
+        .onSnapshot(querySnapshot => {
+            var services = new Array();
+            querySnapshot.forEach(documentSnapshot => {
+                var item = new ServiceItem();
+                item.update(documentSnapshot.data());
+                item._id = documentSnapshot.id;
+                item.active ? services.push(item) : null;
+            });
+            
+            setServices(services)
+        })
+
+        return () => {
+            subscriber()
+            serviceFetching()
+        }
     }, [])
 
     return (

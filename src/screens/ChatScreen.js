@@ -73,13 +73,13 @@ const ChatScreen = ({route, navigation}) => {
         setPhotoFileName('');
     }
 
-    const sendMessage = () => {
+    const sendMessage = (cId) => {
         if (photoUri != 'none' && pickingPhoto) {
             uploadImageToStorage(photoUri, photoFileName, (url) => {
-                addNewMessageToChat('', url, chatId, handleMessageSent)
+                addNewMessageToChat('', url, cId, handleMessageSent)
             })
         } else {
-            addNewMessageToChat(draft, '', chatId, handleMessageSent)
+            addNewMessageToChat(draft, '', cId, handleMessageSent)
         }
     }
 
@@ -89,12 +89,13 @@ const ChatScreen = ({route, navigation}) => {
 
             if (!checkExistedChat()) {
                 addNewChat(obj_id, obj_name, obj_avt, (result) => {
-                    getChatId(obj_id, handleChatId)
-                    sendMessage()
+                    // getChatId(obj_id, handleChatId)
+                    setChatId(result)
+                    sendMessage(result)
                 })
             }
             else {
-                sendMessage()
+                sendMessage(chatId)
             }
         }
     }
@@ -107,6 +108,7 @@ const ChatScreen = ({route, navigation}) => {
 
         launchImageLibrary(options, (response) => {
             if (response.didCancel) {
+                setPickingPhoto(false)
                 console.log('User cancelled image picker');
             }
             else if (response.errorCode == 'permission') {
