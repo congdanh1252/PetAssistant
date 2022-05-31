@@ -17,6 +17,7 @@ export default class Appointment {
       this.status_code = 0;
       this.has_feedback = false;
       this.feedback = '';
+      this.total_amount = 0;
     }
 
     update(data) {
@@ -37,6 +38,7 @@ export default class Appointment {
         this.status_code = data.status_code || 0;
         this.has_feedback = data.has_feedback || false;
         this.feedback = data.feedback || '';
+        this.total_amount = data.total_amount || 0;
     }
 
     static clone(data) {

@@ -24,6 +24,7 @@ import strings from "../../data/strings";
 import BackButton from "../../components/BackButton";
 import thirdParty from "../../models/thirdParty";
 import ServiceItem from "../../models/serviceItem";
+import { moneyFormat } from "../../models/common/moneyStringFormat";
 
 const EditProfileScreen = ({route, navigation}) => {
     var tp = new thirdParty();
@@ -722,29 +723,36 @@ const EditProfileScreen = ({route, navigation}) => {
                                                         <Text
                                                             style={[
                                                                 styles.dropdown_option_text,
-                                                                {fontWeight: 'bold'}
+                                                                {
+                                                                    fontWeight: 'bold',
+                                                                    color: item.active?COLORS.green:COLORS.black
+                                                                }
                                                             ]}
                                                         >
-                                                            {item.detail} - {item.price} VNĐ
+                                                            {item.detail} - {moneyFormat(item.price)} VNĐ
                                                         </Text>
 
-                                                        <TouchableOpacity
-                                                            activeOpacity={0.7}
-                                                            style={styles.edit_item_icon}
-                                                            onPress={() => {
-                                                                setEditIndex(index)
-                                                                setDialogShow(true)
-                                                                setDialogAction('edit')
-                                                                setDialogItemName(item.detail)
-                                                                setDialogItemDescription(item.description)
-                                                                setDialogItemPrice(item.price!='?' ? parseInt(item.price) : 369258147)
-                                                            }}
-                                                        >
-                                                            <Image
-                                                                style={styles.edit_icon}
-                                                                source={require('../../assets/icons/ic_edit.png')}
-                                                            />
-                                                        </TouchableOpacity>
+                                                        {
+                                                            item.active ?
+                                                            <TouchableOpacity
+                                                                activeOpacity={0.7}
+                                                                style={styles.edit_item_icon}
+                                                                onPress={() => {
+                                                                    setEditIndex(index)
+                                                                    setDialogShow(true)
+                                                                    setDialogAction('edit')
+                                                                    setDialogItemName(item.detail)
+                                                                    setDialogItemDescription(item.description)
+                                                                    setDialogItemPrice(item.price!='?' ? parseInt(item.price) : 369258147)
+                                                                }}
+                                                            >
+                                                                <Image
+                                                                    style={styles.edit_icon}
+                                                                    source={require('../../assets/icons/ic_edit.png')}
+                                                                />
+                                                            </TouchableOpacity>
+                                                            : null
+                                                        }
                                                     </View>
 
                                                     {/* description */}

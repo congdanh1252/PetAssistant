@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Image, StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput,
+import { Image, StyleSheet, View, Text, ActivityIndicator, TouchableOpacity, TextInput,
     TouchableWithoutFeedback, Keyboard, FlatList,
 } from 'react-native';
 import Dialog from "react-native-dialog";
 import Toast from "react-native-toast-message";
 import firestore from '@react-native-firebase/firestore';
-import auth from '@react-native-firebase/auth';
+import { launchImageLibrary } from "react-native-image-picker";
 
 import {
     addNewMessageToChat,
@@ -13,6 +13,7 @@ import {
     addNewChat,
     deleteChat
 } from '../api/ChatAPI';
+import { uploadImageToStorage } from '../api/PetAPI';
 import Message from '../models/message';
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
@@ -20,7 +21,6 @@ import BackButton from '../components/BackButton';
 import { windowWidth, windowHeight } from '../models/common/Dimensions'
 
 const ChatScreen = ({route, navigation}) => {
-    const { me } = auth().currentUser.uid;
     const [chatId, setChatId] = useState('');
     const { obj_id, obj_name, obj_avt } = route.params;
     const [chatUser, setChatUser] = useState({
@@ -29,9 +29,12 @@ const ChatScreen = ({route, navigation}) => {
         photo: obj_avt
     });
     const [draft, setDraft] = useState('');
-    const [show, setShow] = useState(false);
+    const [pickingPhoto, setPickingPhoto] = useState(false);
+    const [photoUri, setPhotoUri] = useState('none');
+    const [photoFileName, setPhotoFileName] = useState('');
     const [dialogVisible, setDialogVisible] = useState(false);
     const [messages, setMessages] = useState([]);
+    const [isSending, setIsSending] = useState(false);
 
     const handleDeleteButton = () => {
         deleteChat(chatId, (res) => {
@@ -63,21 +66,65 @@ const ChatScreen = ({route, navigation}) => {
     }
 
     const handleMessageSent = (result) => {
+        setIsSending(false)
         setDraft('');
+        setPickingPhoto(false);
+        setPhotoUri('none');
+        setPhotoFileName('');
+    }
+
+    const sendMessage = (cId) => {
+        if (photoUri != 'none' && pickingPhoto) {
+            uploadImageToStorage(photoUri, photoFileName, (url) => {
+                addNewMessageToChat('', url, cId, handleMessageSent)
+            })
+        } else {
+            addNewMessageToChat(draft, '', cId, handleMessageSent)
+        }
     }
 
     const handleSendMessage = () => {
-        if (draft != '') {
+        if (draft != '' || photoUri != 'none') {
+            setIsSending(true)
+
             if (!checkExistedChat()) {
                 addNewChat(obj_id, obj_name, obj_avt, (result) => {
-                    getChatId(obj_id, handleChatId)
-                    addNewMessageToChat(draft, '', result, handleMessageSent);
+                    // getChatId(obj_id, handleChatId)
+                    setChatId(result)
+                    sendMessage(result)
                 })
             }
             else {
-                addNewMessageToChat(draft, '', chatId, handleMessageSent)
+                sendMessage(chatId)
             }
         }
+    }
+
+    const pickPhoto = () => {
+        let options = {
+            selectionLimit: 1,
+            mediaType: 'photo',
+        }
+
+        launchImageLibrary(options, (response) => {
+            if (response.didCancel) {
+                setPickingPhoto(false)
+                console.log('User cancelled image picker');
+            }
+            else if (response.errorCode == 'permission') {
+                console.log(strings.err_photo_picker_permission);
+            }
+            else {
+                setPhotoUri(response.assets[0].uri);
+                setPhotoFileName(response.assets[0].fileName);
+                console.log(response.assets[0].fileName);
+            }
+        })
+    }
+
+    const handleRemovePickedPhoto = () => {
+        setPhotoUri('none')
+        setPickingPhoto(false)
     }
 
     const renderItem = ({ item }) => {
@@ -151,19 +198,6 @@ const ChatScreen = ({route, navigation}) => {
         )
     };
 
-    const ListMessages = () => {
-        return (
-            <FlatList
-                inverted
-                data={messages}
-                renderItem={renderItem}
-                keyExtractor={(item) => item._id}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={style.messages_container}
-            />
-        )
-    }
-
     //get chat id
     useEffect(() => {
         let isMounted = true;
@@ -232,40 +266,85 @@ const ChatScreen = ({route, navigation}) => {
             <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
                 <View style={style.container}>
                     {/* Chat messages area */}
-                    <ListMessages/>
+                    <FlatList
+                        inverted
+                        data={messages}
+                        renderItem={renderItem}
+                        keyExtractor={(item) => item._id}
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={style.messages_container}
+                    />
 
                     {/* Keyboard area */}
-                    <View style={style.bottom_stack_holder}>
-                        <TouchableOpacity activeOpacity={0.7}>
+                    <View style={
+                            !pickingPhoto ?
+                            style.bottom_stack_holder :
+                            [style.bottom_stack_holder, {height: windowHeight / 4}]
+                        }
+                    >
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={() => {
+                                pickPhoto()
+                                setPickingPhoto(true)
+                            }}
+                        >
                             <Image
                                 style={{
-                                    width: 30,
-                                    height: 30,
+                                    width: 34,
+                                    height: 34,
                                 }}
                                 source={require('../assets/icons/Add.png')}
                             />
                         </TouchableOpacity>
 
-                        <TextInput
-                            style={style.input}
-                            placeholder={strings.type_something_msg}
-                            multiline={true}
-                            returnKeyType={'done'}
-                            value={draft}
-                            onChangeText={(value) => {
-                                setDraft(value);
-                            }}
-                        />
+                        {
+                            !pickingPhoto ?
+                            <TextInput
+                                style={style.input}
+                                placeholder={strings.type_something_msg}
+                                multiline={true}
+                                returnKeyType={'done'}
+                                value={draft}
+                                onChangeText={(value) => {
+                                    setDraft(value);
+                                }}
+                            /> :
 
-                        <TouchableOpacity
-                            activeOpacity={0.7}
-                            style={style.send_button}
-                            onPress={() => {
-                                handleSendMessage()
-                            }}
-                        >
-                            <Text style={style.title}>GỬI</Text>
-                        </TouchableOpacity>
+                            <View style={style.picked_photo_holder}>
+                                {
+                                    photoUri == 'none' ?
+                                        null :
+                                        <Image
+                                            style={style.picked_photo}
+                                            source={{uri: photoUri}}
+                                        />
+                                }
+
+                                <TouchableOpacity
+                                    activeOpacity={0.7}
+                                    style={style.remove_photo_button}
+                                    onPress={() => handleRemovePickedPhoto()}
+                                >
+                                    <Text style={{color: '#fff', fontSize: 20}}> —</Text>
+                                </TouchableOpacity>
+                            </View>
+                        }
+
+                        {
+                            isSending ?
+                                <ActivityIndicator size="small" color="#000" />
+                            :
+                                <TouchableOpacity
+                                    activeOpacity={0.7}
+                                    style={style.send_button}
+                                    onPress={() => {
+                                        handleSendMessage()
+                                    }}
+                                >
+                                    <Text style={style.title}>GỬI</Text>
+                                </TouchableOpacity>
+                        }
                     </View>
                 </View>
             </TouchableWithoutFeedback>
@@ -360,6 +439,29 @@ const style = StyleSheet.create({
         borderRadius: 10,
         backgroundColor: '#EEEEEE',
         color:COLORS.black,
+    },
+    picked_photo: {
+        height: '100%',
+        width: '90%',
+        borderRadius: 10
+    },
+    picked_photo_holder: {
+        height: windowHeight / 4,
+        width: windowWidth - 148,
+        padding: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 10,
+        backgroundColor: '#EEEEEE',
+    },
+    remove_photo_button : {
+        position: 'absolute',
+        top: 4,
+        right: 14,
+        width: 26,
+        height: 26,
+        borderRadius: 13,
+        backgroundColor: COLORS.black
     },
     send_button: {
         width: 40,

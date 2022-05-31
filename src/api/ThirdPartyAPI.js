@@ -113,6 +113,21 @@ export const addFeedbackToAppointment = (id, apmFb, handleCallback) => {
     });
 };
 
+export const addTotalAmountToAppointment = (id, amount, handleCallback) => {
+    firestore()
+    .collection('appointment')
+    .doc(id)
+    .update({
+        total_amount: parseInt(amount)
+    })
+    .then(() => {
+        handleCallback('Success');
+    })
+    .catch((e) => {
+        handleCallback(e);
+    });
+};
+
 export const updateFeedbackInThirdPartyProfile = (id, thirdParty, newRt, handleCallback) => {
     firestore()
     .collection('thirdParty')
@@ -216,4 +231,53 @@ export const updateMultipleServices = async (thirdParty, actions, handleCallback
                 });
         }
     }
+}
+
+export const proceedAppointment = (id, currentCode, amount, handleCallback) => {
+    var newCode = 0
+    var newStatus = ''
+
+    switch (currentCode) {
+        case 0:
+            newCode = 1
+            newStatus = 'Đã xác nhận' 
+            break
+        case 1:
+            newCode = 2
+            newStatus = 'Thành công' 
+            break
+        default:
+            newCode = 3
+            newStatus = 'Đã hủy' 
+    }
+
+    firestore()
+    .collection('appointment')
+    .doc(id)
+    .update({
+        status: newStatus,
+        status_code: newCode
+    })
+    .then(() => {
+        if (newCode == 2) {
+            addTotalAmountToAppointment(id, amount, (res) => {
+                if (res == 'Success') {
+                    handleCallback({
+                        res: 'success',
+                        newCode: newCode,
+                        newStatus: newStatus
+                    });
+                }
+            })
+        } else {
+            handleCallback({
+                res: 'success',
+                newCode: newCode,
+                newStatus: newStatus
+            });
+        }
+    })
+    .catch((e) => {
+        handleCallback(e);
+    });
 }

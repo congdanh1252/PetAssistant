@@ -12,6 +12,9 @@ import BackButton from '../components/BackButton';
 import { windowWidth } from '../models/common/Dimensions';
 
 const ChatListScreen = ({route, navigation}) => {
+    const myId = auth().currentUser.uid;
+    const userIcon = 'https://icon-library.com/images/google-user-icon/google-user-icon-21.jpg';
+    const [isThirdParty, setIsThirdParty] = useState(false);
     const [chats, setChats] = useState([]);
     const [dataList, setDataList] = useState([]);
     const [filter, setFilter] = useState('');
@@ -39,10 +42,16 @@ const ChatListScreen = ({route, navigation}) => {
                 chat._id = documentSnapshot.id;
                 chat.createdAt = new Date(documentSnapshot.data().createdAt.toDate());
                 chat.updatedAt = new Date(documentSnapshot.data().updatedAt.toDate());
-                chat.user2Name = documentSnapshot.data().user2Name;
                 chat.photoUrl = documentSnapshot.data().user2Image;
 
-                if (chat.user1 == auth().currentUser.uid || chat.user2 == auth().currentUser.uid) {
+                if (chat.user1 == myId || chat.user2 == myId) {
+                    if (chat.user2 == myId) {
+                        setIsThirdParty(true)
+                        chat.user2 = chat.user1
+                        chat.user1 = myId
+                        chat.user2Name = chat.user1Name
+                        chat.photoUrl = userIcon
+                    }
                     list.push(chat);
                 }
             });
@@ -50,7 +59,7 @@ const ChatListScreen = ({route, navigation}) => {
             setDataList(list);
         });
 
-        return () => subscriber();
+        return () => subscriber()
     }, []);
 
     const ChatList = () => {    
@@ -75,7 +84,7 @@ const ChatListScreen = ({route, navigation}) => {
                             >
                                 <View style={style.chat_holder}>
                                     <Image
-                                        source={{uri: item.photoUrl}}
+                                        source={{uri: isThirdParty ? userIcon : item.photoUrl}}
                                         resizeMode={'cover'}
                                         style={style.user_photo}
                                     />
@@ -89,12 +98,12 @@ const ChatListScreen = ({route, navigation}) => {
                                                 {item.user2Name}
                                             </Text>
 
-                                            <Text style={style.text}>
+                                            <Text style={[style.text, {marginLeft: -22}]}>
                                                 {
-                                                    moment(item.createdAt).fromNow()
+                                                    moment(item.updatedAt).fromNow()
                                                     .substring(
                                                         0,
-                                                        moment(item.createdAt).fromNow().lastIndexOf(' ')
+                                                        moment(item.updatedAt).fromNow().lastIndexOf(' ')
                                                     )
                                                 }
                                             </Text>

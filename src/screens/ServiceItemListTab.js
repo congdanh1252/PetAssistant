@@ -7,6 +7,7 @@ import ServiceItem from '../models/serviceItem';
 import COLORS from '../theme/colors';
 import strings from '../data/strings';
 import { windowHeight } from '../models/common/Dimensions';
+import { moneyFormat } from '../models/common/moneyStringFormat';
 
 const ServiceItemListTab = ({route, navigation}) => {
     const { obj_id, role } = route.params;
@@ -79,7 +80,7 @@ const ServiceItemListTab = ({route, navigation}) => {
                                     {/* Title + arrow icon */}
                                     <View style={style.inline_holder}>
                                         <Text style={style.item_title}>
-                                            {item.detail} - {item.price} VNĐ
+                                            {item.detail} - {moneyFormat(item.price)} VNĐ
                                         </Text>
                                         
                                         <Image
