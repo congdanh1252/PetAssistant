@@ -26,31 +26,27 @@ import { moneyFormat } from '../../models/common/moneyStringFormat';
 const AppointmentArchiveScreen = ({route, navigation}) => {
     const [appointment, setAppointment] = useState(new Appointment());
     const [show, setShow] = useState(false);
-    const [showT, setShowT] = useState(false);
     const [showDetail, setShowDetail] = useState(false);
     const [items, setItems] = useState([]);
     const [dataList, setDataList] = useState([]);
     const [statusSort, setStatusSort] = useState('Chờ xác nhận');
-    const [timeSort, setTimeSort] = useState('Mới nhất');
-    const [filter, setFilter] = useState('');
     const [dialogShow, setDialogShow] = useState(false);
     const [amDialogShow, setAmDialogShow] = useState(false);
     const [amount, setAmount] = useState('');
     const [rating, setRating] = useState('');
     const [ratingDetail, setRatingDetail] = useState('');
 
-    const snapPoints = useMemo(() => ['62%', '62%'], []);
+    const snapPoints = useMemo(() => ['63%', '63%'], []);
     const statusSnapPoints = useMemo(() => ['34%', '34%'], []);
-    const timeSnapPoints = useMemo(() => ['19%', '19%'], []);
 
     const filterListBySearch = (input) => {
-        // var newList = [];
-        // dataList.forEach(item => {
-        //     if (item.name.toLowerCase().includes(input.toLowerCase())) {
-        //         newList.push(item);
-        //     }
-        // });
-        // setItems(newList);
+        var newList = [];
+        dataList.forEach(item => {
+            if (item.customer_name.toLowerCase().includes(input.toLowerCase())) {
+                newList.push(item);
+            }
+        });
+        setItems(newList);
         // input == "" ? setFilter('') : setFilter(filter);
     }
 
@@ -99,7 +95,7 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
         }
 
         return (
-            <Text style={[style.item_status, {color: color, marginTop: 0}]}>
+            <Text style={[style.item_status, {color: color, marginTop: 9, position: 'relative'}]}>
                 {appointment.status}
             </Text>
         )
@@ -119,11 +115,17 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
 
     const handleButtonPress = (code) => {
         if (code < 2) {
+            // if (code == 0) {
+            //     navigation.navigate('EditAppointment', {
+
+            //     })
+            // }
             proceedAppointment(appointment._id, code, amount, (result) => {
                 if (result.res == 'success') {
                     var obj = appointment
                     obj.status_code = result.newCode
                     obj.status = result.newStatus
+                    // thêm reminder
                     setAppointment(obj)
                     setAmDialogShow(false)
                     setShowDetail(false)
@@ -316,8 +318,10 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
         const subscriber = firestore()
         .collection('appointment')
         .where('third_party_id', '==', auth().currentUser.uid)
+        .where('status', '==', statusSort)
         .onSnapshot(querySnapshot => {
             var list = new Array();
+            if (querySnapshot != null) {
             querySnapshot.forEach(documentSnapshot => {
                 var item = new Appointment();
                 item.update(documentSnapshot.data());
@@ -327,12 +331,13 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
                 item.created_at = new Date(documentSnapshot.data().createdAt.toDate());
                 list.push(item);
             })
+        }
             setItems(list);
             setDataList(list);
         })
 
         return () => subscriber();
-    }, []);
+    }, [statusSort]);
 
     //Main 
     return (
@@ -355,33 +360,15 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
                     }}
                 />
 
-                <View
-                    style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'space-between'
+                <TouchableOpacity
+                    activeOpacity={0.6}
+                    onPress={() => {
+                        setShow(true)
                     }}
+                    style={{width: 120, marginTop: 24, marginBottom: 8}}
                 >
-                    <TouchableOpacity
-                        activeOpacity={0.6}
-                        onPress={() => {
-                            setShow(true)
-                        }}
-                        style={{width: 120, marginTop: 24, marginBottom: 8}}
-                    >
-                        <Text style={style.title}>{statusSort}</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        activeOpacity={0.6}
-                        onPress={() => {
-                            setShowT(true)
-                        }}
-                        style={{width: 120, marginTop: 24, marginBottom: 8, alignItems: 'flex-end'}}
-                    >
-                        <Text style={style.title}>{timeSort}</Text>
-                    </TouchableOpacity>
-                </View>
+                    <Text style={style.title}>{statusSort}</Text>
+                </TouchableOpacity>
                 
                 <Items/>
             </View>
@@ -714,7 +701,7 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
                                     activeOpacity={0.7}
                                     underlayColor='#EEEEEE'
                                     style={
-                                        filter != '0'
+                                        statusSort != 'Chờ xác nhận'
                                         ?
                                         style.dropdown_option
                                         :
@@ -722,7 +709,6 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
                                     }
                                     onPress={() => {
                                         setShow(false)
-                                        setFilter('0')
                                         setStatusSort('Chờ xác nhận')
                                     }}
                                 >
@@ -737,7 +723,7 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
                                     activeOpacity={0.7}
                                     underlayColor='#EEEEEE'
                                     style={
-                                        filter != '1'
+                                        statusSort != 'Đã xác nhận'
                                         ?
                                         style.dropdown_option
                                         :
@@ -745,7 +731,6 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
                                     }
                                     onPress={() => {
                                         setShow(false)
-                                        setFilter('1')
                                         setStatusSort('Đã xác nhận')
                                     }}
                                 >
@@ -760,7 +745,7 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
                                     activeOpacity={0.7}
                                     underlayColor='#EEEEEE'
                                     style={
-                                        filter != '2'
+                                        statusSort != 'Thành công'
                                         ?
                                         style.dropdown_option
                                         :
@@ -768,7 +753,6 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
                                     }
                                     onPress={() => {
                                         setShow(false)
-                                        setFilter('2')
                                         setStatusSort('Thành công')
                                     }}
                                 >
@@ -783,7 +767,7 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
                                     activeOpacity={0.7}
                                     underlayColor='#EEEEEE'
                                     style={
-                                        filter != '3'
+                                        statusSort != 'Đã hủy'
                                         ?
                                         style.dropdown_option
                                         :
@@ -791,76 +775,11 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
                                     }
                                     onPress={() => {
                                         setShow(false)
-                                        setFilter('3')
                                         setStatusSort('Đã hủy')
                                     }}
                                 >
                                     <Text style={style.dropdown_option_text}>
                                     Đã hủy
-                                    </Text>
-                                </TouchableHighlight>
-                            </BottomSheet>
-                        </View>
-                    </TouchableWithoutFeedback>
-            }
-
-            {/* BottomSheet Time */}
-            {
-                !showT ?
-                    null
-                :
-                    <TouchableWithoutFeedback onPress={() => {setShowT(false)}}>
-                        <View style={style.overlay}>
-                            <BottomSheet
-                                index={1}
-                                snapPoints={timeSnapPoints}
-                                backgroundStyle={{borderWidth: 1}}
-                                style={style.dropdown_bottomsheet}
-                                enableOverDrag={false}
-                                enablePanDownToClose={true}
-                                onClose={() => {setShow(false)}}
-                            >
-                                {/* Mới nhất */}
-                                <TouchableHighlight
-                                    key={0}
-                                    activeOpacity={0.7}
-                                    underlayColor='#EEEEEE'
-                                    style={
-                                        timeSort != 'Mới nhất'
-                                        ?
-                                        style.dropdown_option
-                                        :
-                                        [style.dropdown_option, {backgroundColor: COLORS.grey}]
-                                    }
-                                    onPress={() => {
-                                        setShowT(false)
-                                        setTimeSort('Mới nhất')
-                                    }}
-                                >
-                                    <Text style={style.dropdown_option_text}>
-                                    Mới nhất
-                                    </Text>
-                                </TouchableHighlight>
-
-                                {/* Cũ nhất */}
-                                <TouchableHighlight
-                                    key={1}
-                                    activeOpacity={0.7}
-                                    underlayColor='#EEEEEE'
-                                    style={
-                                        timeSort != 'Cũ nhất'
-                                        ?
-                                        style.dropdown_option
-                                        :
-                                        [style.dropdown_option, {backgroundColor: COLORS.grey}]
-                                    }
-                                    onPress={() => {
-                                        setShowT(false)
-                                        setTimeSort('Cũ nhất')
-                                    }}
-                                >
-                                    <Text style={style.dropdown_option_text}>
-                                    Cũ nhất
                                     </Text>
                                 </TouchableHighlight>
                             </BottomSheet>
@@ -984,8 +903,9 @@ const style = StyleSheet.create({
         paddingRight: 2,
     },
     item_status: {
+        position: 'absolute',
+        bottom: 10,
         fontSize: 17,
-        marginTop: 8,
         color: COLORS.yellow,
         fontFamily: 'Roboto-Medium',
     },
@@ -1036,7 +956,7 @@ const style = StyleSheet.create({
     },
     total_amount: {
         fontSize: 20,
-        color: COLORS.green,
+        color: COLORS.success,
         fontFamily: 'Roboto-Bold',
     },
     button: {

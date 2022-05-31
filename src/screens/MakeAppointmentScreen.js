@@ -20,26 +20,18 @@ import ServiceItem from "../models/serviceItem";
 
 const MakeAppointmentScreen = ({route, navigation}) => {
     var appointment = new Appointment();
-    const apmObj = {
-        name: 'Phong kham',
-        service: [
-            'Tiem ngua',
-            'Truyen nuoc bien',
-            'Kham tong quat'
-        ]
-    };
     const { action, thirdPartyID, currentService } = route.params;
     const [tpName, setTPName] = useState('');
     const [tpThumbnail, setTPThumbnail] = useState('');
     const [tpAddress, setTPAddress] = useState('');
-    const [name, setName] = useState(action=='add' ? '' : apmObj.name);
-    const [phoneNumber, setPhoneNumber] = useState(action=='add' ? '' : apmObj.phone_number);
-    const [date, setDate] = useState(action=='add' ? '' : apmObj.appointment_date);
-    const [time, setTime] = useState(action=='add' ? '' : apmObj.appointment_time);
+    const [name, setName] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [date, setDate] = useState('');
+    const [time, setTime] = useState('');
     const [timeDisplay, setTimeDisplay] = useState('');
     const [services, setServices] = useState([]);
-    const [choseService, setChoseService] = useState(action=='add' ? [currentService] : apmObj.service);
-    const [note, setNote] = useState(action=='add' ? '' : apmObj.note);
+    const [choseService, setChoseService] = useState([currentService]);
+    const [note, setNote] = useState('');
     const [isUploading, setUploading] = useState(false);
 
     const [show, setShow] = useState(false);

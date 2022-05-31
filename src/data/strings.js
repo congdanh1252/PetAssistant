@@ -180,6 +180,7 @@ export default strings = {
     address_label: "Địa chỉ",
     update_info_success_msg: "Đã cập nhật thông tin của bạn! 👐",
     update_info_fail_msg: "Đã xảy ra lỗi trong quá trình thực hiện! 😔",
+    msg_confirm_cancel_appointment: "Bạn có chắc chắn muốn hủy lịch hẹn không? Việc này sẽ không thể hoàn tác.",
     
 
     back: "Trở lại",

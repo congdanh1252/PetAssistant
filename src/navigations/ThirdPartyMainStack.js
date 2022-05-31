@@ -1,13 +1,12 @@
-import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import HomeScreen from '../screens/third-party/HomeScreen';
-import ChatListScreen from '../screens/ChatListScreen';
-import ChatScreen from '../screens/ChatScreen';
-import ProfileScreen from '../screens/third-party/ProfileScreen';
-import EditProfileScreen from '../screens/third-party/EditProfileScreen';
-import AppointmentArchiveScreen from '../screens/third-party/AppointmentArchieveScreen';
-import { ScheduleEvent } from '../screens/ScheduleEvent';
-import { StatisticScreen } from '../screens/StatisticScreen';
+import React from 'react'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import HomeScreen from '../screens/third-party/HomeScreen'
+import ChatListScreen from '../screens/ChatListScreen'
+import ChatScreen from '../screens/ChatScreen'
+import ProfileScreen from '../screens/third-party/ProfileScreen'
+import EditProfileScreen from '../screens/third-party/EditProfileScreen'
+import AppointmentArchiveScreen from '../screens/third-party/AppointmentArchieveScreen'
+import MakeAppointmentScreen from '../screens/MakeAppointmentScreen'
 
 import ScheduleScreen from "../screens/third-party/ScheduleScreen"
 import ScheduleEvent from "../screens/third-party/ScheduleEvent"
@@ -77,6 +76,11 @@ const ThirdPartyMainStack = () => {
         <Stack.Screen
           name="AppointmentArchieve"
           component={AppointmentArchiveScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="EditAppointment"
+          component={MakeAppointmentScreen}
           options={{headerShown: false}}
         />
         <Stack.Screen
