@@ -14,16 +14,16 @@ import { windowHeight, windowWidth } from "../models/common/Dimensions"
 import { getMarketList } from "../api/MarketAPI"
 
 export function ProductScreen({ navigation }) {
-  const SearchBar = () => {
-    const [keyword, setKeyword] = useState()
+  const [keyword, setKeyword] = useState()
 
+  const SearchBar = () => {
     return (
       <View style={styles.searchBar}>
         <View style={styles.inputBox}>
           <TextInput
             value={keyword}
-            onChangeText={(value) => {
-              setKeyword(value)
+            onKeyPress={(value) => {
+              onSearch(value)
             }}
             style={styles.input}
             placeholder={strings.findInfomation}
@@ -122,6 +122,7 @@ export function ProductScreen({ navigation }) {
   }
 
   const [marketList, setMarketList] = useState([])
+  const [marketListQuery, setMarketListQuery] = useState([])
 
   const provinces = ["Toàn quốc", "Bình Dương", "Hà Nội"]
   const types = ["Tất cả", "Chó", "Mèo"]
@@ -137,6 +138,8 @@ export function ProductScreen({ navigation }) {
   }
   const [province, setProvince] = useState("Toàn quốc")
   const [kind, setKind] = useState("Tất cả")
+  const [species, setSpecies] = useState("Tất cả")
+
 
   const [bottomSheetContent, setBottomSheetContent] = useState(provinces)
 
@@ -144,11 +147,25 @@ export function ProductScreen({ navigation }) {
     let isCancelled = false
     getMarketList(province, kind, (marketList) => {
       setMarketList(marketList)
+      setMarketListQuery(marketList)
     })
     return () => {
       isCancelled = true
     }
   }, [kind, province])
+
+  const onSearch = (value) => {
+    let query = []
+    marketList.map((marketItem) => {
+      if (
+        marketItem.name.includes(value) ||
+        marketItem.species.includes(value)
+      ) {
+        query.push(marketItem)
+      }
+    })
+    setMarketListQuery(query)
+  }
 
   return (
     <View style={styles.container}>
@@ -169,7 +186,6 @@ export function ProductScreen({ navigation }) {
       <View style={styles.bodyContainer}>
         <View style={styles.filterContainer}>
           <View style={[styles.filter, { width: 180 }]}>
-            <Image source={require("../assets/icons/Map.png")} />
             <Text>{province}</Text>
             <TouchableOpacity
               onPress={() => {
@@ -181,7 +197,6 @@ export function ProductScreen({ navigation }) {
             </TouchableOpacity>
           </View>
           <View style={[styles.filter, { width: 120 }]}>
-            <Image source={require("../assets/icons/Map.png")} />
             <Text>{kind}</Text>
             <TouchableOpacity
               onPress={() => {
@@ -192,14 +207,9 @@ export function ProductScreen({ navigation }) {
               <Image source={require("../assets/icons/Dropdown.png")} />
             </TouchableOpacity>
           </View>
-          <View style={styles.filter}>
-            <TouchableOpacity>
-              <Image source={require("../assets/icons/Filter.png")} />
-            </TouchableOpacity>
-          </View>
         </View>
         <ScrollView>
-          {marketList.map((item) => {
+          {marketListQuery.map((item) => {
             return <Product key={item._id} item={item} />
           })}
         </ScrollView>
@@ -217,11 +227,9 @@ export function ProductScreen({ navigation }) {
                 onPress={(event) => {
                   if (bottomSheetContent[0] == types[0]) {
                     setKind(types[index])
-                    console.log(types[index])
                   }
                   if (bottomSheetContent[0] == provinces[0]) {
                     setProvince(provinces[index])
-                    console.log(provinces[index])
                   }
                   close()
                 }}

@@ -46,7 +46,6 @@ export function ProductDetailScreen({ route, navigation }) {
 
         let temp = new User()
         temp._id = item.seller_id
-        console.log(item.photo)
         setSeller(temp)
       }
     })
@@ -60,6 +59,7 @@ export function ProductDetailScreen({ route, navigation }) {
 
     if (seller._id != "") {
       getUserInfo(seller._id, (user) => {
+        console.log(seller)
         setSeller(user)
       })
     }
@@ -214,7 +214,7 @@ export function ProductDetailScreen({ route, navigation }) {
                   <Text style={styles.petInfo}>Địa chỉ</Text>
                 </View>
                 <View style={{ width: "50%" }}>
-                  <Text style={styles.petInfo}>{seller.address}</Text>
+                  <Text style={styles.petInfo}>{item.province}</Text>
                 </View>
               </View>
 

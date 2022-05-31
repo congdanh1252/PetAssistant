@@ -2,7 +2,7 @@ import firestore from "@react-native-firebase/firestore"
 import auth from "@react-native-firebase/auth"
 import MarketItem from "../models/MarketItem"
 
-export const getMarketList = (province, kind, handleCallback) => {
+export const getMarketList = (province, kind, species, handleCallback) => {
   console.log("Province: ", province)
   console.log("Kind : ", kind)
 
@@ -16,11 +16,13 @@ export const getMarketList = (province, kind, handleCallback) => {
       } else {
         querySnapshot.forEach((documentSnapshot) => {
           if (
-            (documentSnapshot.data().kind == kind || kind == "Tất cả") &&
+            (documentSnapshot.data().species == species || species == "Tất cả")(
+              documentSnapshot.data().kind == kind || kind == "Tất cả"
+            ) &&
             (documentSnapshot.data().province == province ||
               province == "Toàn quốc")
           ) {
-            console.log(documentSnapshot.data());
+            console.log(documentSnapshot.data())
             let marketItem = new MarketItem()
             marketItem.update(documentSnapshot.data())
             marketItem._id = documentSnapshot.id

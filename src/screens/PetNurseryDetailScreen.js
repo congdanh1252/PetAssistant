@@ -95,15 +95,6 @@ export function PetNurseryDetailScreen({ navigation, route }) {
         >
           Tìm người trông hộ
         </Text>
-        <Text
-          style={{
-            color: COLORS.white,
-            fontFamily: "Roboto-Regular",
-            fontSize: 14,
-          }}
-        >
-          Bình Dương
-        </Text>
       </View>
 
       <View style={styles.bodyContainer}>

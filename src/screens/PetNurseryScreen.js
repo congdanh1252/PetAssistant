@@ -127,6 +127,7 @@ export function PetNurseryScreen({ navigation, route }) {
     getNurseryList(province, type, level, (nurseryList) => {
       setnNurseries(nurseryList)
     })
+
     return () => {
       isCancelled = true
     }
@@ -144,21 +145,12 @@ export function PetNurseryScreen({ navigation, route }) {
         >
           Tìm người trông hộ
         </Text>
-        <Text
-          style={{
-            color: COLORS.white,
-            fontFamily: "Roboto-Regular",
-            fontSize: 14,
-          }}
-        >
-          Bình Dương
-        </Text>
       </View>
 
       <View style={styles.bodyContainer}>
         {/* Filter */}
         <View style={styles.filterContainer}>
-          <View style={[styles.filter, { width: 120 }]}>
+          <View style={[styles.filter, { width: 130 }]}>
             <Text style={{ color: COLORS.black }}>{province}</Text>
             <TouchableOpacity
               onPress={() => {
@@ -166,7 +158,13 @@ export function PetNurseryScreen({ navigation, route }) {
                 open()
               }}
             >
-              <Image source={require("../assets/icons/Dropdown.png")} />
+              <Image
+                style={{
+                  height: 15,
+                  width: 15,
+                }}
+                source={require("../assets/icons/Dropdown.png")}
+              />
             </TouchableOpacity>
           </View>
           <View style={[styles.filter, { width: 130 }]}>
@@ -177,10 +175,16 @@ export function PetNurseryScreen({ navigation, route }) {
                 open()
               }}
             >
-              <Image source={require("../assets/icons/Dropdown.png")} />
+              <Image
+                style={{
+                  height: 15,
+                  width: 15,
+                }}
+                source={require("../assets/icons/Dropdown.png")}
+              />
             </TouchableOpacity>
           </View>
-          <View style={[styles.filter, { width: 70 }]}>
+          <View style={[styles.filter, { width: 80 }]}>
             <Text style={{ color: COLORS.black }}>{type}</Text>
             <TouchableOpacity
               onPress={() => {
@@ -188,12 +192,13 @@ export function PetNurseryScreen({ navigation, route }) {
                 open()
               }}
             >
-              <Image source={require("../assets/icons/Dropdown.png")} />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.filter}>
-            <TouchableOpacity>
-              <Image source={require("../assets/icons/Filter.png")} />
+              <Image
+                style={{
+                  height: 15,
+                  width: 15,
+                }}
+                source={require("../assets/icons/Dropdown.png")}
+              />
             </TouchableOpacity>
           </View>
         </View>
@@ -206,9 +211,23 @@ export function PetNurseryScreen({ navigation, route }) {
               flexWrap: "wrap",
             }}
           >
-            {nurseries.map((p) => {
-              return <Nurserer key={p._id} nurserer={p} />
-            })}
+            {nurseries.length > 0 ? (
+              nurseries.map((p) => {
+                return <Nurserer key={p._id} nurserer={p} />
+              })
+            ) : (
+              <Text
+                style={{
+                  marginTop: 16,
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                  textAlign: "center",
+                  fontFamily: "Roboto-Italic",
+                }}
+              >
+                Không có người không hộ nào phù hợp
+              </Text>
+            )}
           </View>
         </ScrollView>
       </View>
