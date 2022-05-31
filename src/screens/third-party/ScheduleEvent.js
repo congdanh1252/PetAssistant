@@ -159,7 +159,8 @@ export default function ScheduleEvent({ route, navigation }) {
               paddingHorizontal: 8,
             }}
           >
-            {props.service.detail} - {moneyFormat(props.service.price)} VNĐ
+            {props.service}
+            {/* - {moneyFormat(props.service.price)} VNĐ */}
           </Text>
 
           <TouchableOpacity>
@@ -173,7 +174,7 @@ export default function ScheduleEvent({ route, navigation }) {
               showDialog()
               setDialogTitle(strings.deleteEventDetail)
               setDialogDescription(strings.confirmDeleteEventDetail)
-              setDeleteItem(props.job)
+              setDeleteItem(props.service)
               setDeleteItemType("job")
             }}
           >

@@ -8,13 +8,17 @@ import firestore from '@react-native-firebase/firestore';
 import BottomSheet from '@gorhom/bottom-sheet';
 import Dialog from "react-native-dialog";
 import Toast from "react-native-toast-message";
-
+import moment from 'moment';
 import {
     addFeedbackToAppointment,
     getThirdPartyInfo,
     proceedAppointment,
     updateFeedbackInThirdPartyProfile
 } from '../../api/ThirdPartyAPI';
+import {
+    addReminder,
+    addReminderUser
+} from "../../api/third-party/ReminderAPI"
 import { windowWidth, windowHeight } from '../../models/common/Dimensions';
 
 import COLORS from '../../theme/colors';
@@ -22,6 +26,7 @@ import strings from '../../data/strings';
 import BackButton from '../../components/BackButton';
 import Appointment from '../../models/appointment';
 import { moneyFormat } from '../../models/common/moneyStringFormat';
+import Reminder from '../../models/reminder';
 
 const AppointmentArchiveScreen = ({route, navigation}) => {
     const [appointment, setAppointment] = useState(new Appointment());
@@ -125,7 +130,11 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
                     var obj = appointment
                     obj.status_code = result.newCode
                     obj.status = result.newStatus
-                    // thêm reminder
+
+                    
+                    addReminder3Party()
+                    _addReminderUser()
+
                     setAppointment(obj)
                     setAmDialogShow(false)
                     setShowDetail(false)
@@ -140,6 +149,52 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
                 setDialogShow(true)
             }
         }
+    }
+
+    const addReminder3Party = () => {
+
+        let reminder = new Reminder()
+        let date = new Date(appointment.appointment_time)
+        let date_2 = new Date(appointment.appointment_date)
+        date.setDate(date_2.getDate())
+        date.setMonth(date_2.getMonth())
+        date.setFullYear(date_2.getFullYear())
+        
+        
+        reminder.customer = appointment.customer_id
+        reminder.datetime = date
+        reminder.description = appointment.note
+        reminder.service = appointment.service
+        reminder.title = appointment.customer_name + " đặt lịch"
+        reminder.type = "Service"
+        reminder.reminderType = "custom"
+
+        addReminder(reminder, (reminder) => {
+            console.log("add3party:" +reminder)
+        })
+    }
+
+    const _addReminderUser = () => {
+
+        let reminder = new Reminder()
+        let date = new Date(appointment.appointment_time)
+        let date_2 = new Date(appointment.appointment_date)
+        date.setDate(date_2.getDate())
+        date.setMonth(date_2.getMonth())
+        date.setFullYear(date_2.getFullYear())
+        
+        reminder.datetime = date
+        reminder.description = appointment.note
+        reminder.details = appointment.service
+        reminder.title = "Có hẹn với " + appointment.third_party_name
+        reminder.frequency = "custom"
+        reminder.type = "Service"
+        reminder.reminderType = "custom"
+        reminder.pets = []
+
+        addReminderUser(reminder, appointment.customer_id, (reminder) => {
+            console.log("user:" +reminder)
+        })
     }
 
     const HandlingButton = () => {

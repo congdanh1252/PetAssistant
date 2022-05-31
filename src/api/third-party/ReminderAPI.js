@@ -29,45 +29,63 @@ export const getReminder = (reminderID, handleReminder) => {
       reminder.update(documentSnapshot.data())
       reminder.datetime = documentSnapshot.data().datetime.toDate()
 
-      console.log(reminder.service)
-
       firestore()
         .collection("users")
         .doc(reminder.user._id)
         .onSnapshot((documentSnapshot) => {
           reminder.user.update(documentSnapshot.data())
 
-          var services = new Array()
-          for (let i = 0; i < reminder.service.length; i++) {
-            firestore()
-              .collection("thirdParty/NbPlzxROMlRyZ02vdVZf/service")
-              .doc(reminder.service[i])
-              .onSnapshot((documentSnapshot) => {
-                var service = new ServiceItem()
-                service.update(documentSnapshot.data())
-                service._id = documentSnapshot.id
-                services.push(service)
+          handleReminder(reminder)
+          // var services = new Array()
+          // for (let i = 0; i < reminder.service.length; i++) {
+          //   firestore()
+          //     .collection("thirdParty/NbPlzxROMlRyZ02vdVZf/service")
+          //     .doc(reminder.service[i])
+          //     .onSnapshot((documentSnapshot) => {
+          //       var service = new ServiceItem()
+          //       service.update(documentSnapshot.data())
+          //       service._id = documentSnapshot.id
+          //       services.push(service)
 
-                reminder.service = services
-                if (i == reminder.service.length - 1) {
-                  handleReminder(reminder)
-                }
-              }, onError)
-          }
+          //       reminder.service = services
+          //       if (i == reminder.service.length - 1) {
+          //       }
+          //     }, onError)
+          // }
         }, onError)
     }, onError)
 }
 
 export const addReminder = (reminder, handleCallback) => {
-  console.log(reminder)
   firestore()
     .collection("thirdParty/" + auth().currentUser.uid + "/reminders")
     .add(reminder)
     .then((docRef) => {
-      console.log("Added")
       reminder._id = docRef.id
       firestore()
         .collection("thirdParty/" + auth().currentUser.uid + "/reminders")
+        .doc(docRef.id)
+        .update({
+          _id: reminder._id,
+          date: reminder.datetime.getDate(),
+          month: reminder.datetime.getMonth() + 1,
+          year: reminder.datetime.getFullYear(),
+        })
+        .then(() => {
+          handleCallback(reminder)
+        })
+    })
+}
+
+export const addReminderUser = (reminder, userId, handleCallback) => {
+  console.log(userId)
+  firestore()
+    .collection("users/" + userId + "/reminders")
+    .add(reminder)
+    .then((docRef) => {
+      reminder._id = docRef.id
+      firestore()
+        .collection("users/" + userId + "/reminders")
         .doc(docRef.id)
         .update({
           _id: reminder._id,

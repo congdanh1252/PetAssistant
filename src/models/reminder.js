@@ -16,6 +16,7 @@ export default class Reminder {
     this.user = new User()
     this.service = new Array()
     this.notificationId = Math.floor(Math.random() * 1000000) + 1
+    this.customer = ""
   }
 
   update(data) {
@@ -33,6 +34,7 @@ export default class Reminder {
     this.service = data.service || new Array()
     this.notificationId =
       data.notificationId || Math.floor(Math.random() * 1000000) + 1
+    this.customer = data.customer || ""
   }
 
   static clone(data) {
