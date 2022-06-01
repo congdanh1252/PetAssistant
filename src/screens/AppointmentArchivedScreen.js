@@ -265,6 +265,23 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                         )
                     })
                 }
+                {
+                    items.length < 1 ?
+                    <View style={{width: '100%'}}>
+                        <Text
+                            style={{
+                                color: COLORS.black,
+                                fontFamily: 'Roboto-Light',
+                                fontStyle: 'italic',
+                                fontSize: 16,
+                                textAlign: 'center'
+                            }}
+                        >
+                            Hiện chưa có lịch hẹn nào ở mục này!
+                        </Text>
+                    </View>
+                    : null
+                }
                 </View>
             </ScrollView>
         )
@@ -567,10 +584,8 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                     rating: rating,
                                     detail: ratingDetail
                                 }, (result) => {
-                                    setDialogShow(false)
-                                    showResultToast(result)
-
                                     if (result == 'Success') {
+                                        console.log(appointment.third_party_id)
                                         getThirdPartyInfo(appointment.third_party_id, (obj) => {
                                             obj.feedback.push({
                                                 rating: rating,
@@ -579,6 +594,9 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                                 createdAt: formatDate(new Date())
                                             })
                                             updateFeedbackInThirdPartyProfile(obj._id, obj, rating, (res) => {
+                                                setDialogShow(false)
+                                                setShowDetail(false)
+                                                showResultToast(result)
                                                 res == 'Success' ?
                                                 console.log('update third party feedback OK!')
                                                 : console.log('update third party failed!')
