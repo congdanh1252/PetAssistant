@@ -143,7 +143,7 @@ export function PetNurseryScreen({ navigation, route }) {
             fontSize: 20,
           }}
         >
-          Tìm người trông hộ
+          Tìm người trông hộF
         </Text>
       </View>
 

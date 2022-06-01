@@ -12,6 +12,7 @@ import strings from "../data/strings"
 import { moneyFormat } from "../models/common/moneyStringFormat"
 import { windowHeight, windowWidth } from "../models/common/Dimensions"
 import { getMarketList } from "../api/MarketAPI"
+import { getSpeciesList } from "../api/PetAPI"
 
 export function ProductScreen({ navigation }) {
   const [keyword, setKeyword] = useState()
@@ -123,9 +124,11 @@ export function ProductScreen({ navigation }) {
 
   const [marketList, setMarketList] = useState([])
   const [marketListQuery, setMarketListQuery] = useState([])
+  const [speciesData, setSpeciesData] = useState({})
 
   const provinces = ["Toàn quốc", "Bình Dương", "Hà Nội"]
-  const types = ["Tất cả", "Chó", "Mèo"]
+  const types = ["Tất cả", "Chó", "Mèo", "Chim", "Hamster"]
+  const [speciesList, setSpeciesList] = useState()
 
   const bottomSheetRef = useRef(BottomSheet)
   const snapPoints = useMemo(() => ["0%", "50%"], [])
@@ -136,23 +139,23 @@ export function ProductScreen({ navigation }) {
   const close = () => {
     bottomSheetRef.current.close()
   }
+
   const [province, setProvince] = useState("Toàn quốc")
   const [kind, setKind] = useState("Tất cả")
   const [species, setSpecies] = useState("Tất cả")
-
 
   const [bottomSheetContent, setBottomSheetContent] = useState(provinces)
 
   useEffect(() => {
     let isCancelled = false
-    getMarketList(province, kind, (marketList) => {
+    getMarketList(province, kind, species, (marketList) => {
       setMarketList(marketList)
       setMarketListQuery(marketList)
     })
     return () => {
       isCancelled = true
     }
-  }, [kind, province])
+  }, [kind, province, species])
 
   const onSearch = (value) => {
     let query = []
@@ -165,6 +168,37 @@ export function ProductScreen({ navigation }) {
       }
     })
     setMarketListQuery(query)
+  }
+
+  useEffect(() => {
+    let isCancelled = false
+    getSpeciesList((list) => {
+      setSpeciesData(list)
+    })
+    return () => {
+      isCancelled = true
+    }
+  }, [])
+
+  const getSpecies = (index) => {
+    switch (index) {
+      case 1:
+        setSpeciesList(speciesData.dog)
+        break
+      case 2:
+        setSpeciesList(speciesData.cat)
+        break
+      case 3:
+        setSpeciesList(speciesData.bird)
+        break
+      case 4:
+        setSpeciesList(speciesData.hamster)
+        break
+      case 0:
+      default:
+        setSpecies()
+        break
+    }
   }
 
   return (
@@ -185,7 +219,7 @@ export function ProductScreen({ navigation }) {
 
       <View style={styles.bodyContainer}>
         <View style={styles.filterContainer}>
-          <View style={[styles.filter, { width: 180 }]}>
+          <View style={[styles.filter, { width: 120 }]}>
             <Text>{province}</Text>
             <TouchableOpacity
               onPress={() => {
@@ -196,11 +230,22 @@ export function ProductScreen({ navigation }) {
               <Image source={require("../assets/icons/Dropdown.png")} />
             </TouchableOpacity>
           </View>
-          <View style={[styles.filter, { width: 120 }]}>
+          <View style={[styles.filter, { width: 100 }]}>
             <Text>{kind}</Text>
             <TouchableOpacity
               onPress={() => {
                 setBottomSheetContent(types)
+                open()
+              }}
+            >
+              <Image source={require("../assets/icons/Dropdown.png")} />
+            </TouchableOpacity>
+          </View>
+          <View style={[styles.filter, { width: 140 }]}>
+            <Text>{species}</Text>
+            <TouchableOpacity
+              onPress={() => {
+                setBottomSheetContent(speciesList)
                 open()
               }}
             >
@@ -216,29 +261,35 @@ export function ProductScreen({ navigation }) {
       </View>
 
       <BottomSheet ref={bottomSheetRef} index={1} snapPoints={snapPoints}>
-        <View style={styles.contentContainer}>
-          {bottomSheetContent.map((p, index) => {
-            return (
-              <TouchableOpacity
-                key={index}
-                style={{
-                  padding: 10,
-                }}
-                onPress={(event) => {
-                  if (bottomSheetContent[0] == types[0]) {
-                    setKind(types[index])
-                  }
-                  if (bottomSheetContent[0] == provinces[0]) {
-                    setProvince(provinces[index])
-                  }
-                  close()
-                }}
-              >
-                <Text>{p}</Text>
-              </TouchableOpacity>
-            )
-          })}
-        </View>
+        <ScrollView>
+          <View style={styles.contentContainer}>
+            {bottomSheetContent.map((p, index) => {
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={{
+                    padding: 10,
+                  }}
+                  onPress={(event) => {
+                    if (bottomSheetContent[0] == types[0]) {
+                      setKind(types[index])
+                      getSpecies(index)
+                    }
+                    if (bottomSheetContent[0] == provinces[0]) {
+                      setProvince(provinces[index])
+                    }
+                    if (bottomSheetContent[0] == speciesList[0]) {
+                      setSpecies(speciesList[index])
+                    }
+                    close()
+                  }}
+                >
+                  <Text>{p}</Text>
+                </TouchableOpacity>
+              )
+            })}
+          </View>
+        </ScrollView>
       </BottomSheet>
     </View>
   )

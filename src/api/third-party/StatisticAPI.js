@@ -78,7 +78,7 @@ export const getMonthAverageTP = (date, handleMonthAvgCallback) => {
   var avg = 0
   var count = 0
   firestore()
-    .collection("users/" + auth().currentUser.uid + "/expenditures")
+    .collection("thirdParty/" + auth().currentUser.uid + "/income")
     .get()
     .then((querySnapshot) => {
       querySnapshot.forEach((documentSnapshot) => {
@@ -129,15 +129,15 @@ export const updateIncome = (income, handleUpdateIncomeCallback) => {
   firestore()
     .collection("thirdParty/" + auth().currentUser.uid + "/income")
     .doc(income._id)
-    .set({
-      title: income.title,
-      amount: parseInt(income.amount),
-      month: income.date.getMonth() + 1,
-      date: firestore.Timestamp.fromDate(new Date(income.date)),
-      year: income.date.getFullYear(),
-      type: income.type,
-      //service: income.service,
-    })
+    .set(
+      {
+        title: income.title,
+        amount: parseInt(income.amount),
+        type: income.type,
+        //service: income.service,
+      },
+      { merge: true }
+    )
     .then(() => {
       handleUpdateIncomeCallback()
     }, onError)
@@ -153,9 +153,9 @@ export const deleteIncome = (income, handleDeleteIncomeCallback) => {
     }, onError)
 }
 
-export const getMonthStatisticTP = (date, handleStatisticCallback) => {
-  var values = [0, 0, 0, 0, 0]
-  var percentage = [0, 0, 0, 0, 0]
+export const getMonthStatisticTP = (date, keys, handleStatisticCallback) => {
+  var values = new Array(keys.length).fill(0)
+  var percentage = new Array(keys.length).fill(0)
   var total = 0
   firestore()
     .collection("thirdParty/" + auth().currentUser.uid + "/income")
@@ -164,27 +164,19 @@ export const getMonthStatisticTP = (date, handleStatisticCallback) => {
     .get()
     .then((querySnapshot) => {
       querySnapshot.forEach((documentSnapshot) => {
-        var type = documentSnapshot.data().type
-        var amount = documentSnapshot.data().amount
-        total += amount
-        switch (type) {
-          case "Doctor":
-            values[0] += amount
-            break
-          case "Food":
-            values[1] += amount
-            break
-          case "Service":
-            values[2] += amount
-            break
-          case "Stuff":
-            values[3] += amount
-            break
-          default:
-            values[4] += amount
-            break
-        }
+        var services = documentSnapshot.data().service
+        total += services.length
+
+        services.forEach((service) => {
+          for (let i = 0; i < keys.length; i++) {
+            if (service == keys[i]) {
+              values[i]++
+              break
+            }
+          }
+        })
       })
+
       for (var i = 0; i < values.length; i++) {
         percentage[i] = Math.round((values[i] / total) * 100)
       }

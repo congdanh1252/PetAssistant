@@ -5,6 +5,7 @@ import MarketItem from "../models/MarketItem"
 export const getMarketList = (province, kind, species, handleCallback) => {
   console.log("Province: ", province)
   console.log("Kind : ", kind)
+  console.log("Species : ", species)
 
   var marketList = new Array()
   firestore()
@@ -16,13 +17,12 @@ export const getMarketList = (province, kind, species, handleCallback) => {
       } else {
         querySnapshot.forEach((documentSnapshot) => {
           if (
-            (documentSnapshot.data().species == species || species == "Tất cả")(
-              documentSnapshot.data().kind == kind || kind == "Tất cả"
-            ) &&
+            (documentSnapshot.data().species == species ||
+              species == "Tất cả") &&
+            (documentSnapshot.data().kind == kind || kind == "Tất cả") &&
             (documentSnapshot.data().province == province ||
               province == "Toàn quốc")
           ) {
-            console.log(documentSnapshot.data())
             let marketItem = new MarketItem()
             marketItem.update(documentSnapshot.data())
             marketItem._id = documentSnapshot.id

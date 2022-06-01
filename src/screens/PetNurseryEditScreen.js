@@ -1,12 +1,201 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { View, Text, StyleSheet, Image } from "react-native"
+import React, { useState, useRef, useMemo, useCallback, useEffect } from "react"
+import {
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+} from "react-native-gesture-handler"
+import BottomSheet from "@gorhom/bottom-sheet"
 
-export default function PetNurseryEditScreen() {
+import COLORS from "../theme/colors"
+import strings from "../data/strings"
+import { windowHeight, windowWidth } from "../models/common/Dimensions"
+import { getNurseryItem, getRatingList } from "../api/NurseryAPI"
+import Nursery from "../models/nursery"
+
+export function PetNurseryEditScreen({ navigation, route }) {
+  const [item, setItem] = useState(new Nursery())
+  const [ratingList, setRatingList] = useState([])
+
+  useEffect(() => {
+    const { item_id } = route.params
+    let isCancelled = false
+    getNurseryItem(item_id, (item) => {
+      if (item != "error") {
+        setItem(item)
+      }
+    })
+    return () => {
+      isCancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    const { item_id } = route.params
+    let isCancelled = false
+    getRatingList(item_id, (ratingList) => {
+      if (item != "error") {
+        console.log(ratingList)
+        setRatingList(ratingList)
+      }
+    })
+    return () => {
+      isCancelled = true
+    }
+  }, [item._id])
+
   return (
-    <View>
-      <Text>PetNurseryEditScreen</Text>
+    <View style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Text
+          style={{
+            color: COLORS.white,
+            fontFamily: "Roboto-Medium",
+            fontSize: 20,
+          }}
+        >
+          Chỉnh sửa thông tin
+        </Text>
+      </View>
+
+      <View style={styles.bodyContainer}>
+        <ScrollView>
+          {/* Info */}
+          <View>
+            <Text style={styles.sectionTitle}>Thông tin cá nhân</Text>
+            <View style={styles.line} />
+            <View style={styles.rowContainer}>
+              <Image
+                source={require("../assets/icons/nursery.png")}
+                style={{
+                  width: (windowWidth - 40) / 2,
+                  height: (windowWidth - 40) / 2,
+                  borderRadius: 10,
+                }}
+              />
+
+              <View>
+                <View style={styles.rowContainer}>
+                  <View style={{ marginRight: 8 }}>
+                    <Text style={{ color: COLORS.black }}>Họ tên</Text>
+                    <Text style={{ color: COLORS.black }}>Tuổi</Text>
+                    <Text style={{ color: COLORS.black }}>Trình độ</Text>
+                    <Text style={{ color: COLORS.black }}>Đánh giá</Text>
+                    <Text style={{ color: COLORS.black }}>Được thuê</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.bold}>{item.name.toUpperCase()}</Text>
+                    <Text style={styles.bold}>{item.age}</Text>
+                    <Text style={styles.bold}>{item.level}</Text>
+                    <Text style={styles.bold}>{item.rating}</Text>
+                    <Text style={styles.bold}>{item.hired_time} lần</Text>
+                  </View>
+                </View>
+
+                <View style={[styles.rowContainer, { marginTop: 8 }]}>
+                  <View>
+                    <Text style={{ fontSize: 12, color: COLORS.green }}>
+                      Trạng thái: {item.status}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Experience */}
+          <View>
+            <Text style={styles.sectionTitle}>Kinh nghiệm</Text>
+            <View style={styles.line} />
+            <View style={{ padding: 10 }}>
+              <View style={styles.inputBox}>
+                <TextInput
+                  onChangeText={(value) => {
+                    title = value
+                  }}
+                  style={styles.input}
+                  placeholder="Chi tiết kinh nghiệm"
+                  placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                ></TextInput>
+              </View>
+            </View>
+          </View>
+        </ScrollView>
+      </View>
     </View>
   )
 }
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#242B2E",
+  },
+  headerContainer: {
+    display: "flex",
+    flexDirection: "column",
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  bodyContainer: {
+    display: "flex",
+    flex: 9,
+    flexDirection: "column",
+    backgroundColor: COLORS.white,
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+    padding: 10,
+  },
+  rowContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  filterContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  filter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: COLORS.grey,
+    padding: 10,
+    borderRadius: 10,
+    color: COLORS.black,
+  },
+  sectionTitle: {
+    fontFamily: "Roboto-Bold",
+    fontSize: 20,
+    marginTop: 20,
+    color: COLORS.black,
+  },
+  bold: {
+    fontFamily: "Roboto-Bold",
+    fontSize: 14,
+    color: COLORS.black,
+  },
+  line: {
+    backgroundColor: COLORS.dark,
+    width: "100%",
+    marginTop: 2,
+    marginBottom: 4,
+    height: 0.5,
+    alignSelf: "center",
+  },
+  input: {
+    width: windowWidth - windowWidth / 4,
+    height: 40,
+    color: "#000",
+    backgroundColor: "#EEEEEE",
+    borderRadius: 15,
+    paddingHorizontal: 15,
+  },
+  inputBox: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+})
