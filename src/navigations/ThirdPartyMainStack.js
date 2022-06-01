@@ -5,8 +5,9 @@ import ChatListScreen from '../screens/ChatListScreen'
 import ChatScreen from '../screens/ChatScreen'
 import ProfileScreen from '../screens/third-party/ProfileScreen'
 import EditProfileScreen from '../screens/third-party/EditProfileScreen'
+import EditAppointmentScreen from '../screens/third-party/EditAppointmentScreen'
 import AppointmentArchiveScreen from '../screens/third-party/AppointmentArchieveScreen'
-import MakeAppointmentScreen from '../screens/MakeAppointmentScreen'
+import ReceivedFeedbackScreen from '../screens/third-party/ReceivedFeedbackScreen'
 
 import ScheduleScreen from "../screens/third-party/ScheduleScreen"
 import ScheduleEvent from "../screens/third-party/ScheduleEvent"
@@ -80,7 +81,12 @@ const ThirdPartyMainStack = () => {
         />
         <Stack.Screen
           name="EditAppointment"
-          component={MakeAppointmentScreen}
+          component={EditAppointmentScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="ReceivedFeedback"
+          component={ReceivedFeedbackScreen}
           options={{headerShown: false}}
         />
         <Stack.Screen

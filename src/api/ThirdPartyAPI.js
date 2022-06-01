@@ -4,16 +4,19 @@ import ThirdParty from '../models/thirdParty';
 
 export const getThirdPartyInfo = (id, handleCallback) => {
     firestore()
-      .collection("thirdParty")
-      .doc(id)
-      .get()
-      .then((documentSnapshot) => {
+    .collection("thirdParty")
+    .doc(id)
+    .get()
+    .then((documentSnapshot) => {
         var item = new ThirdParty()
         item.update(documentSnapshot.data())
         item._id = documentSnapshot.id
         handleCallback(item)
-      })
-  }
+    })
+    .catch((e) => {
+        handleCallback(e);
+    });
+}
 
 export const getSavedThirdParties = (handleCallback) => {
     firestore()
@@ -88,6 +91,26 @@ export const addNewAppointment = (apm, handleCallback) => {
         status: 'Chờ xác nhận',
         status_code: 0,
         has_feedback: false
+    })
+    .then(() => {
+        handleCallback('Success');
+    })
+    .catch((e) => {
+        handleCallback(e);
+    });
+};
+
+export const updateAppointmentAfterConfirm = (apm, handleCallback) => {
+    firestore()
+    .collection('appointment')
+    .doc(apm._id)
+    .update({
+        service: apm.service,
+        appointment_date: firestore.Timestamp.fromDate(apm.appointment_date),
+        appointment_time: firestore.Timestamp.fromDate(apm.appointment_time),
+        note: apm.note,
+        status: 'Đã xác nhận',
+        status_code: 1,
     })
     .then(() => {
         handleCallback('Success');

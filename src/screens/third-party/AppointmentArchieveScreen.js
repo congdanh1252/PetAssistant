@@ -32,6 +32,7 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
     const [statusSort, setStatusSort] = useState('Chờ xác nhận');
     const [dialogShow, setDialogShow] = useState(false);
     const [amDialogShow, setAmDialogShow] = useState(false);
+    const [cfDiaglogShow, setCfDialogShow] = useState(false);
     const [amount, setAmount] = useState('');
     const [rating, setRating] = useState('');
     const [ratingDetail, setRatingDetail] = useState('');
@@ -115,11 +116,13 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
 
     const handleButtonPress = (code) => {
         if (code < 2) {
-            // if (code == 0) {
-            //     navigation.navigate('EditAppointment', {
-
-            //     })
-            // }
+          if (code == 0) {
+              navigation.navigate('EditAppointment', {
+                apmId: appointment._id,
+                third_party: appointment.third_party_id
+              })
+              setShowDetail(false)
+          } else {
             proceedAppointment(appointment._id, code, amount, (result) => {
                 if (result.res == 'success') {
                     var obj = appointment
@@ -128,10 +131,12 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
                     // thêm reminder
                     setAppointment(obj)
                     setAmDialogShow(false)
+                    setCfDialogShow(false)
                     setShowDetail(false)
                     showResultToast('Success')
                 }
             })
+          }
         }
         if (code == 2) {
             if (!appointment.has_feedback) {
@@ -168,7 +173,7 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
                         titleStyle={style.button_title}
                         buttonStyle={[style.button, {backgroundColor: COLORS.black}]}
                         onPress={() => {
-                            handleButtonPress(-1)
+                          setCfDialogShow(true)
                         }}
                     />
 
@@ -307,6 +312,23 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
                             </TouchableOpacity>
                         )
                     })
+                }
+                {
+                    items.length < 1 ?
+                    <View style={{width: '100%'}}>
+                        <Text
+                            style={{
+                                color: COLORS.black,
+                                fontFamily: 'Roboto-Light',
+                                fontStyle: 'italic',
+                                fontSize: 16,
+                                textAlign: 'center'
+                            }}
+                        >
+                            Hiện chưa có lịch hẹn nào ở mục này!
+                        </Text>
+                    </View>
+                    : null
                 }
                 </View>
             </ScrollView>
@@ -675,6 +697,52 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
                             handleButtonPress(1)
                         }}
                     />  
+                </Dialog.Container>
+                : null
+            }
+
+            {
+                cfDiaglogShow ?
+                <Dialog.Container
+                    visible={true}
+                    contentStyle={{
+                        maxWidth: '64%'
+                    }}
+                >
+                    <Dialog.Title
+                        style={{
+                            fontSize: 18,
+                            fontFamily: 'Roboto-Bold',
+                        }}
+                    >
+                        {strings.confirm_label} hủy
+                    </Dialog.Title>
+
+                    <Dialog.Description
+                        style={{
+                            color: '#000',
+                            fontSize: 16,
+                            fontFamily: 'Roboto-Light'
+                        }}
+                    >
+                        {strings.msg_confirm_cancel_appointment}
+                    </Dialog.Description>
+
+                    <Dialog.Button
+                        style={{color: COLORS.black, marginTop: 8}}
+                        label={'Đóng'}
+                        onPress={() => {
+                            setCfDialogShow(false)
+                        }}
+                    />
+         
+                    <Dialog.Button
+                        style={{color: COLORS.black, marginTop: 8}}
+                        label={'OK'}
+                        onPress={() => {
+                            handleButtonPress(-1)
+                        }}
+                    />
                 </Dialog.Container>
                 : null
             }
