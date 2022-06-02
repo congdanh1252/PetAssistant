@@ -85,6 +85,7 @@ export const getMonthAverageTP = (date, handleMonthAvgCallback) => {
         avg += documentSnapshot.data().amount
         count++
       })
+      avg = avg / count
       handleMonthAvgCallback(avg)
     }, onError)
 }
@@ -109,6 +110,7 @@ export const findDateByKeyword = (keyword, date, handleDatesCallback) => {
 
 export const addIncome = (income, handleAddIncomeCallback) => {
   var dt = new Date(income.date)
+  console.log(income)
   firestore()
     .collection("thirdParty/" + auth().currentUser.uid + "/income")
     .add({
@@ -118,7 +120,7 @@ export const addIncome = (income, handleAddIncomeCallback) => {
       date: firestore.Timestamp.fromDate(dt),
       year: dt.getFullYear(),
       type: income.type,
-      service: income.service,
+      service: ["Dịch vụ lưu trú"],
     })
     .then(() => {
       handleAddIncomeCallback()

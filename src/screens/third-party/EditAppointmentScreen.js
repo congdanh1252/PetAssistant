@@ -15,7 +15,13 @@ import strings from "../../data/strings";
 import BackButton from "../../components/BackButton";
 import Appointment from "../../models/appointment";
 import ServiceItem from "../../models/serviceItem";
+import Reminder from '../../models/reminder';
 import { updateAppointmentAfterConfirm } from "../../api/ThirdPartyAPI";
+import {
+    addReminder,
+    addReminderUser
+} from "../../api/third-party/ReminderAPI"
+
 
 const EditAppointmentScreen = ({route, navigation}) => {
     var appointment = new Appointment();
@@ -28,6 +34,7 @@ const EditAppointmentScreen = ({route, navigation}) => {
     const [services, setServices] = useState([]);
     const [choseService, setChoseService] = useState([]);
     const [note, setNote] = useState('');
+    const [appointment2, setAppointment2] = useState(new Appointment())
     const [isUploading, setUploading] = useState(false);
 
     const [show, setShow] = useState(false);
@@ -75,8 +82,65 @@ const EditAppointmentScreen = ({route, navigation}) => {
             setUploading(true);
 
             initAppointmentData()
+
+            
+
             updateAppointmentAfterConfirm(appointment, handleAppointmentUpdated)
         }
+    }
+
+
+    const addReminder3Party = () => {
+
+        let reminder = new Reminder()
+        let date = new Date(appointment.appointment_time)
+        let date_2 = new Date(appointment.appointment_date)
+        date.setDate(date_2.getDate())
+        date.setMonth(date_2.getMonth())
+        date.setFullYear(date_2.getFullYear())
+        
+        
+        reminder.customer = appointment2.customer_id
+        reminder.datetime = date
+        reminder.description = appointment.note
+        reminder.service = appointment.service
+        reminder.title = appointment2.customer_name + " đặt lịch"
+        reminder.type = "Service"
+        reminder.reminderType = "custom"
+
+        addReminder(reminder, (reminder) => {
+            console.log("add3party:" +reminder)
+
+           _addReminderUser()
+        })
+    }
+
+    const _addReminderUser = () => {
+
+        let reminder = new Reminder()
+        let date = new Date(appointment.appointment_time)
+        let date_2 = new Date(appointment.appointment_date)
+        date.setDate(date_2.getDate())
+        date.setMonth(date_2.getMonth())
+        date.setFullYear(date_2.getFullYear())
+        
+        reminder.datetime = date
+        reminder.description = appointment.note
+        reminder.details = appointment.service
+        reminder.title = "Có hẹn với " + appointment2.third_party_name
+        reminder.frequency = "custom"
+        reminder.type = "Service"
+        reminder.reminderType = "custom"
+        reminder.pets = []
+
+        addReminderUser(reminder, appointment2.customer_id, (reminder) => {
+            console.log("user:" +reminder)
+
+            setUploading(false);
+            showResultToast("Success");
+    
+            navigation.goBack();
+        })
     }
 
     const showResultToast = (result) => {
@@ -101,11 +165,11 @@ const EditAppointmentScreen = ({route, navigation}) => {
       }
     }
 
-    const handleAppointmentUpdated = (result) => {
-        setUploading(false);
-        showResultToast(result);
+    const handleAppointmentUpdated = () => {
 
-        navigation.goBack();
+        addReminder3Party()
+
+
     }
 
     const updateServices = (element) => {
@@ -145,7 +209,7 @@ const EditAppointmentScreen = ({route, navigation}) => {
             item.update(documentSnapshot.data())
             item._id = documentSnapshot.id
             appointment.update(item)
-
+            setAppointment2(item)
             setName(item.customer_name)
             setPhoneNumber(item.customer_phone_number)
             setNote(item.note)

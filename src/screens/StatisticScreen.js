@@ -307,11 +307,6 @@ export default function StatisticScreen({ route, navigation }) {
   }
 
   const BottomBar = () => {
-    const switchType = () => {
-      if (statisticType == "type") setStatisticType("month")
-      else setStatisticType("type")
-    }
-
     return (
       <View style={styles.bottomBar}>
         <TouchableOpacity
@@ -327,26 +322,6 @@ export default function StatisticScreen({ route, navigation }) {
             source={require("../assets/icons/BackArrow.png")}
           />
         </TouchableOpacity>
-
-        <TouchableOpacity onPress={switchType}>
-          {statisticType == "type" ? (
-            <Image
-              style={{
-                height: 30,
-                width: 30,
-              }}
-              source={require("../assets/icons/BackArrow.png")}
-            />
-          ) : (
-            <Image
-              style={{
-                height: 30,
-                width: 30,
-              }}
-              source={require("../assets/icons/BackArrow.png")}
-            />
-          )}
-        </TouchableOpacity>
       </View>
     )
   }
@@ -358,6 +333,16 @@ export default function StatisticScreen({ route, navigation }) {
 
       {/* Body */}
       <View style={styles.bodyContainer}>
+        <Picker
+          selectedValue={statisticType}
+          onValueChange={(itemValue, itemIndex) => {
+            setStatisticType(itemValue)
+          }}
+        >
+          <Picker.Item label="Theo thể loại" value="type" />
+          <Picker.Item label="Theo tháng" value="month" />
+          <Picker.Item label="Theo năm" value="year" />
+        </Picker>
         {statisticType == "type" ? (
           <>
             <PieChar />
@@ -371,53 +356,6 @@ export default function StatisticScreen({ route, navigation }) {
             <Text style={{ textAlign: "right" }}>
               {statisticType == "month" ? "Ngày" : "Tháng"}
             </Text>
-
-            <Picker
-              selectedValue={statisticType}
-              onValueChange={(itemValue, itemIndex) => {
-                setStatisticType(itemValue)
-              }}
-            >
-              <Picker.Item label="Theo thể loại" value="type" />
-              <Picker.Item label="Theo tháng" value="month" />
-              <Picker.Item label="Theo năm" value="year" />
-            </Picker>
-
-            {/* {statisticType == "month" ? (
-              <View style={{ padding: 4 }}>
-                <Text style={styles.statisticDetail}>
-                  Trung bình tháng: {"  "}
-                  <Text style={styles.statisticDetail_Bold}>100.000 VNĐ</Text>
-                </Text>
-                <Text style={styles.statisticDetail}>
-                  Ngày cao nhất:{"  "}
-                  <Text style={styles.statisticDetail_Bold}>
-                    5 (100.000 VNĐ)
-                  </Text>
-                </Text>
-                <Text style={styles.statisticDetail}>
-                  Ngày thấp nhất nhất:{"  "}
-                  <Text style={styles.statisticDetail_Bold}>5 (0 VNĐ)</Text>
-                </Text>
-              </View>
-            ) : (
-              <View style={{ padding: 4 }}>
-                <Text style={styles.statisticDetail}>
-                  Trung bình năm: {"  "}
-                  <Text style={styles.statisticDetail_Bold}>100.000 VNĐ</Text>
-                </Text>
-                <Text style={styles.statisticDetail}>
-                  Tháng cao nhất:{"  "}
-                  <Text style={styles.statisticDetail_Bold}>
-                    5 (100.000 VNĐ)
-                  </Text>
-                </Text>
-                <Text style={styles.statisticDetail}>
-                  Tháng thấp nhất nhất:{"  "}
-                  <Text style={styles.statisticDetail_Bold}>5 (0 VNĐ)</Text>
-                </Text>
-              </View>
-            )} */}
           </>
         )}
       </View>

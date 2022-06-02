@@ -147,6 +147,23 @@ export const addExpenditure = (expenditure, handleAddExpenditureCallback) => {
   }, onError);
 }
 
+export const addExpenditureWithId = (expenditure, userId, handleAddExpenditureCallback) => {
+  var dt = new Date(expenditure.date)
+  firestore()
+  .collection('users/' + userId + '/expenditures')
+  .add({
+    title: expenditure.title,
+    amount: parseInt(expenditure.amount),
+    month: dt.getMonth() + 1,
+    date: firestore.Timestamp.fromDate(dt),
+    year: dt.getFullYear(),
+    type: expenditure.type,
+  })
+  .then(() => {
+    handleAddExpenditureCallback()
+  }, onError);
+}
+
 export const updateExpenditure = (expenditure, handleUpdateExpenditureCallback) => {
   firestore()
   .collection('users/' + auth().currentUser.uid + '/expenditures')

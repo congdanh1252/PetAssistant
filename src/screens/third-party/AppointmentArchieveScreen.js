@@ -16,9 +16,11 @@ import {
     updateFeedbackInThirdPartyProfile
 } from '../../api/ThirdPartyAPI';
 import {
-    addReminder,
-    addReminderUser
-} from "../../api/third-party/ReminderAPI"
+    addIncome,
+} from "../../api/third-party/StatisticAPI"
+import {
+    addExpenditureWithId,
+} from "../../api/ExpenditureAPI"
 import { windowWidth, windowHeight } from '../../models/common/Dimensions';
 
 import COLORS from '../../theme/colors';
@@ -27,6 +29,7 @@ import BackButton from '../../components/BackButton';
 import Appointment from '../../models/appointment';
 import { moneyFormat } from '../../models/common/moneyStringFormat';
 import Reminder from '../../models/reminder';
+import Expenditure from '../../models/expenditure';
 
 const AppointmentArchiveScreen = ({route, navigation}) => {
     const [appointment, setAppointment] = useState(new Appointment());
@@ -134,9 +137,9 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
                     obj.status_code = result.newCode
                     obj.status = result.newStatus
 
-                    
-                    addReminder3Party()
-                    _addReminderUser()
+
+                    addIncome3Party()
+                    addExpenditureUser()
 
                     setAppointment(obj)
                     setAmDialogShow(false)
@@ -156,49 +159,29 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
         }
     }
 
-    const addReminder3Party = () => {
+    const addIncome3Party = () => {
+        let income = new Expenditure()
 
-        let reminder = new Reminder()
-        let date = new Date(appointment.appointment_time)
-        let date_2 = new Date(appointment.appointment_date)
-        date.setDate(date_2.getDate())
-        date.setMonth(date_2.getMonth())
-        date.setFullYear(date_2.getFullYear())
-        
-        
-        reminder.customer = appointment.customer_id
-        reminder.datetime = date
-        reminder.description = appointment.note
-        reminder.service = appointment.service
-        reminder.title = appointment.customer_name + " đặt lịch"
-        reminder.type = "Service"
-        reminder.reminderType = "custom"
+        income.amount = parseInt(amount)
+        income.date = new Date()
+        income.title = appointment.customer_name + " sử dụng dịch vụ"
+        income.type = "Service"
 
-        addReminder(reminder, (reminder) => {
-            console.log("add3party:" +reminder)
+        addIncome(income, () => {
+            console.log("addIncome3Party")
         })
     }
 
-    const _addReminderUser = () => {
+    const addExpenditureUser = () => {
+        let expenditure = new Expenditure()
 
-        let reminder = new Reminder()
-        let date = new Date(appointment.appointment_time)
-        let date_2 = new Date(appointment.appointment_date)
-        date.setDate(date_2.getDate())
-        date.setMonth(date_2.getMonth())
-        date.setFullYear(date_2.getFullYear())
-        
-        reminder.datetime = date
-        reminder.description = appointment.note
-        reminder.details = appointment.service
-        reminder.title = "Có hẹn với " + appointment.third_party_name
-        reminder.frequency = "custom"
-        reminder.type = "Service"
-        reminder.reminderType = "custom"
-        reminder.pets = []
+        expenditure.amount = parseInt(amount)
+        expenditure.date = new Date()
+        expenditure.title = "Sử dụng dịch vụ của " +  appointment.third_party_name 
+        expenditure.type = "Service"
 
-        addReminderUser(reminder, appointment.customer_id, (reminder) => {
-            console.log("user:" +reminder)
+        addExpenditureWithId(expenditure, appointment.customer_id, () => {
+            console.log("addExpenditureUser")
         })
     }
 
