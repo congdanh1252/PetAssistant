@@ -192,9 +192,9 @@ export default function ExpenditureScreen({ route, navigation }) {
 
         <View
           style={{
-            width: '65%',
-            marginLeft: 'auto',
-            marginRight: 'auto',
+            width: "65%",
+            marginLeft: "auto",
+            marginRight: "auto",
             display: "flex",
             flexDirection: "row",
             justifyContent: "space-between",
@@ -320,7 +320,6 @@ export default function ExpenditureScreen({ route, navigation }) {
         <View
           style={{
             width: "100%",
-            display: "flex",
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",

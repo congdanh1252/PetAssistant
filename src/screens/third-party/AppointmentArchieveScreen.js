@@ -177,7 +177,7 @@ const AppointmentArchiveScreen = ({route, navigation}) => {
 
         expenditure.amount = parseInt(amount)
         expenditure.date = new Date()
-        expenditure.title = "Sử dụng dịch vụ của " +  appointment.third_party_name 
+        expenditure.title = appointment.third_party_name 
         expenditure.type = "Service"
 
         addExpenditureWithId(expenditure, appointment.customer_id, () => {

@@ -127,7 +127,7 @@ const EditAppointmentScreen = ({route, navigation}) => {
         reminder.datetime = date
         reminder.description = appointment.note
         reminder.details = appointment.service
-        reminder.title = "Có hẹn với " + appointment2.third_party_name
+        reminder.title = appointment2.third_party_name
         reminder.frequency = "custom"
         reminder.type = "Service"
         reminder.reminderType = "custom"
