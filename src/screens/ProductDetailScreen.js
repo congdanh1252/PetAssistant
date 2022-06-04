@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, Image, ScrollView } from "react-native"
 import React, { useState, useRef, useMemo, useCallback, useEffect } from "react"
 import { TextInput, TouchableOpacity } from "react-native-gesture-handler"
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet"
-import Carousel, { Pagination } from 'react-native-snap-carousel';
+import Carousel, { Pagination } from "react-native-snap-carousel"
 import { Linking } from "react-native"
 import COLORS from "../theme/colors"
 import strings from "../data/strings"
@@ -12,6 +12,7 @@ import MarketItem from "../models/MarketItem"
 import { getMarketItem } from "../api/MarketAPI"
 import { getUserInfo } from "../api/UserAPI"
 import User from "../models/user"
+import auth from "@react-native-firebase/auth"
 
 export function ProductDetailScreen({ route, navigation }) {
   const bottomSheetRef = useRef(BottomSheet)
@@ -24,14 +25,14 @@ export function ProductDetailScreen({ route, navigation }) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [photos, setPhotos] = useState([])
 
-  const RenderItem = ({item, index}) => {
+  const RenderItem = ({ item, index }) => {
     return (
-        <Image
-            source={{uri: item}}
-            resizeMode='cover'
-            style={styles.item_img}
-        />
-    );
+      <Image
+        source={{ uri: item }}
+        resizeMode="cover"
+        style={styles.item_img}
+      />
+    )
   }
 
   useEffect(() => {
@@ -39,14 +40,13 @@ export function ProductDetailScreen({ route, navigation }) {
     let isCancelled = false
     getMarketItem(item_id, (item) => {
       if (item != "error") {
-        let img = item.photos;
+        let img = item.photos
         img.push(item.photo)
         setItem(item)
         setPhotos(img)
 
         let temp = new User()
         temp._id = item.seller_id
-        console.log(item.photo)
         setSeller(temp)
       }
     })
@@ -60,6 +60,7 @@ export function ProductDetailScreen({ route, navigation }) {
 
     if (seller._id != "") {
       getUserInfo(seller._id, (user) => {
+        console.log(seller)
         setSeller(user)
       })
     }
@@ -101,7 +102,7 @@ export function ProductDetailScreen({ route, navigation }) {
 
       <View style={styles.item_img_container}>
         <Carousel
-          layout='default'
+          layout="default"
           inactiveSlideOpacity={1}
           data={item.photos}
           sliderWidth={windowWidth}
@@ -109,25 +110,25 @@ export function ProductDetailScreen({ route, navigation }) {
           renderItem={RenderItem}
           showsHorizontalScrollIndicator={false}
           enableSnap={true}
-          onSnapToItem = {index => setActiveIndex(index)}
+          onSnapToItem={(index) => setActiveIndex(index)}
         />
 
         <Pagination
           dotsLength={item.photos.length}
           activeDotIndex={activeIndex}
           dotStyle={{
-              width: 12,
-              height: 12,
-              borderRadius: 6,
-              marginHorizontal: 5,
-              backgroundColor: COLORS.white
+            width: 12,
+            height: 12,
+            borderRadius: 6,
+            marginHorizontal: 5,
+            backgroundColor: COLORS.white,
           }}
           inactiveDotStyle={{
-              backgroundColor: '#000000'
+            backgroundColor: "#000000",
           }}
           inactiveDotOpacity={0.5}
           inactiveDotScale={0.7}
-          containerStyle={{marginTop: -95}}
+          containerStyle={{ marginTop: -95 }}
         />
       </View>
 
@@ -138,7 +139,10 @@ export function ProductDetailScreen({ route, navigation }) {
         enableOverDrag={false}
         onChange={handleSheetChanges}
       >
-        <BottomSheetScrollView style={styles.contentContainer} showsVerticalScrollIndicator={false}>
+        <BottomSheetScrollView
+          style={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+        >
           <View>
             <View style={styles.sectionContainer}>
               <Text style={styles.headerText}>{item.name}</Text>
@@ -214,7 +218,7 @@ export function ProductDetailScreen({ route, navigation }) {
                   <Text style={styles.petInfo}>Địa chỉ</Text>
                 </View>
                 <View style={{ width: "50%" }}>
-                  <Text style={styles.petInfo}>{seller.address}</Text>
+                  <Text style={styles.petInfo}>{item.province}</Text>
                 </View>
               </View>
 
@@ -301,39 +305,67 @@ export function ProductDetailScreen({ route, navigation }) {
         }}
       >
         <View style={{ width: "50%" }}>
-          <TouchableOpacity
-            onPress={() => {
-              Linking.openURL(`tel:${seller.phoneNumber}`)
-            }}
-            style={[
-              {
-                backgroundColor: COLORS.pet_green,
-              },
-              styles.button,
-            ]}
-          >
-            <Text style={{color: '#000'}}>Gọi điện</Text>
-          </TouchableOpacity>
+          {seller._id == auth().currentUser.uid ? (
+            <TouchableOpacity
+              onPress={() => {}}
+              style={[
+                {
+                  backgroundColor: COLORS.pet_green,
+                },
+                styles.button,
+              ]}
+            >
+              <Text style={{ color: "#000" }}>Xóa thú cưng</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              onPress={() => {
+                Linking.openURL(`tel:${seller.phoneNumber}`)
+              }}
+              style={[
+                {
+                  backgroundColor: COLORS.pet_green,
+                },
+                styles.button,
+              ]}
+            >
+              <Text style={{ color: "#000" }}>Gọi điện</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={{ width: "50%" }}>
-          <TouchableOpacity
-            style={[
-              {
-                backgroundColor: COLORS.pet_pink,
-              },
-              styles.button,
-            ]}
-            onPress={() => {
-              navigation.navigate('ChatScreen', {
-                obj_id: item.seller_id,
-                obj_name: seller.name,
-                obj_avt: 'https://topbestviet.com/media/base/person.png',
-              })
-            }}
-          >
-            <Text style={{color: '#000'}}>Nhắn tin</Text>
-          </TouchableOpacity>
+          {seller._id == auth().currentUser.uid ? (
+            <TouchableOpacity
+              onPress={() => {}}
+              style={[
+                {
+                  backgroundColor: COLORS.pet_pink,
+                },
+                styles.button,
+              ]}
+            >
+              <Text style={{ color: "#000" }}>Chỉnh sửa thông tin</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={[
+                {
+                  backgroundColor: COLORS.pet_pink,
+                },
+                styles.button,
+              ]}
+              onPress={() => {
+                navigation.navigate("ChatScreen", {
+                  obj_id: item.seller_id,
+                  obj_name: seller.name,
+                  obj_avt: "https://topbestviet.com/media/base/person.png",
+                })
+              }}
+            >
+              <Text style={{ color: "#000" }}>Nhắn tin</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </View>
@@ -353,10 +385,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   item_img_container: {
-    height: '32%',
+    height: "32%",
   },
   item_img: {
-    height: '100%',
+    height: "100%",
   },
   headerText: {
     fontFamily: "Roboto-Bold",

@@ -13,46 +13,7 @@ import { windowHeight, windowWidth } from "../models/common/Dimensions"
 import { getNurseryItem, getRatingList } from "../api/NurseryAPI"
 import Nursery from "../models/nursery"
 
-const Star = (props) => {
-  var star = []
-  for (let i = 0; i < props.num; i++) {
-    star.push(<Image key={i} source={require("../assets/icons/Star.png")} />)
-  }
-  return <View style={styles.rowContainer}>{star}</View>
-}
-
-const Rating = (props) => {
-  return (
-    <View
-      style={{
-        backgroundColor: COLORS.grey,
-        borderRadius: 10,
-        padding: 10,
-        marginTop: 10,
-      }}
-    >
-      <View style={styles.rowContainer}>
-        <Text style={{ fontSize: 14 }}>
-          <Text
-            style={{
-              fontFamily: "Roboto-Bold",
-              color: COLORS.black,
-            }}
-          >
-            {props.rating.user}
-          </Text>
-          <Text> đã thuê {props.rating.period} ngày</Text>
-        </Text>
-        <Star num={props.rating.rating} />
-      </View>
-      <Text style={{ textAlign: "justify", color: COLORS.black }}>
-        {props.rating.detail}
-      </Text>
-    </View>
-  )
-}
-
-export function PetNurseryDetailScreen({ navigation, route }) {
+export function PetNurseryEditScreen({ navigation, route }) {
   const [item, setItem] = useState(new Nursery())
   const [ratingList, setRatingList] = useState([])
 
@@ -93,7 +54,7 @@ export function PetNurseryDetailScreen({ navigation, route }) {
             fontSize: 20,
           }}
         >
-          Tìm người trông hộ
+          Chỉnh sửa thông tin
         </Text>
       </View>
 
@@ -134,20 +95,9 @@ export function PetNurseryDetailScreen({ navigation, route }) {
                 <View style={[styles.rowContainer, { marginTop: 8 }]}>
                   <View>
                     <Text style={{ fontSize: 12, color: COLORS.green }}>
-                      {item.status}
+                      Trạng thái: {item.status}
                     </Text>
                   </View>
-                  <TouchableOpacity
-                    style={{
-                      backgroundColor: COLORS.grey,
-                      borderRadius: 8,
-                      padding: 8,
-                    }}
-                  >
-                    <Text style={{ fontSize: 12, color: COLORS.black }}>
-                      Liên hệ ngay
-                    </Text>
-                  </TouchableOpacity>
                 </View>
               </View>
             </View>
@@ -158,41 +108,16 @@ export function PetNurseryDetailScreen({ navigation, route }) {
             <Text style={styles.sectionTitle}>Kinh nghiệm</Text>
             <View style={styles.line} />
             <View style={{ padding: 10 }}>
-              <Text
-                style={{
-                  fontFamily: "Roboto-Regular",
-                  textAlign: "justify",
-                  color: COLORS.black,
-                }}
-              >
-                {item.experience}
-              </Text>
-              {/* <View
-                style={[
-                  styles.rowContainer,
-                  { width: "60%", alignSelf: "center" },
-                ]}
-              >
-                <View>
-                  <Text style={{ color: COLORS.black }}>Chó</Text>
-                  <Text style={{ color: COLORS.black }}>Mèo</Text>
-                </View>
-                <View>
-                  <Text style={styles.bold}>Chiahuahua, Alaska</Text>
-                  <Text style={styles.bold}>Anh long ngan, Mun</Text>
-                </View>
-              </View> */}
-            </View>
-          </View>
-
-          {/* Rating */}
-          <View>
-            <Text style={styles.sectionTitle}>Đánh giá</Text>
-            <View style={styles.line} />
-            <View>
-              {ratingList.map((rating) => {
-                return <Rating key={rating._id} rating={rating} />
-              })}
+              <View style={styles.inputBox}>
+                <TextInput
+                  onChangeText={(value) => {
+                    title = value
+                  }}
+                  style={styles.input}
+                  placeholder="Chi tiết kinh nghiệm"
+                  placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                ></TextInput>
+              </View>
             </View>
           </View>
         </ScrollView>
@@ -260,5 +185,17 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     height: 0.5,
     alignSelf: "center",
+  },
+  input: {
+    width: windowWidth - windowWidth / 4,
+    height: 40,
+    color: "#000",
+    backgroundColor: "#EEEEEE",
+    borderRadius: 15,
+    paddingHorizontal: 15,
+  },
+  inputBox: {
+    alignItems: "center",
+    marginBottom: 20,
   },
 })

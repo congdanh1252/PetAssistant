@@ -10,33 +10,35 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import Toast from "react-native-toast-message";
 import firestore from '@react-native-firebase/firestore';
 
-import { addNewAppointment } from "../api/ThirdPartyAPI";
-import COLORS from '../theme/colors';
-import strings from "../data/strings";
-import BackButton from "../components/BackButton";
-import Appointment from "../models/appointment";
-import thirdParty from '../models/thirdParty';
-import ServiceItem from "../models/serviceItem";
+import COLORS from '../../theme/colors';
+import strings from "../../data/strings";
+import BackButton from "../../components/BackButton";
+import Appointment from "../../models/appointment";
+import ServiceItem from "../../models/serviceItem";
+import Reminder from '../../models/reminder';
+import { updateAppointmentAfterConfirm } from "../../api/ThirdPartyAPI";
+import {
+    addReminder,
+    addReminderUser
+} from "../../api/third-party/ReminderAPI"
 
-const MakeAppointmentScreen = ({route, navigation}) => {
+
+const EditAppointmentScreen = ({route, navigation}) => {
     var appointment = new Appointment();
-    const { action, thirdPartyID, currentService } = route.params;
-    const [tpName, setTPName] = useState('');
-    const [tpThumbnail, setTPThumbnail] = useState('');
-    const [tpAddress, setTPAddress] = useState('');
+    const { apmId, third_party } = route.params;
     const [name, setName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
-    const [date, setDate] = useState('');
-    const [time, setTime] = useState('');
+    const [date, setDate] = useState(new Date());
+    const [time, setTime] = useState(new Date());
     const [timeDisplay, setTimeDisplay] = useState('');
     const [services, setServices] = useState([]);
-    const [choseService, setChoseService] = useState([currentService]);
+    const [choseService, setChoseService] = useState([]);
     const [note, setNote] = useState('');
+    const [appointment2, setAppointment2] = useState(new Appointment())
     const [isUploading, setUploading] = useState(false);
 
     const [show, setShow] = useState(false);
     const [showDate, setShowDate] = useState(false);
-    const [choseDate, setChoseDate] = useState(false);
 
     const onChangeTime = (event, selectedTime) => {
         setShow(false)
@@ -48,26 +50,18 @@ const MakeAppointmentScreen = ({route, navigation}) => {
     };
 
     const onChangeDate = (event, selectedDate) => {
-        setShowDate(false)
         if (selectedDate != null) {
-            setDate(selectedDate)
+          setDate(selectedDate)
         }
-        setChoseDate(true)
+        setShowDate(false)
     };
 
     const initAppointmentData = () => {
-        appointment.third_party_id = thirdPartyID;
-        appointment.third_party_name = tpName;
-        appointment.third_party_thumbnail = tpThumbnail;
-        appointment.third_party_address = tpAddress;
-        appointment.customer_name = name;
-        appointment.customer_phone_number = phoneNumber;
-        appointment.service = choseService;
-        appointment.appointment_date = date;
-        appointment.appointment_time = time;
-        appointment.note = note;
-        appointment.status = 'Chờ xác nhận';
-        appointment.status_code = 0;
+      appointment._id = apmId;
+      appointment.service = choseService;
+      appointment.appointment_date = date;
+      appointment.appointment_time = time;
+      appointment.note = note;
     }
 
     const checkSubmitFields = () => {
@@ -87,84 +81,95 @@ const MakeAppointmentScreen = ({route, navigation}) => {
             console.log('check input ok');
             setUploading(true);
 
-            if (action==='add') {
-                initAppointmentData();
-                addNewAppointment(appointment, handleAppointmentAdded)
-            }
+            initAppointmentData()
+
+            
+
+            updateAppointmentAfterConfirm(appointment, handleAppointmentUpdated)
         }
     }
 
-    const resetAllFields = () => {
-        setPhotoUri(new Array());
-        setPhotoFileName(new Array());
-        setName('');
-        setKind('');
-        setGender('');
-        setSpecies('');
-        setDescription('');
-        setPrice('');
-        setDiscountPrice('');
-        setHeight('');
-        setWeight('');
-        setDropdown('');
-        setUploading(false);
-        setShow(false);
+
+    const addReminder3Party = () => {
+
+        let reminder = new Reminder()
+        let date = new Date(appointment.appointment_time)
+        let date_2 = new Date(appointment.appointment_date)
+        date.setDate(date_2.getDate())
+        date.setMonth(date_2.getMonth())
+        date.setFullYear(date_2.getFullYear())
+        
+        
+        reminder.customer = appointment2.customer_id
+        reminder.datetime = date
+        reminder.description = appointment.note
+        reminder.service = appointment.service
+        reminder.title = appointment2.customer_name + " đặt lịch"
+        reminder.type = "Service"
+        reminder.reminderType = "custom"
+
+        addReminder(reminder, (reminder) => {
+            console.log("add3party:" +reminder)
+
+           _addReminderUser()
+        })
     }
 
-    const cancelAddingTask = () => {
-        Alert.alert(
-            'Cảnh báo',
-            (action == 'add'
-            ? 'Bạn có chắc muốn hủy đăng thông tin bán thú cưng?'
-            : 'Bạn có chắc muốn hủy việc chỉnh sửa thông tin thú cưng?'),
-            [
-                {
-                    text: strings.cancel,
-                },
-                {
-                    text: strings.sure,
-                    onPress: () => {
-                        action == 'add'
-                        ? resetAllFields()
-                        : navigation.goBack();
-                    }
-                }
-            ]
-        );
+    const _addReminderUser = () => {
+
+        let reminder = new Reminder()
+        let date = new Date(appointment.appointment_time)
+        let date_2 = new Date(appointment.appointment_date)
+        date.setDate(date_2.getDate())
+        date.setMonth(date_2.getMonth())
+        date.setFullYear(date_2.getFullYear())
+        
+        reminder.datetime = date
+        reminder.description = appointment.note
+        reminder.details = appointment.service
+        reminder.title = appointment2.third_party_name
+        reminder.frequency = "custom"
+        reminder.type = "Service"
+        reminder.reminderType = "custom"
+        reminder.pets = []
+
+        addReminderUser(reminder, appointment2.customer_id, (reminder) => {
+            console.log("user:" +reminder)
+
+            setUploading(false);
+            showResultToast("Success");
+    
+            navigation.goBack();
+        })
     }
 
     const showResultToast = (result) => {
-        if (result == 'Success') {
-            Toast.show({
-                type: 'success',
-                text1: strings.success,
-                text2: action==='add' ? strings.msg_upload_appointment_success : '',
-                position: 'top',
-                autoHide: true,
-            });
-
-            action==='add' ? console.log('Appointment uploaded!') : console.log('!');
-        }
-        else {
-            Toast.show({
-                type: 'error',
-                text1: strings.fail,
-                text2: strings.msg_upload_appointment_fail,
-                position: 'top',
-                autoHide: true,
-            });
-
-            action==='add' ?
-            console.log('Add to firestore error => ' + result) :
-            console.log('Update to firestore error => ' + result);
-        }
+      if (result == 'Success') {
+          Toast.show({
+              type: 'success',
+              text1: strings.success,
+              text2: strings.msg_proceed_appointment_success,
+              position: 'top',
+              autoHide: true,
+          });
+      }
+      else {
+          Toast.show({
+              type: 'error',
+              text1: strings.fail,
+              text2: strings.err_check_inputs,
+              position: 'top',
+              autoHide: true,
+          });
+          console.log(result)
+      }
     }
 
-    const handleAppointmentAdded = (result) => {
-        setUploading(false);
-        showResultToast(result);
+    const handleAppointmentUpdated = () => {
 
-        navigation.goBack();
+        addReminder3Party()
+
+
     }
 
     const updateServices = (element) => {
@@ -197,20 +202,26 @@ const MakeAppointmentScreen = ({route, navigation}) => {
     //load list items
     useEffect(() => {
         const subscriber = firestore()
-        .collection('thirdParty')
-        .doc(thirdPartyID)
+        .collection('appointment')
+        .doc(apmId)
         .onSnapshot(documentSnapshot => {
-            var item = new thirdParty();
-            item.update(documentSnapshot.data());
-            item._id = documentSnapshot.id;
-
-            setTPName(item.name);
-            setTPThumbnail(item.thumbnail);
-            setTPAddress(item.address);
+            var item = new Appointment()
+            item.update(documentSnapshot.data())
+            item._id = documentSnapshot.id
+            appointment.update(item)
+            setAppointment2(item)
+            setName(item.customer_name)
+            setPhoneNumber(item.customer_phone_number)
+            setNote(item.note)
+            setChoseService(item.service)
+            const val = new Date(item.appointment_time.toDate())
+            setTime(val)
+            setDate(new Date(item.appointment_date.toDate()))
+            setTimeDisplay(val.getHours().toString() + ":" + String(val.getMinutes()).padStart(2, '0'))
         })
 
         const serviceFetching = firestore()
-        .collection('thirdParty/' + thirdPartyID + '/service')
+        .collection('thirdParty/' + third_party + '/service')
         .onSnapshot(querySnapshot => {
             var services = new Array();
             querySnapshot.forEach(documentSnapshot => {
@@ -239,7 +250,7 @@ const MakeAppointmentScreen = ({route, navigation}) => {
                 />
 
                 <Text style={styles.header_title}>
-                    {strings.make_appointment_label}
+                    Xác nhận lịch hẹn
                 </Text>
             </View>
 
@@ -272,9 +283,7 @@ const MakeAppointmentScreen = ({route, navigation}) => {
                                             textContentType={"name"}
                                             placeholderTextColor={'#898989'}
                                             placeholder={strings.name}
-                                            onChangeText={value => {
-                                               setName(value)
-                                            }}
+                                            editable={false}
                                             value={name}
                                         />
                                     </TouchableOpacity>
@@ -293,9 +302,7 @@ const MakeAppointmentScreen = ({route, navigation}) => {
                                             textContentType={"telephoneNumber"}
                                             placeholderTextColor={'#898989'}
                                             placeholder={strings.phone}
-                                            onChangeText={value => {
-                                               setPhoneNumber(value)
-                                            }}
+                                            editable={false}
                                             value={phoneNumber}
                                         />
                                     </TouchableOpacity>
@@ -320,11 +327,9 @@ const MakeAppointmentScreen = ({route, navigation}) => {
                                             placeholderTextColor={'#898989'}
                                             placeholder={strings.appointment_date_label}
                                             value={
-                                                choseDate ?
                                                 String(date.getDate()).padStart(2, '0') + "-" +
                                                 String(date.getMonth() + 1).padStart(2, '0') + "-" +
                                                 date.getFullYear().toString()
-                                                : (null)
                                             }
                                         />
                                     </TouchableOpacity>
@@ -396,12 +401,12 @@ const MakeAppointmentScreen = ({route, navigation}) => {
                                     >
                                         <Image
                                             style={styles.plus_icon}
-                                            source={require('../assets/icons/Add.png')}
+                                            source={require('../../assets/icons/Add.png')}
                                         />
 
                                         <Picker
                                             style={[styles.plus_icon, {marginTop: -44, marginLeft: 5, opacity: 0, backgroundColor: COLORS.green}]}
-                                            selectedValue={currentService}
+                                            selectedValue={choseService}
                                             onValueChange={(itemValue, itemIndex) => {
                                                 updateServices(itemValue)
                                             }}>
@@ -440,7 +445,7 @@ const MakeAppointmentScreen = ({route, navigation}) => {
                                     title={strings.cancel}
                                     titleStyle={styles.button_title}
                                     buttonStyle={styles.button}
-                                    onPress={() => cancelAddingTask()}
+                                    onPress={() => navigation.goBack()}
                                 >
                                 </Button>
 
@@ -503,7 +508,7 @@ const MakeAppointmentScreen = ({route, navigation}) => {
     )
 }
 
-export default MakeAppointmentScreen;
+export default EditAppointmentScreen;
 
 const styles = StyleSheet.create({
     screen: {

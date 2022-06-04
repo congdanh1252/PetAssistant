@@ -22,9 +22,9 @@ export default class thirdParty {
         this.thumbnail = data.thumbnail || '';
         this.rating = data.rating || '';
         this.rating_count = parseInt(data.rating_count) || 0;
-        this.img = data.img || '';
-        this.service = data.service || '';
-        this.feedback = data.feedback || '';
+        this.img = data.img || new Array();
+        this.service = data.service || new Array();
+        this.feedback = data.feedback || new Array();
     }
 
     static clone(data) {

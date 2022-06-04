@@ -228,7 +228,7 @@ const HomeScreen = ({ navigation }) => {
             activeOpacity={0.7}
             style={[style.menu_box, { marginRight: 8 }]}
             onPress={() => {
-              // navigation.navigate("PredictStack")
+              navigation.navigate("AppointmentArchieve")
             }}
           >
             <Image
@@ -244,7 +244,9 @@ const HomeScreen = ({ navigation }) => {
             activeOpacity={0.7}
             style={[style.menu_box, { marginLeft: 8 }]}
             onPress={() => {
-              // navigation.navigate('Service')
+              navigation.navigate('ReceivedFeedback', {
+                obj_id: auth().currentUser.uid
+              })
             }}
           >
             <Image

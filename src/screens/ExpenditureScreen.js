@@ -192,26 +192,24 @@ export default function ExpenditureScreen({ route, navigation }) {
 
         <View
           style={{
+            width: "65%",
+            marginLeft: "auto",
+            marginRight: "auto",
             display: "flex",
             flexDirection: "row",
             justifyContent: "space-between",
           }}
         >
           <View style={styles.cardHeader}>
-            <Text style={styles.cardTextBold}>{monthLimit / 1000}k</Text>
-            <Text>Hạn mức</Text>
-          </View>
-
-          <View style={styles.cardHeader}>
             <Text
               style={
                 type == "user"
-                  ? monthSpent < monthLimit
+                  ? monthSpent < monthAverage
                     ? styles.successText
                     : styles.errorText
-                  : monthSpent > monthLimit
-                  ? styles.errorText
-                  : styles.successText
+                  : monthSpent > monthAverage
+                  ? styles.successText
+                  : styles.error
               }
             >
               {monthSpent / 1000}k
@@ -228,10 +226,10 @@ export default function ExpenditureScreen({ route, navigation }) {
               }
             >
               {monthAverage > 0
-                ? monthAverage / 1000 + "k"
+                ? Math.round(monthAverage / 1000) + "k"
                 : monthAverage == 0
-                ? monthAverage / 1000 + "k"
-                : monthAverage / 1000 + "k"}
+                ? Math.round(monthAverage / 1000) + "k"
+                : Math.round(monthAverage / 1000) + "k"}
             </Text>
 
             <Text>Trung bình</Text>
@@ -322,7 +320,6 @@ export default function ExpenditureScreen({ route, navigation }) {
         <View
           style={{
             width: "100%",
-            display: "flex",
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
@@ -878,7 +875,7 @@ export default function ExpenditureScreen({ route, navigation }) {
         isCancelled = true
       }
     }
-  }, [])
+  }, [selectedMonth])
 
   return (
     <View style={styles.container}>

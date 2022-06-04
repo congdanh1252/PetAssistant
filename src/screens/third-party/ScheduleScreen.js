@@ -180,7 +180,7 @@ export default function ScheduleScreen({ navigation }) {
             ? styles.yellowBackground
             : props.reminder.type == "Stuff"
             ? styles.pinkBackground
-            : styles.greenBackground,
+            : styles.pinkBackground,
         ]}
       >
         <View style={styles.eventTitle}>
@@ -212,13 +212,6 @@ export default function ScheduleScreen({ navigation }) {
           <Text>
             {" "}
             Khách hàng:{" "}
-            <Text style={{ fontFamily: "Roboto-Bold" }}>
-              {props.reminder.user.name}
-            </Text>
-          </Text>
-          <Text>
-            {" "}
-            Trạng thái:{" "}
             <Text style={{ fontFamily: "Roboto-Bold" }}>
               {props.reminder.user.name}
             </Text>

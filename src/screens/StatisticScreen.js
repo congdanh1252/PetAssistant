@@ -32,13 +32,27 @@ import {
 import { ScrollView, TouchableOpacity } from "react-native-gesture-handler"
 import MonthPicker from "react-native-month-year-picker"
 import { Value } from "react-native-reanimated"
+import { getServices } from "../api/third-party/ServiceAPI"
 
 export default function StatisticScreen({ route, navigation }) {
-  const keys = ["Sức khỏe", "Thức ăn", "Dịch vụ", "Dụng cụ", "Khác"]
   const { type } = route.params
-  const types = ["Doctor", "Food", "Service", "Stuff", "Other"]
+  const [keys, setKeys] = useState([
+    "Sức khỏe",
+    "Thức ăn",
+    "Dịch vụ",
+    "Dụng cụ",
+    "Khác",
+  ])
+  const [types, setTypes] = useState([
+    "Doctor",
+    "Food",
+    "Service",
+    "Stuff",
+    "Other",
+  ])
   const [percentage, setPercentage] = useState([20, 20, 20, 20, 20])
   const [values, setValues] = useState([0, 0, 0, 0, 0])
+
   const colors = [
     COLORS.yellow,
     COLORS.ocean,
@@ -51,6 +65,23 @@ export default function StatisticScreen({ route, navigation }) {
   const [statisticType, setStatisticType] = useState("year")
 
   const [data, setData] = useState([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+  // Get 3rd service
+  useEffect(() => {
+    isCancelled = false
+    getServices((services) => {
+      let k = new Array()
+      services.forEach((service) => {
+        k.push(service.detail)
+      })
+      setKeys(k)
+      setPercentage(new Array(k.length).fill(100 / k.length))
+      setValues(new Array(k.length).fill(0))
+    })
+    return () => {
+      isCancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     let isCancelled = false
@@ -82,22 +113,16 @@ export default function StatisticScreen({ route, navigation }) {
       }
     } else {
       if (statisticType == "type") {
-        getMonthStatisticTP(month, (values, percentage) => {
+        getMonthStatisticTP(month, keys, (values, percentage) => {
           try {
             if (!isCancelled) {
               console.log(values)
-              if (
-                values[0] == 0 &&
-                values[1] == 0 &&
-                values[2] == 0 &&
-                values[3] == 0 &&
-                values[4] == 0
-              ) {
-                setShowData(false)
-              } else {
+              if (values) {
                 setShowData(true)
                 setPercentage(percentage)
                 setValues(values)
+              } else {
+                setShowData(false)
               }
             }
           } catch (error) {
@@ -259,7 +284,7 @@ export default function StatisticScreen({ route, navigation }) {
                     }}
                   >
                     <Text style={styles.detail}>
-                      {moneyFormat(values[index]) + " vnđ"}
+                      {moneyFormat(values[index]) + " lần sử dụng"}
                     </Text>
 
                     <View
@@ -282,11 +307,6 @@ export default function StatisticScreen({ route, navigation }) {
   }
 
   const BottomBar = () => {
-    const switchType = () => {
-      if (statisticType == "type") setStatisticType("month")
-      else setStatisticType("type")
-    }
-
     return (
       <View style={styles.bottomBar}>
         <TouchableOpacity
@@ -302,26 +322,6 @@ export default function StatisticScreen({ route, navigation }) {
             source={require("../assets/icons/BackArrow.png")}
           />
         </TouchableOpacity>
-
-        <TouchableOpacity onPress={switchType}>
-          {statisticType == "type" ? (
-            <Image
-              style={{
-                height: 30,
-                width: 30,
-              }}
-              source={require("../assets/icons/BackArrow.png")}
-            />
-          ) : (
-            <Image
-              style={{
-                height: 30,
-                width: 30,
-              }}
-              source={require("../assets/icons/BackArrow.png")}
-            />
-          )}
-        </TouchableOpacity>
       </View>
     )
   }
@@ -333,6 +333,16 @@ export default function StatisticScreen({ route, navigation }) {
 
       {/* Body */}
       <View style={styles.bodyContainer}>
+        <Picker
+          selectedValue={statisticType}
+          onValueChange={(itemValue, itemIndex) => {
+            setStatisticType(itemValue)
+          }}
+        >
+          <Picker.Item label="Theo thể loại" value="type" />
+          <Picker.Item label="Theo tháng" value="month" />
+          <Picker.Item label="Theo năm" value="year" />
+        </Picker>
         {statisticType == "type" ? (
           <>
             <PieChar />
@@ -346,53 +356,6 @@ export default function StatisticScreen({ route, navigation }) {
             <Text style={{ textAlign: "right" }}>
               {statisticType == "month" ? "Ngày" : "Tháng"}
             </Text>
-
-            <Picker
-              selectedValue={statisticType}
-              onValueChange={(itemValue, itemIndex) => {
-                setStatisticType(itemValue)
-              }}
-            >
-              <Picker.Item label="Theo thể loại" value="type" />
-              <Picker.Item label="Theo tháng" value="month" />
-              <Picker.Item label="Theo năm" value="year" />
-            </Picker>
-
-            {/* {statisticType == "month" ? (
-              <View style={{ padding: 4 }}>
-                <Text style={styles.statisticDetail}>
-                  Trung bình tháng: {"  "}
-                  <Text style={styles.statisticDetail_Bold}>100.000 VNĐ</Text>
-                </Text>
-                <Text style={styles.statisticDetail}>
-                  Ngày cao nhất:{"  "}
-                  <Text style={styles.statisticDetail_Bold}>
-                    5 (100.000 VNĐ)
-                  </Text>
-                </Text>
-                <Text style={styles.statisticDetail}>
-                  Ngày thấp nhất nhất:{"  "}
-                  <Text style={styles.statisticDetail_Bold}>5 (0 VNĐ)</Text>
-                </Text>
-              </View>
-            ) : (
-              <View style={{ padding: 4 }}>
-                <Text style={styles.statisticDetail}>
-                  Trung bình năm: {"  "}
-                  <Text style={styles.statisticDetail_Bold}>100.000 VNĐ</Text>
-                </Text>
-                <Text style={styles.statisticDetail}>
-                  Tháng cao nhất:{"  "}
-                  <Text style={styles.statisticDetail_Bold}>
-                    5 (100.000 VNĐ)
-                  </Text>
-                </Text>
-                <Text style={styles.statisticDetail}>
-                  Tháng thấp nhất nhất:{"  "}
-                  <Text style={styles.statisticDetail_Bold}>5 (0 VNĐ)</Text>
-                </Text>
-              </View>
-            )} */}
           </>
         )}
       </View>

@@ -4,16 +4,19 @@ import ThirdParty from '../models/thirdParty';
 
 export const getThirdPartyInfo = (id, handleCallback) => {
     firestore()
-      .collection("thirdParty")
-      .doc(id)
-      .get()
-      .then((documentSnapshot) => {
+    .collection("thirdParty")
+    .doc(id)
+    .get()
+    .then((documentSnapshot) => {
         var item = new ThirdParty()
         item.update(documentSnapshot.data())
         item._id = documentSnapshot.id
         handleCallback(item)
-      })
-  }
+    })
+    .catch((e) => {
+        handleCallback(e);
+    });
+}
 
 export const getSavedThirdParties = (handleCallback) => {
     firestore()
@@ -97,6 +100,26 @@ export const addNewAppointment = (apm, handleCallback) => {
     });
 };
 
+export const updateAppointmentAfterConfirm = (apm, handleCallback) => {
+    firestore()
+    .collection('appointment')
+    .doc(apm._id)
+    .update({
+        service: apm.service,
+        appointment_date: firestore.Timestamp.fromDate(apm.appointment_date),
+        appointment_time: firestore.Timestamp.fromDate(apm.appointment_time),
+        note: apm.note,
+        status: 'Đã xác nhận',
+        status_code: 1,
+    })
+    .then(() => {
+        handleCallback('Success');
+    })
+    .catch((e) => {
+        handleCallback(e);
+    });
+};
+
 export const addFeedbackToAppointment = (id, apmFb, handleCallback) => {
     firestore()
     .collection('appointment')
@@ -104,6 +127,21 @@ export const addFeedbackToAppointment = (id, apmFb, handleCallback) => {
     .update({
         has_feedback: true,
         feedback: apmFb
+    })
+    .then(() => {
+        handleCallback('Success');
+    })
+    .catch((e) => {
+        handleCallback(e);
+    });
+};
+
+export const addTotalAmountToAppointment = (id, amount, handleCallback) => {
+    firestore()
+    .collection('appointment')
+    .doc(id)
+    .update({
+        total_amount: parseInt(amount)
     })
     .then(() => {
         handleCallback('Success');
@@ -216,4 +254,53 @@ export const updateMultipleServices = async (thirdParty, actions, handleCallback
                 });
         }
     }
+}
+
+export const proceedAppointment = (id, currentCode, amount, handleCallback) => {
+    var newCode = 0
+    var newStatus = ''
+
+    switch (currentCode) {
+        case 0:
+            newCode = 1
+            newStatus = 'Đã xác nhận' 
+            break
+        case 1:
+            newCode = 2
+            newStatus = 'Thành công' 
+            break
+        default:
+            newCode = 3
+            newStatus = 'Đã hủy' 
+    }
+
+    firestore()
+    .collection('appointment')
+    .doc(id)
+    .update({
+        status: newStatus,
+        status_code: newCode
+    })
+    .then(() => {
+        if (newCode == 2) {
+            addTotalAmountToAppointment(id, amount, (res) => {
+                if (res == 'Success') {
+                    handleCallback({
+                        res: 'success',
+                        newCode: newCode,
+                        newStatus: newStatus
+                    });
+                }
+            })
+        } else {
+            handleCallback({
+                res: 'success',
+                newCode: newCode,
+                newStatus: newStatus
+            });
+        }
+    })
+    .catch((e) => {
+        handleCallback(e);
+    });
 }

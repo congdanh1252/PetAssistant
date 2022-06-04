@@ -10,6 +10,7 @@ import { windowHeight } from '../models/common/Dimensions';
 const ServiceFeedbackListTab = ({route, navigation}) => {
     const { obj_id } = route.params;
     const [list, setList] = useState([]);
+    const [emptyMsg, setEmptyMsg] = useState('Hiện chưa có feedback nào!');
 
     //load list items
     useEffect(() => {
@@ -56,6 +57,23 @@ const ServiceFeedbackListTab = ({route, navigation}) => {
                             </View>
                         );
                     })
+                }
+                {
+                    list.length < 1 ?
+                    <View style={{width: '100%', marginTop: '50%'}}>
+                        <Text
+                            style={{
+                                color: COLORS.black,
+                                fontFamily: 'Roboto-Light',
+                                fontStyle: 'italic',
+                                fontSize: 16,
+                                textAlign: 'center'
+                            }}
+                        >
+                            {emptyMsg}
+                        </Text>
+                    </View>
+                    : null
                 }
             </ScrollView>
         )

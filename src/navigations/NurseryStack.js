@@ -3,6 +3,8 @@ import { NavigationContainer } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { PetNurseryScreen } from "../screens/PetNurseryScreen"
 import { PetNurseryDetailScreen } from "../screens/PetNurseryDetailScreen"
+import { PetNurseryEditScreen } from "../screens/PetNurseryEditScreen"
+
 
 const Stack = createNativeStackNavigator()
 
@@ -21,6 +23,11 @@ const NurseryStack = () => {
       <Stack.Screen
         name="NurseryDetail"
         component={PetNurseryDetailScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="NurseryEdit"
+        component={PetNurseryEditScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

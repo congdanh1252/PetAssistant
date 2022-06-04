@@ -8,41 +8,50 @@ import firestore from '@react-native-firebase/firestore';
 import BottomSheet from '@gorhom/bottom-sheet';
 import Dialog from "react-native-dialog";
 import Toast from "react-native-toast-message";
-
+import moment from 'moment';
 import {
     addFeedbackToAppointment,
     getThirdPartyInfo,
     proceedAppointment,
     updateFeedbackInThirdPartyProfile
-} from '../api/ThirdPartyAPI';
-import { moneyFormat } from '../models/common/moneyStringFormat';
-import { windowWidth, windowHeight } from '../models/common/Dimensions';
+} from '../../api/ThirdPartyAPI';
+import {
+    addIncome,
+} from "../../api/third-party/StatisticAPI"
+import {
+    addExpenditureWithId,
+} from "../../api/ExpenditureAPI"
+import { windowWidth, windowHeight } from '../../models/common/Dimensions';
 
-import COLORS from '../theme/colors';
-import strings from '../data/strings';
-import BackButton from '../components/BackButton';
-import Appointment from '../models/appointment';
+import COLORS from '../../theme/colors';
+import strings from '../../data/strings';
+import BackButton from '../../components/BackButton';
+import Appointment from '../../models/appointment';
+import { moneyFormat } from '../../models/common/moneyStringFormat';
+import Reminder from '../../models/reminder';
+import Expenditure from '../../models/expenditure';
 
-const AppointmentArchivedScreen = ({route, navigation}) => {
-    // const { role } = route.params;
+const AppointmentArchiveScreen = ({route, navigation}) => {
     const [appointment, setAppointment] = useState(new Appointment());
     const [show, setShow] = useState(false);
     const [showDetail, setShowDetail] = useState(false);
     const [items, setItems] = useState([]);
     const [dataList, setDataList] = useState([]);
-    const [filter, setFilter] = useState('Tất cả');
+    const [statusSort, setStatusSort] = useState('Chờ xác nhận');
     const [dialogShow, setDialogShow] = useState(false);
+    const [amDialogShow, setAmDialogShow] = useState(false);
     const [cfDiaglogShow, setCfDialogShow] = useState(false);
+    const [amount, setAmount] = useState('');
     const [rating, setRating] = useState('');
     const [ratingDetail, setRatingDetail] = useState('');
 
-    const snapPoints = useMemo(() => ['62%', '62%'], []);
-    const filterSnapPoints = useMemo(() => ['42%', '42%'], []);
+    const snapPoints = useMemo(() => ['63%', '63%'], []);
+    const statusSnapPoints = useMemo(() => ['34%', '34%'], []);
 
     const filterListBySearch = (input) => {
         var newList = [];
         dataList.forEach(item => {
-            if (item.third_party_name.toLowerCase().includes(input.toLowerCase())) {
+            if (item.customer_name.toLowerCase().includes(input.toLowerCase())) {
                 newList.push(item);
             }
         });
@@ -55,29 +64,16 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
             Toast.show({
                 type: 'success',
                 text1: strings.success,
-                text2: strings.msg_send_feedback_success,
+                text2: strings.msg_proceed_appointment_success,
                 position: 'top',
                 autoHide: true,
             });
-
-            console.log('feedback added!')
         }
-        else {
+        if (result == 'Empty_fb') {
             Toast.show({
-                type: 'error',
-                text1: strings.fail,
-                text2: strings.msg_save_guide_fail,
-                position: 'top',
-                autoHide: true,
-            });
-
-            console.log('Add to firestore error => ' + result)
-        }
-        if (result == 'c_success') {
-            Toast.show({
-                type: 'success',
-                text1: strings.success,
-                text2: 'Đã hủy lịch hẹn! 😉',
+                type: 'info',
+                text1: strings.hix_label,
+                text2: strings.empty_fb_label,
                 position: 'top',
                 autoHide: true,
             });
@@ -126,43 +122,133 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
         )
     }
 
+    const handleButtonPress = (code) => {
+        if (code < 2) {
+          if (code == 0) {
+              navigation.navigate('EditAppointment', {
+                apmId: appointment._id,
+                third_party: appointment.third_party_id
+              })
+              setShowDetail(false)
+          } else {
+            proceedAppointment(appointment._id, code, amount, (result) => {
+                if (result.res == 'success') {
+                    var obj = appointment
+                    obj.status_code = result.newCode
+                    obj.status = result.newStatus
+
+
+                    addIncome3Party()
+                    addExpenditureUser()
+
+                    setAppointment(obj)
+                    setAmDialogShow(false)
+                    setCfDialogShow(false)
+                    setShowDetail(false)
+                    showResultToast('Success')
+                }
+            })
+          }
+        }
+        if (code == 2) {
+            if (!appointment.has_feedback) {
+                showResultToast('Empty_fb')
+            } else {
+                setDialogShow(true)
+            }
+        }
+    }
+
+    const addIncome3Party = () => {
+        let income = new Expenditure()
+
+        income.amount = parseInt(amount)
+        income.date = new Date()
+        income.title = appointment.customer_name + " sử dụng dịch vụ"
+        income.type = "Service"
+
+        addIncome(income, () => {
+            console.log("addIncome3Party")
+        })
+    }
+
+    const addExpenditureUser = () => {
+        let expenditure = new Expenditure()
+
+        expenditure.amount = parseInt(amount)
+        expenditure.date = new Date()
+        expenditure.title = appointment.third_party_name 
+        expenditure.type = "Service"
+
+        addExpenditureWithId(expenditure, appointment.customer_id, () => {
+            console.log("addExpenditureUser")
+        })
+    }
+
     const HandlingButton = () => {
         return (
             <>
             {
-                parseInt(appointment.status_code) < 2 ?
+                appointment.status_code == 0 ?
+                <Button
+                    title={strings.confirm_label}
+                    titleStyle={style.button_title}
+                    buttonStyle={[style.button, {backgroundColor: COLORS.blue}]}
+                    onPress={() => {
+                        handleButtonPress(0)
+                    }}
+                /> : null
+            }
+            {
+                appointment.status_code == 1 ?
+                <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'flex-end'
+                }}>
                     <Button
                         title={strings.cancel}
                         titleStyle={style.button_title}
-                        buttonStyle={style.button}
+                        buttonStyle={[style.button, {backgroundColor: COLORS.black}]}
                         onPress={() => {
-                            setCfDialogShow(true)
+                          setCfDialogShow(true)
                         }}
-                    >
-                    </Button>
-                : null
-            }
+                    />
 
-            {
-                parseInt(appointment.status_code) == 2 ?
                     <Button
-                        title={
-                            appointment.has_feedback ?
-                            strings.feedback_label + ' của bạn'
-                            : strings.feedback_label
-                        }
+                        title={strings.success}
                         titleStyle={style.button_title}
-                        buttonStyle={
-                            appointment.has_feedback ?
-                            [style.button, {width: 148}]
-                            : style.button
-                        }
+                        buttonStyle={[style.button, {
+                            backgroundColor: COLORS.green,
+                            marginLeft: 14,
+                            width: 120
+                        }]}
                         onPress={() => {
-                            setDialogShow(true)
+                            setAmDialogShow(true)
                         }}
-                    >
-                    </Button>
-                : null
+                    />
+                </View> : null
+            }
+            {
+                appointment.status_code == 2 ?
+                <Button
+                    title={'Xem ' + strings.feedback_label.toLowerCase()}
+                    titleStyle={style.button_title}
+                    buttonStyle={[style.button, {backgroundColor: COLORS.blue, width: 120}]}
+                    onPress={() => {
+                        handleButtonPress(2)
+                    }}
+                /> : null
+            }
+            {
+                appointment.status_code == 3 ?
+                <Button
+                    title={'Đã ' + strings.cancel.toLowerCase()}
+                    titleStyle={style.button_title}
+                    buttonStyle={style.button}
+                    onPress={() => {
+                    }}
+                /> : null
             }
             </>
         )
@@ -215,11 +301,11 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                     style={style.item_thumbnail}
                                 />
 
-                                <Text style={style.item_title} numberOfLines={1}>{item.third_party_name}</Text>
+                                <Text style={style.item_title} numberOfLines={1}>{item.customer_name}</Text>
 
                                 <View style={style.item_info_holder}>
                                     <Image
-                                        source={require('../assets/icons/ic_calendar.png')}
+                                        source={require('../../assets/icons/ic_calendar.png')}
                                         style={[style.info_icon, {tintColor: '#000'}]}
                                     />
 
@@ -228,7 +314,7 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
 
                                 <View style={style.item_info_holder}>
                                     <Image
-                                        source={require('../assets/icons/ic_menu.png')}
+                                        source={require('../../assets/icons/ic_menu.png')}
                                         style={[style.info_icon, {tintColor: '#000'}]}
                                     />
 
@@ -291,10 +377,11 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
     useEffect(() => {
         const subscriber = firestore()
         .collection('appointment')
-        .where('customer_id', '==', auth().currentUser.uid)
-        // .where('status', '==', filter)
+        .where('third_party_id', '==', auth().currentUser.uid)
+        .where('status', '==', statusSort)
         .onSnapshot(querySnapshot => {
             var list = new Array();
+            if (querySnapshot != null) {
             querySnapshot.forEach(documentSnapshot => {
                 var item = new Appointment();
                 item.update(documentSnapshot.data());
@@ -302,23 +389,15 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                 item.appointment_date = new Date(documentSnapshot.data().appointment_date.toDate());
                 item.appointment_time = new Date(documentSnapshot.data().appointment_time.toDate());
                 item.created_at = new Date(documentSnapshot.data().createdAt.toDate());
-
-                if (filter == 'Tất cả') {
-                    list.push(item)
-                } else {
-                    if (item.status == filter) {
-                        list.push(item)
-                   }
-                }
+                list.push(item);
             })
+        }
             setItems(list);
             setDataList(list);
         })
 
-        return () => {
-            subscriber()
-        }
-    }, [filter]);
+        return () => subscriber();
+    }, [statusSort]);
 
     //Main 
     return (
@@ -348,7 +427,7 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                     }}
                     style={{width: 120, marginTop: 24, marginBottom: 8}}
                 >
-                    <Text style={style.title}>{filter}</Text>
+                    <Text style={style.title}>{statusSort}</Text>
                 </TouchableOpacity>
                 
                 <Items/>
@@ -508,6 +587,7 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                         </View>
                                         : <HandlingButton/>
                                     }
+                                    
                                 </View>
                             </BottomSheet>
                         </View>
@@ -568,7 +648,7 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
 
                     <Dialog.Button
                         style={{color: COLORS.black, marginTop: 8}}
-                        label={strings.cancel}
+                        label={'Đóng'}
                         onPress={() => {
                             setDialogShow(false)
                         }}
@@ -584,8 +664,10 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                     rating: rating,
                                     detail: ratingDetail
                                 }, (result) => {
+                                    setDialogShow(false)
+                                    showResultToast(result)
+
                                     if (result == 'Success') {
-                                        console.log(appointment.third_party_id)
                                         getThirdPartyInfo(appointment.third_party_id, (obj) => {
                                             obj.feedback.push({
                                                 rating: rating,
@@ -594,9 +676,6 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                                 createdAt: formatDate(new Date())
                                             })
                                             updateFeedbackInThirdPartyProfile(obj._id, obj, rating, (res) => {
-                                                setDialogShow(false)
-                                                setShowDetail(false)
-                                                showResultToast(result)
                                                 res == 'Success' ?
                                                 console.log('update third party feedback OK!')
                                                 : console.log('update third party failed!')
@@ -607,6 +686,55 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                             }}
                         /> : null
                     }              
+                </Dialog.Container>
+                : null
+            }
+
+            {
+                amDialogShow ?
+                <Dialog.Container
+                    visible={true}
+                    contentStyle={{
+                        maxWidth: '64%'
+                    }}
+                >
+                    <Dialog.Title
+                        style={{
+                            fontSize: 18,
+                            fontFamily: 'Roboto-Bold',
+                        }}
+                    >
+                        Tổng tiền dịch vụ
+                    </Dialog.Title>
+
+                    <TextInput
+                        style={style.input}
+                        placeholderTextColor={'#898989'}
+                        placeholder={strings.amount}
+                        value={amount.toString()}
+                        editable={true}
+                        keyboardType={'numeric'}
+                        multiline={false}
+                        onChangeText={value => {
+                            setAmount(value)
+                        }}
+                    />
+
+                    <Dialog.Button
+                        style={{color: COLORS.black, marginTop: 8}}
+                        label={strings.cancel}
+                        onPress={() => {
+                            setAmDialogShow(false)
+                        }}
+                    />  
+
+                    <Dialog.Button
+                        style={{color: COLORS.black, marginTop: 8}}
+                        label={'OK'}
+                        onPress={() => {
+                            handleButtonPress(1)
+                        }}
+                    />  
                 </Dialog.Container>
                 : null
             }
@@ -650,20 +778,14 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                         style={{color: COLORS.black, marginTop: 8}}
                         label={'OK'}
                         onPress={() => {
-                            proceedAppointment(appointment._id, 3, 0, (res) => {
-                                if (res.res == 'success') {
-                                    setCfDialogShow(false)
-                                    setShowDetail(false)
-                                    showResultToast('c_success')
-                                }
-                            })
+                            handleButtonPress(-1)
                         }}
                     />
                 </Dialog.Container>
                 : null
             }
 
-            {/* BottomSheet Filter */}
+            {/* BottomSheet Status */}
             {
                 !show ?
                     null
@@ -672,42 +794,20 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                         <View style={style.overlay}>
                             <BottomSheet
                                 index={1}
-                                snapPoints={filterSnapPoints}
+                                snapPoints={statusSnapPoints}
                                 backgroundStyle={{borderWidth: 1}}
                                 style={style.dropdown_bottomsheet}
                                 enableOverDrag={false}
                                 enablePanDownToClose={true}
                                 onClose={() => {setShow(false)}}
                             >
-                                {/* Tất cả */}
-                                <TouchableHighlight
-                                    key={4}
-                                    activeOpacity={0.7}
-                                    underlayColor='#EEEEEE'
-                                    style={
-                                        filter != 'Tất cả'
-                                        ?
-                                        style.dropdown_option
-                                        :
-                                        [style.dropdown_option, {backgroundColor: COLORS.grey}]
-                                    }
-                                    onPress={() => {
-                                        setShow(false)
-                                        setFilter('Tất cả')
-                                    }}
-                                >
-                                    <Text style={style.dropdown_option_text}>
-                                    Tất cả
-                                    </Text>
-                                </TouchableHighlight>
-
                                 {/* Chờ xác nhận */}
                                 <TouchableHighlight
                                     key={0}
                                     activeOpacity={0.7}
                                     underlayColor='#EEEEEE'
                                     style={
-                                        filter != 'Chờ xác nhận'
+                                        statusSort != 'Chờ xác nhận'
                                         ?
                                         style.dropdown_option
                                         :
@@ -715,7 +815,7 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                     }
                                     onPress={() => {
                                         setShow(false)
-                                        setFilter('Chờ xác nhận')
+                                        setStatusSort('Chờ xác nhận')
                                     }}
                                 >
                                     <Text style={style.dropdown_option_text}>
@@ -729,7 +829,7 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                     activeOpacity={0.7}
                                     underlayColor='#EEEEEE'
                                     style={
-                                        filter != 'Đã xác nhận'
+                                        statusSort != 'Đã xác nhận'
                                         ?
                                         style.dropdown_option
                                         :
@@ -737,7 +837,7 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                     }
                                     onPress={() => {
                                         setShow(false)
-                                        setFilter('Đã xác nhận')
+                                        setStatusSort('Đã xác nhận')
                                     }}
                                 >
                                     <Text style={style.dropdown_option_text}>
@@ -751,7 +851,7 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                     activeOpacity={0.7}
                                     underlayColor='#EEEEEE'
                                     style={
-                                        filter != 'Thành công'
+                                        statusSort != 'Thành công'
                                         ?
                                         style.dropdown_option
                                         :
@@ -759,7 +859,7 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                     }
                                     onPress={() => {
                                         setShow(false)
-                                        setFilter('Thành công')
+                                        setStatusSort('Thành công')
                                     }}
                                 >
                                     <Text style={style.dropdown_option_text}>
@@ -773,7 +873,7 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                     activeOpacity={0.7}
                                     underlayColor='#EEEEEE'
                                     style={
-                                        filter != 'Đã hủy'
+                                        statusSort != 'Đã hủy'
                                         ?
                                         style.dropdown_option
                                         :
@@ -781,7 +881,7 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
                                     }
                                     onPress={() => {
                                         setShow(false)
-                                        setFilter('Đã hủy')
+                                        setStatusSort('Đã hủy')
                                     }}
                                 >
                                     <Text style={style.dropdown_option_text}>
@@ -796,7 +896,7 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
     );
 }
 
-export default AppointmentArchivedScreen;
+export default AppointmentArchiveScreen;
 
 const style = StyleSheet.create({
     screen: {
@@ -960,6 +1060,11 @@ const style = StyleSheet.create({
         color: COLORS.black,
         fontFamily: 'Roboto-Bold',
     },
+    total_amount: {
+        fontSize: 20,
+        color: COLORS.success,
+        fontFamily: 'Roboto-Bold',
+    },
     button: {
         width: 94,
         height: 40,
@@ -973,11 +1078,6 @@ const style = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Roboto-Bold',
         color: COLORS.white,
-    },
-    total_amount: {
-        fontSize: 20,
-        color: COLORS.success,
-        fontFamily: 'Roboto-Bold',
     },
     input_holder: {
         width: '100%',
