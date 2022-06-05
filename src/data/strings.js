@@ -181,6 +181,7 @@ export default strings = {
     update_info_success_msg: "Đã cập nhật thông tin của bạn! 👐",
     update_info_fail_msg: "Đã xảy ra lỗi trong quá trình thực hiện! 😔",
     msg_confirm_cancel_appointment: "Bạn có chắc chắn muốn hủy lịch hẹn không? Việc này sẽ không thể hoàn tác.",
+    msg_delete_pet_in_market: "Bạn có chắc muốn xóa thú cưng này khỏi chợ? Thao tác này sẽ không thể hoàn tác.",
     
 
     back: "Trở lại",

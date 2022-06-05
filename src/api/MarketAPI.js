@@ -52,3 +52,40 @@ export const getMarketItem = (_id, handleCallback) => {
       handleCallback("error")
     })
 }
+
+export const deleteMarketItem = (id, handleCallback) => {
+  firestore()
+  .collection('market')
+  .doc(id)
+  .delete()
+  .then((e) => {
+      handleCallback('success')
+  })
+  .catch((e) => {
+      handleCallback(e);
+  });
+}
+
+export const updateMarketItem = (pet, handleCallback) => {
+  firestore()
+  .collection('market')
+  .doc(pet._id)
+  .update({
+      name: pet.name,
+      kind: pet.kind,
+      gender: pet.gender,
+      species: pet.species,
+      height: pet.height,
+      weight: pet.weight,
+      age: firestore.Timestamp.fromDate(pet.age),
+      price: pet.price,
+      discount_price: pet.discount_price,
+      description: pet.description,
+  })
+  .then(() => {
+      handleCallback('Success');
+  })
+  .catch((e) => {
+      handleCallback(e);
+  });
+};

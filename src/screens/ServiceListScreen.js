@@ -145,7 +145,7 @@ const ServiceListScreen = ({route, navigation}) => {
                         activeOpacity={0.7}
                         style={style.location_filter_holder}
                     >
-                        <Text style={[style.item_rating_label, {opacity: 0.7}]}>Bình Dương</Text>
+                        <Text style={[style.item_rating_label, {opacity: 0.7}]}>Toàn quốc</Text>
 
                         <Image
                             style={style.arrow_down}

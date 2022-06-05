@@ -20,22 +20,21 @@ import COLORS from '../theme/colors';
 import strings from "../data/strings";
 import BackButton from "../components/BackButton";
 import PetSell from "../models/petSell";
+import { updateMarketItem } from "../api/MarketAPI";
 
 const SellPetScreen = ({route, navigation}) => {
     var elseOption = '';
     var pet = new PetSell();
-    const { petObj } = {
-        
-    };
-    const { action } = route.params;
-    const [photoUri, setPhotoUri] = useState(action=='add' ? [] : petObj.photo.concat(petObj.additional_photos));
+    
+    const { action, petObj } = route.params;
+    const [photoUri, setPhotoUri] = useState(action=='add' ? [] : petObj.photos);
     const [photoFileName, setPhotoFileName] = useState([]);
     const [name, setName] = useState(action=='add' ? '' : petObj.name);
     const [kind, setKind] = useState(action=='add' ? '' : petObj.kind);
     const [gender, setGender] = useState(action=='add' ? '' : petObj.gender);
     const [species, setSpecies] = useState(action=='add' ? '' : petObj.species);
-    const [price, setPrice] = useState(action=='add' ? '' : petObj.price);
-    const [discountPrice, setDiscountPrice] = useState(action=='add' ? '' : petObj.discount_price);
+    const [price, setPrice] = useState(action=='add' ? '' : petObj.price.toString());
+    const [discountPrice, setDiscountPrice] = useState(action=='add' ? '' : petObj.discount_price.toString());
     const [description, setDescription] = useState(action=='add' ? '' : petObj.description);
     const [height, setHeight] = useState(action=='add' ? '' : (petObj.height + ''));
     const [weight, setWeight] = useState(action=='add' ? '' : (petObj.weight + ''));
@@ -43,7 +42,7 @@ const SellPetScreen = ({route, navigation}) => {
     const [isUploading, setUploading] = useState(false);
 
     const [show, setShow] = useState(false);
-    const [date, setDate] = useState(action=='add' ? new Date(2020, 12, 12) : petObj.age);
+    const [date, setDate] = useState(action=='add' ? new Date(2020, 12, 12) : new Date(2020, 12, 12));
     const [choseDate, setChoseDate] = useState(action=='add' ? false : true);
 
     const snapPoints = useMemo(() => ['100%', '100%'], []);
@@ -89,7 +88,20 @@ const SellPetScreen = ({route, navigation}) => {
         pet.price = parseInt(price);
         pet.discount_price = parseInt(discountPrice);
         pet.description = description;
-        //action === 'edit' ? pet._id = petObj._id : null;
+    }
+
+    const initPetEditData = () => {
+        pet.name = name;
+        pet.kind = kind;
+        pet.gender = gender;
+        pet.species = species;
+        pet.age = date;
+        pet.height = parseFloat(height);
+        pet.weight = parseFloat(weight);
+        pet.price = parseInt(price);
+        pet.discount_price = parseInt(discountPrice);
+        pet.description = description;
+        pet._id = petObj._id;
     }
 
     const checkSubmitFields = () => {
@@ -112,15 +124,13 @@ const SellPetScreen = ({route, navigation}) => {
             if (action==='add') {
                 uploadMultipleImagesToStorage(photoUri, photoFileName, handleImageUrl);
             }
-            // else {
-            //     if (photoFileName==='') {
-            //         initPetData(petObj.photo);
-            //         updatePetInFirestore(pet, handlePetUpdated);
-            //     } else {
-            //         uploadImageToStorage(photoUri, photoFileName, handleImageUrl);
-            //         deleteImageFromStorage(petObj.photo);
-            //     }
-            // }
+            else {
+                initPetEditData()
+                updateMarketItem(pet, (res) => {
+                    showResultToast(res)
+                    navigation.goBack()
+                })
+            }
         }
     }
 

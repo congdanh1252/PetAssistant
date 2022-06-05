@@ -89,7 +89,6 @@ const EditAppointmentScreen = ({route, navigation}) => {
         }
     }
 
-
     const addReminder3Party = () => {
 
         let reminder = new Reminder()
@@ -186,7 +185,7 @@ const EditAppointmentScreen = ({route, navigation}) => {
     }
 
     const removeItemOnClick = (item) => {
-        if (item != currentService) {
+        if (choseService.length > 1) {
             let listItem = [];
 
             for (let i = 0; i < choseService.length; i++) {
@@ -210,6 +209,7 @@ const EditAppointmentScreen = ({route, navigation}) => {
             item._id = documentSnapshot.id
             appointment.update(item)
             setAppointment2(item)
+
             setName(item.customer_name)
             setPhoneNumber(item.customer_phone_number)
             setNote(item.note)
