@@ -130,7 +130,7 @@ const AppointmentArchivedScreen = ({route, navigation}) => {
         return (
             <>
             {
-                parseInt(appointment.status_code) < 2 ?
+                parseInt(appointment.status_code) < 1 ?
                     <Button
                         title={strings.cancel}
                         titleStyle={style.button_title}

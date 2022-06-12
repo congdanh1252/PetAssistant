@@ -491,6 +491,7 @@ const style = StyleSheet.create({
         alignItems: 'center',
     },
     service_msg_holder: {
+        maxWidth: windowWidth - 98,
         padding: 10,
         borderRadius: 10,
         alignItems: 'flex-start',
